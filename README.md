@@ -1,2 +1,2 @@
-# 9bit
-Emulation/simulation of a custom 9-bit CPU.
+# 12bit
+Emulation/simulation of a custom 12-bit CPU.
