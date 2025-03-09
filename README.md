@@ -9,6 +9,7 @@ Emulation of a custom 12-bit CPU. Written by Chris Musei-Sequeira
 
 ## Instructions
 | Opcode (Octal) | Mnemonic | Operand (If Applicable) | Total Width (Words)
+| --- | --- | --- | --- |
 | 0000 | NOP | | 1
 | 0001 | LDA | Address (1 word) | 2
 | 0002 | ADD | Address (1 word) | 2
