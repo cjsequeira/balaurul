@@ -1,0 +1,20 @@
+table {
+    border: 1px solid black;
+
+    padding: 0px;
+    margin: 0px;
+}
+
+td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 3px;
+}
+
+td.labels {
+    font-weight: bold;
+}
+
+#app_12bit_memory {
+    font-family: "Lucida Console", "Courier New", monospace;
+}
