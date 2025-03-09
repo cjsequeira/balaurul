@@ -15,6 +15,11 @@ td.labels {
     font-weight: bold;
 }
 
+td.pc {
+    padding: 1px;
+    border: 2px solid red
+}
+
 #app_12bit_memory {
     font-family: "Lucida Console", "Courier New", monospace;
 }
