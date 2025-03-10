@@ -1,5 +1,10 @@
+body {
+    background-color:navy;
+    color: rgba(240, 240, 240, 1.0);
+}
+
 table {
-    border: 1px solid black;
+    border: 1px solid grey;
     border-collapse: collapse;
 }
 
