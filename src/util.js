@@ -25,7 +25,8 @@ export function showDiff(string_primary, string_secondary, color) {
     return string_out;
 }
 
-// calculate the two's complement for a given number of given bit-length
+// return a decimal number assuming two's complement representation of...
+//  a given number with a given bit length
 export function twosComplement(number, bits) {
     if (number >= Math.pow(2, bits - 1)) {
         return (number - Math.pow(2, bits));
