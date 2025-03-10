@@ -1,6 +1,6 @@
 body {
     background-color:navy;
-    color: rgba(240, 240, 240, 1.0);
+    color: rgba(255, 255, 255, 1.0);
 }
 
 table {
@@ -22,7 +22,11 @@ td.labels {
     text-align: left;
     vertical-align: middle;
     border: 1px solid grey;
-    padding: 3px;
+    padding: 4px;
+    font-family: "Lucida Console", "Courier New", monospace;
+}
+
+.mnemonic {
     font-family: "Lucida Console", "Courier New", monospace;
 }
 
@@ -33,4 +37,21 @@ td.mem_pc {
 
 #app_12bit_memory {
     font-family: "Lucida Console", "Courier New", monospace;
+}
+
+
+/* floating div code based on: https://stackoverflow.com/questions/5803023/how-to-place-two-divs-next-to-each-other */
+#wrapper {
+    width: fit-content;
+    overflow: hidden;
+}
+#first {
+    width: fit-content;
+    float: left;
+    margin: 5px;
+}
+#second {
+    width: fit-content;
+    float: right;
+    margin: 5px;
 }

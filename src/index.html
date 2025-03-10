@@ -13,61 +13,80 @@
             Because we love octal!
         </p>
 
-        <h2>Registers</h2>
-        <p>
-            <table class="registers">
-                <tr>
-                    <th class="registers">Register</th>
-                    <th class="registers">Binary</th>
-                    <th class="registers">Octal</th>
-                    <th class="registers">Hex</th>
-                    <th class="registers">Dec</th>
-                    <th class="registers">2s Comp Dec</th>
-                </tr>
-                <tr>
-                    <td class="registers">A</td>
-                    <td class="registers" id="app_12bit_a_binary"></td>
-                    <td class="registers" id="app_12bit_a_octal"></td>
-                    <td class="registers" id="app_12bit_a_hex"></td>
-                    <td class="registers" id="app_12bit_a_dec"></td>
-                    <td class="registers" id="app_12bit_a_2s_comp_dec"></td>
-                </tr>
-                <tr>
-                    <td class="registers">B</td>
-                    <td class="registers" id="app_12bit_b_binary"></td>
-                    <td class="registers" id="app_12bit_b_octal"></td>
-                    <td class="registers" id="app_12bit_b_hex"></td>
-                    <td class="registers" id="app_12bit_b_dec"></td>
-                    <td class="registers" id="app_12bit_b_2s_comp_dec"></td>
-                </tr>
-            </table>
-        </p>
+        <div id="wrapper">
+            <div id="first">
+                <h2>Registers</h2>
+                <!-- Registers: PC and IR -->
+                <p>
+                    <table class="registers">
+                        <tr>
+                            <th class="registers">Register</th>
+                            <th class="registers">Binary</th>
+                            <th class="registers">Octal</th>
+                            <th class="registers">Hex</th>
+                            <th class="registers">Dec</th>
+                        </tr>
+                        <tr>
+                            <td class="registers">PC</td>
+                            <td class="registers" id="app_12bit_pc_binary"></td>
+                            <td class="registers" id="app_12bit_pc_octal"></td>
+                            <td class="registers" id="app_12bit_pc_hex"></td>
+                            <td class="registers" id="app_12bit_pc_dec"></td>
+                        </tr>
+                        <tr>
+                            <td class="registers">IR</td>
+                            <td class="registers" id="app_12bit_ir_binary"></td>
+                            <td class="registers" id="app_12bit_ir_octal"></td>
+                            <td class="registers" id="app_12bit_ir_hex"></td>
+                            <td class="registers" id="app_12bit_ir_dec"></td>
+                        </tr>
+                    </table>
+                </p>
 
-        <p>
-            <table class="registers">
-                <tr>
-                    <th class="registers">Register</th>
-                    <th class="registers">Binary</th>
-                    <th class="registers">Octal</th>
-                    <th class="registers">Hex</th>
-                    <th class="registers">Dec</th>
-                    <th class="registers">Mnemonic at PC</th>
-                </tr>
-                <tr>
-                    <td class="registers">PC</td>
-                    <td class="registers" id="app_12bit_pc_binary"></td>
-                    <td class="registers" id="app_12bit_pc_octal"></td>
-                    <td class="registers" id="app_12bit_pc_hex"></td>
-                    <td class="registers" id="app_12bit_pc_dec"></td>
-                    <td class="registers" id="app_12bit_pc_mnemonic"></td>
-                </tr>
-            </table>
-        </p>
+                <!-- Mnemonic and operands -->
+                <p>
+                    Mnemonic and operands (octal): <span class="mnemonic" id="app_12bit_ir_mnemonic"></span>
+                </p>
 
-        <h2>RAM</h2>
-        <div id="app_12bit_memory"></div>
+                <!-- Registers: A and B -->
+                <p>
+                    <table class="registers">
+                        <tr>
+                            <th class="registers">Register</th>
+                            <th class="registers">Binary</th>
+                            <th class="registers">Octal</th>
+                            <th class="registers">Hex</th>
+                            <th class="registers">Dec</th>
+                            <th class="registers">2's Comp</th>
+                        </tr>
+                        <tr>
+                            <td class="registers">A</td>
+                            <td class="registers" id="app_12bit_a_binary"></td>
+                            <td class="registers" id="app_12bit_a_octal"></td>
+                            <td class="registers" id="app_12bit_a_hex"></td>
+                            <td class="registers" id="app_12bit_a_dec"></td>
+                            <td class="registers" id="app_12bit_a_2s_comp_dec"></td>
+                        </tr>
+                        <tr>
+                            <td class="registers">B</td>
+                            <td class="registers" id="app_12bit_b_binary"></td>
+                            <td class="registers" id="app_12bit_b_octal"></td>
+                            <td class="registers" id="app_12bit_b_hex"></td>
+                            <td class="registers" id="app_12bit_b_dec"></td>
+                            <td class="registers" id="app_12bit_b_2s_comp_dec"></td>
+                        </tr>
+                    </table>
+                </p>
+            </div>
+
+            <div id="second">
+                <h2>RAM</h2>
+                <div id="app_12bit_memory"></div>
         
-        <script type="module" src="index.js"></script>
+                <script type="module" src="index.js"></script>
+            </div>
+        </div>
+
     </body>
 
 </html>
