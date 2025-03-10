@@ -37,23 +37,43 @@ export class CPU {
         this.pc = 0;
         this.a = 0;
         this.b = 0;
+        this.ir = 0;
 
         // define holders for old values of components
         this.old_pc = 0;
         this.old_a = 0;
         this.old_b = 0;
+        this.old_ir = 0;
 
+        // define CPU-wide flag indicating whether a change has occurred
+        // set to true to indicate that the CPU has just "changed" from nothing to something!
+        this.changed = true;
 
         // **** INITIALIZE CPU
-        // fill registers with random contents
-        this.a = Math.round(Math.random() * (Math.pow(2, CPU_BITS) - 1));
-        this.b = Math.round(Math.random() * (Math.pow(2, CPU_BITS) - 1));
-        this.pc = Math.round(Math.random() * (CPU_RAM_WORDS - 1));
-
-        // fill memory with random contents
+        // fill memory with random contents -- must do before populating IR!
         for (let i = 0; i < CPU_RAM_WORDS; i++) {
             this.memory.push(Math.round(Math.random() * (Math.pow(2, CPU_BITS) - 1)));
         }
+
+        // fill registers A, B, and PC with random contents
+        this.a = Math.round(Math.random() * (Math.pow(2, CPU_BITS) - 1));
+        this.b = Math.round(Math.random() * (Math.pow(2, CPU_BITS) - 1));
+        this.pc = Math.round(Math.random() * (Math.pow(2, CPU_BITS) - 1));
+
+        // populate IR with content pointed to by PC
+        this.ir = this.getWordAt(this.pc);
+    }
+
+    // get address based on PC
+    getAddressFromPC() {
+        // wrap around in memory if PC points to address beyond bounds of RAM
+        return (this.pc % CPU_RAM_WORDS);
+    }
+
+    // get address based on PC
+    getAddressFromOldPC() {
+        // wrap around in memory if PC points to address beyond bounds of RAM
+        return (this.old_pc % CPU_RAM_WORDS);
     }
 
     // get word value at given address
@@ -73,16 +93,16 @@ export class CPU {
         return value;
     }
 
-    // get opcode at given address
-    getOpCode(address) {
+    // get opcode represented by IR
+    getOpCodeFromIR() {
         // use mod operator so there is never an invalid opcode!
-        return (this.getWordAt(address) % CPU_OPCODES.length);
+        return (this.ir % CPU_OPCODES.length);
     }
 
-    // get mnemonic based on current PC value
+    // translate IR value to a mnemonic
     getMnemonic() {
-        // get opcode as value in memory pointed to by PC
-        let opcode = this.getOpCode(this.pc);
+        // get opcode represented by IR
+        let opcode = this.getOpCodeFromIR();
 
         // set mnemonic based on opcode and number of operands
         let mnemonic = CPU_OPCODES[opcode].name;
@@ -95,5 +115,16 @@ export class CPU {
         }
 
         return mnemonic;
+    }
+
+    // synchronize old values and new values
+    syncOldAndNew() {
+        this.old_pc = this.pc;
+        this.old_a = this.a;
+        this.old_b = this.b;
+        this.old_ir = this.ir;
+
+        // indicate that values are now synchronized
+        this.changed = false;
     }
 };
