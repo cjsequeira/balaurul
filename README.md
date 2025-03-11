@@ -5,7 +5,8 @@ Emulation of a custom 12-bit CPU. Written by Chris Musei-Sequeira
 * [Ben Eater's 8-bit CPU](https://eater.net/8bit)
 * [Daniel Grießhaber's SAP-1](https://dangrie158.github.io/SAP-1/)
 * [The PDP-12](https://en.wikipedia.org/wiki/PDP-12)
-* [The Altair 8800](https://en.wikipedia.org/wiki/Altair_8800)
+* [The Altair 8800](https://en.wikipedia.org/wiki/Altair_8800) and [s2js Altair 8800 online simulator](https://s2js.com/altair/)
+* The [Intel 8080 Microcomputer System User's Manual published September 1975](https://archive.ph/GFz3V)
 
 ## Instructions
 | Opcode (Octal) | Mnemonic | Operand (If Applicable) | Total Width (Words)
