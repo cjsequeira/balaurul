@@ -36,7 +36,7 @@ const UI_MEM_PC_CLASS = "mem_pc";
 const UI_MEM_ROWS = 8;
 const UI_MEM_COLS = 8;
 
-// const UI_DIFF_COLOR = "rgba(255, 0, 0, 1.0)";
+const UI_DIFF_COLOR = "rgba(255, 0, 0, 1.0)";
 
 
 // **** NON-CONSTANTS
@@ -58,13 +58,13 @@ function setup() {
     // column labels
     memory_html += "<tr><td></td>"
     for (let j = 0; j < UI_MEM_COLS; j++) {
-        memory_html += "<td class='labels'>" + "xxx" + j + "</td>";
+        memory_html += "<th>" + "xxx" + j + "</th>";
     }
     memory_html += "</tr>"
 
     // each row of memory, with a row label to the left
     for (let i = 0; i < UI_MEM_ROWS; i++) {
-        memory_html += "<tr><td class='labels'>" + (i * 8).toString(8).padStart(4, '0') + "</td>"
+        memory_html += "<tr><th>" + (i * 8).toString(8).padStart(4, '0') + "</th>"
 
         for (let j = 0; j < UI_MEM_COLS; j++) {
             memory_html += "<td id='"
@@ -112,7 +112,7 @@ function setup() {
     // draw a box around the memory cell pointed to by the PC
     document.getElementById(UI_MEM_CELL_ID_PREFIX + cpu.getAddressFromPC().toString(10))
         .classList
-        .add("pc");
+        .add(UI_MEM_PC_CLASS);
 
     // **** ESTABLISH APP UPDATE CALLBACK
     requestAnimationFrame(appUpdate);
@@ -120,11 +120,15 @@ function setup() {
 
 // app update callback for requestAnimationFrame()
 function appUpdate() {
-    if (cpu.changed) {
-        // has something in the CPU changed?
+    // update CPU
+    cpu.update();
 
-        // is the PC now pointing to a different UI memory element from what is boxed?
+    if (cpu.changed) {
+        // if something in the CPU has changed, then...
+
         if (cpu.pc != cpu.old_pc) {
+            // if the PC is now pointing to a different UI memory element from what is boxed, then...
+
             // unbox old UI memory element
             document.getElementById(UI_MEM_CELL_ID_PREFIX + cpu.getAddressFromOldPC().toString(10))
                 .classList
@@ -134,10 +138,43 @@ function appUpdate() {
             document.getElementById(UI_MEM_CELL_ID_PREFIX + cpu.getAddressFromPC().toString(10))
                 .classList
                 .add(UI_MEM_PC_CLASS);
+
+            // show diffs in value
+            UI_PC_BINARY.innerHTML = ModuleUtil.showDiff(
+                cpu.pc.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& '),
+                cpu.old_pc.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& '),
+                UI_DIFF_COLOR
+            );
+            UI_PC_OCTAL.innerHTML = ModuleUtil.showDiff(
+                cpu.pc.toString(8).padStart(4, "0"),
+                cpu.old_pc.toString(8).padStart(4, "0"),
+                UI_DIFF_COLOR
+            );
+            UI_PC_HEX.innerHTML = ModuleUtil.showDiff(
+                cpu.pc.toString(16).padStart(3, "0").toUpperCase(),
+                cpu.old_pc.toString(16).padStart(3, "0").toUpperCase(),
+                UI_DIFF_COLOR
+            );
         }
 
-        // **** SYNCHRONIZE OLD AND NEW CPU COMPONENT VALUES       
-        cpu.syncOldAndNew();
+        if (cpu.a != cpu.old_a) {
+            // if the A register has changed, then ... show diffs in value
+            UI_A_BINARY.innerHTML = ModuleUtil.showDiff(
+                cpu.a.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& '),
+                cpu.old_a.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& '),
+                UI_DIFF_COLOR
+            );
+            UI_A_OCTAL.innerHTML = ModuleUtil.showDiff(
+                cpu.a.toString(8).padStart(4, "0"),
+                cpu.old_a.toString(8).padStart(4, "0"),
+                UI_DIFF_COLOR
+            );
+            UI_A_HEX.innerHTML = ModuleUtil.showDiff(
+                cpu.a.toString(16).padStart(3, "0").toUpperCase(),
+                cpu.old_a.toString(16).padStart(3, "0").toUpperCase(),
+                UI_DIFF_COLOR
+            );
+        }
     }
 
 
