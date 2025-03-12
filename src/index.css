@@ -11,7 +11,8 @@ table {
 td {
     text-align: center;
     vertical-align: middle;
-    padding: 4px;
+    padding: 2px;
+    margin: 2px;
 }
 
 td.registers {
@@ -21,13 +22,16 @@ td.registers {
 }
 
 td.mem_pc {
-    padding: 1px;
-    border: 2px solid red
+    padding: 0px;
+    margin: 0px;
+    border: 2px solid red;
 }
 
 th {
     text-align: left;
+    vertical-align: middle;
     padding: 4px;
+    margin: 0px;
 }
 
 th.registers {
@@ -38,6 +42,11 @@ th.registers {
 
 .mnemonic {
     font-family: "Lucida Console", "Courier New", monospace;
+}
+
+.show_diff {
+    color: red;
+    font-weight: bold;
 }
 
 #app_12bit_memory {

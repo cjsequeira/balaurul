@@ -2,7 +2,7 @@
 
 // **** UTILITY FUNCTIONS
 // color differences between a primary string and a secondary string
-export function showDiff(string_primary, string_secondary, color) {
+export function showDiff(string_primary, string_secondary) {
     // define empty output string
     let string_out = "";
 
@@ -13,7 +13,7 @@ export function showDiff(string_primary, string_secondary, color) {
     for (let i = 0; i < longest; i++) {
         if ((string_primary[i] != string_secondary[i]) || (i >= string_secondary.length)) {
             // if characters differ or we've passed end of secondary, then show as diff
-            string_out += "<span style='color: " + color + "'>"
+            string_out += "<span class='show_diff'>"
                 + string_primary[i]
                 + "</span>";
         } else {

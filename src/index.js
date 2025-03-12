@@ -142,18 +142,15 @@ function appUpdate() {
             // show diffs in value
             UI_PC_BINARY.innerHTML = ModuleUtil.showDiff(
                 cpu.pc.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& '),
-                cpu.old_pc.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& '),
-                UI_DIFF_COLOR
+                cpu.old_pc.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& ')
             );
             UI_PC_OCTAL.innerHTML = ModuleUtil.showDiff(
                 cpu.pc.toString(8).padStart(4, "0"),
-                cpu.old_pc.toString(8).padStart(4, "0"),
-                UI_DIFF_COLOR
+                cpu.old_pc.toString(8).padStart(4, "0")
             );
             UI_PC_HEX.innerHTML = ModuleUtil.showDiff(
                 cpu.pc.toString(16).padStart(3, "0").toUpperCase(),
-                cpu.old_pc.toString(16).padStart(3, "0").toUpperCase(),
-                UI_DIFF_COLOR
+                cpu.old_pc.toString(16).padStart(3, "0").toUpperCase()
             );
         }
 
@@ -161,18 +158,15 @@ function appUpdate() {
             // if the A register has changed, then ... show diffs in value
             UI_A_BINARY.innerHTML = ModuleUtil.showDiff(
                 cpu.a.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& '),
-                cpu.old_a.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& '),
-                UI_DIFF_COLOR
+                cpu.old_a.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& ')
             );
             UI_A_OCTAL.innerHTML = ModuleUtil.showDiff(
                 cpu.a.toString(8).padStart(4, "0"),
-                cpu.old_a.toString(8).padStart(4, "0"),
-                UI_DIFF_COLOR
+                cpu.old_a.toString(8).padStart(4, "0")
             );
             UI_A_HEX.innerHTML = ModuleUtil.showDiff(
                 cpu.a.toString(16).padStart(3, "0").toUpperCase(),
-                cpu.old_a.toString(16).padStart(3, "0").toUpperCase(),
-                UI_DIFF_COLOR
+                cpu.old_a.toString(16).padStart(3, "0").toUpperCase()
             );
         }
     }
