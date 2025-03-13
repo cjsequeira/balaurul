@@ -8,16 +8,26 @@ export class CPU {
 
     static OPCODES = [
         // 11 opcodes ...
+        // NOP: No operation (just increment PC); 0 operands
         { name: "NOP", num_ops: 0, funcs: [CPU.m_finishIcycle], next_type: ["INC_PC", "FETCH"] },
-        { name: "LDA", num_ops: 1, funcs: [CPU.m_finishIcycle], next_type: ["INC_PC", "FETCH"] },
+
+        // LDA: Load accumulator from address; 1 operand
+        { 
+            name: "LDA", 
+            num_ops: 1, 
+            funcs: [CPU.m_incPC, CPU.m_storePCaddrInMAR, CPU.m_storeMARaddrInA, CPU.m_finishIcycle], 
+            next_type: ["INC_PC", "MEM_READ", "MEM_READ", "INC_PC", "FETCH"] 
+        },
+
         { name: "ADD", num_ops: 1, funcs: [CPU.m_finishIcycle], next_type: ["INC_PC", "FETCH"] },
         { name: "SUB", num_ops: 1, funcs: [CPU.m_finishIcycle], next_type: ["INC_PC", "FETCH"] },
         { name: "STA", num_ops: 1, funcs: [CPU.m_finishIcycle], next_type: ["INC_PC", "FETCH"] },
 
+        // LDI: Load accumulator from immediate; 1 operand
         {
             name: "LDI",
             num_ops: 1,
-            funcs: [CPU.m_incPC, CPU.m_storePCinA, CPU.m_finishIcycle],
+            funcs: [CPU.m_incPC, CPU.m_storePCaddrInA, CPU.m_finishIcycle],
             next_type: ["INC_PC", "MEM_READ", "INC_PC", "FETCH"]
         },
 
@@ -53,8 +63,18 @@ export class CPU {
     }
 
     // store into A: word at address in PC
-    static m_storePCinA(cpu) {
-        cpu.a = cpu.getWordAt(cpu.getAddressFromPC());
+    static m_storePCaddrInA(cpu) {
+        cpu.a = cpu.getWordAt(cpu.pc);
+    }
+
+    // store into MAR: word at address in PC
+    static m_storePCaddrInMAR(cpu) {
+        cpu.mar = cpu.getWordAt(cpu.pc);
+    }
+
+    // store into A: word at address in MAR
+    static m_storeMARaddrInA(cpu) {
+        cpu.a = cpu.getWordAt(cpu.mar);
     }
 
     // **** NON-STATIC CLASS METHODS
@@ -64,15 +84,17 @@ export class CPU {
         // define components
         this.memory = [];
         this.pc = 0;
+        this.ir = 0;
+        this.mar = 0;
         this.a = 0;
         this.b = 0;
-        this.ir = 0;
 
         // define holders for old values of components
         this.old_pc = 0;
+        this.old_ir = 0;
+        this.old_mar = 0;
         this.old_a = 0;
         this.old_b = 0;
-        this.old_ir = 0;
 
         // define input lines
         this.input = {
@@ -101,25 +123,14 @@ export class CPU {
             this.memory.push(Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1)));
         }
 
-        // fill registers A, B, and PC with random contents
+        // fill registers PC, MAR, A, and B with random contents
+        this.pc = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
+        this.mar = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
         this.a = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
         this.b = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
-        this.pc = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
 
         // populate IR with content pointed to by PC
-        this.ir = this.getWordAt(this.getAddressFromPC());
-    }
-
-    // get address based on PC
-    getAddressFromPC() {
-        // wrap around in memory if PC points to address beyond bounds of RAM
-        return (this.pc % CPU.RAM_WORDS);
-    }
-
-    // get address based on PC
-    getAddressFromOldPC() {
-        // wrap around in memory if PC points to address beyond bounds of RAM
-        return (this.old_pc % CPU.RAM_WORDS);
+        this.ir = this.getWordAt(this.pc);
     }
 
     // get word value at given address
@@ -139,22 +150,22 @@ export class CPU {
         return value;
     }
 
-    // get opcode represented by IR
+    // get opcode stored in IR
     getOpCodeFromIR() {
         // use mod operator so there is never an invalid opcode!
         return (this.ir % CPU.OPCODES.length);
     }
 
-    // translate IR value to a mnemonic
+    // translate IR value to a text string containing mnemonic, including operands
     getMnemonic() {
-        // get opcode represented by IR
+        // get opcode stored in IR
         let opcode = this.getOpCodeFromIR();
 
         // set mnemonic based on opcode and number of operands
         let mnemonic = CPU.OPCODES[opcode].name;
 
         for (let i = 0; i < CPU.OPCODES[opcode].num_ops; i++) {
-            let operand = this.getWordAt(this.getAddressFromPC() + i + 1);
+            let operand = this.getWordAt(this.pc + i + 1);
 
             // store operand string in octal
             mnemonic += " " + operand.toString(8).padStart(4, "0");
@@ -172,9 +183,10 @@ export class CPU {
     // synchronize old values and new values
     syncOldAndNew() {
         this.old_pc = this.pc;
+        this.old_ir = this.ir;
+        this.old_mar = this.mar;
         this.old_a = this.a;
         this.old_b = this.b;
-        this.old_ir = this.ir;
 
         // indicate that values are now synchronized
         this.changed = false;
@@ -200,7 +212,7 @@ export class CPU {
                 // FETCH (machine cycle 0)
                 case 0:
                     // Populate IR with word pointed to by PC
-                    this.ir = this.getWordAt(this.getAddressFromPC());
+                    this.ir = this.getWordAt(this.pc);
 
                     // Indicate that next machine cycle will be a decode
                     this.m_next_type = "DECODE";
@@ -286,7 +298,5 @@ export class CPU {
         // indicate that something has changed in the CPU
         this.changed = true;
     }
-
-
 
 };

@@ -1,7 +1,7 @@
 "use strict";
 
 // **** UTILITY FUNCTIONS
-// color differences between a primary string and a secondary string
+// create HTML with style differences between a primary string and a secondary string
 export function showDiff(string_primary, string_secondary) {
     // define empty output string
     let string_out = "";
@@ -23,6 +23,24 @@ export function showDiff(string_primary, string_secondary) {
     }
 
     return string_out;
+}
+
+// update specific HTML binary, octal, and hex elements with styled differences
+export function updateHTMLwithDiff(new_val, old_val, binary, octal, hex) {
+    binary.innerHTML = showDiff(
+        new_val.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& '),
+        old_val.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& ')
+    );
+
+    octal.innerHTML = showDiff(
+        new_val.toString(8).padStart(4, "0"),
+        old_val.toString(8).padStart(4, "0")
+    );
+
+    hex.innerHTML = showDiff(
+        new_val.toString(16).padStart(3, "0").toUpperCase(),
+        old_val.toString(16).padStart(3, "0").toUpperCase()
+    );
 }
 
 // return a decimal number assuming two's complement representation of...
