@@ -27,6 +27,12 @@ td.mem_pc {
     border: 2px solid red;
 }
 
+td.mem_mar {
+    padding: 0px;
+    margin: 0px;
+    border: 2px solid purple;
+}
+
 th {
     text-align: left;
     vertical-align: middle;

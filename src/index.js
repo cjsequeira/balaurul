@@ -38,6 +38,7 @@ const UI_B_2S_COMP_DEC = document.getElementById("app_12bit_b_2s_comp_dec");
 const UI_MEM = document.getElementById("app_12bit_memory");
 const UI_MEM_CELL_ID_PREFIX = "app_12bit_memcell_";
 const UI_MEM_PC_CLASS = "mem_pc";
+const UI_MEM_MAR_CLASS = "mem_mar";
 const UI_MEM_ROWS = 8;
 const UI_MEM_COLS = 8;
 
@@ -117,10 +118,14 @@ function setup() {
     // format memory block UI with structure
     UI_MEM.innerHTML = memory_html;
 
-    // draw a box around the memory cell pointed to by the PC
+    // draw a box around the memory cells pointed to by the PC and MAR
     document.getElementById(UI_MEM_CELL_ID_PREFIX + (cpu.pc % ModuleCPU.CPU.RAM_WORDS).toString(10))
         .classList
         .add(UI_MEM_PC_CLASS);
+    document.getElementById(UI_MEM_CELL_ID_PREFIX + (cpu.mar % ModuleCPU.CPU.RAM_WORDS).toString(10))
+        .classList
+        .add(UI_MEM_MAR_CLASS);
+
 
     // **** ESTABLISH APP UPDATE CALLBACK
     requestAnimationFrame(appUpdate);
@@ -133,6 +138,23 @@ function appUpdate() {
 
     if (cpu.changed) {
         // if something in the CPU has changed, then...
+
+        if (cpu.mar != cpu.old_mar) {
+            // if the MAR is now pointing to a different UI memory element from what is boxed, then...
+
+            // unbox old UI memory element
+            document.getElementById(UI_MEM_CELL_ID_PREFIX + (cpu.old_mar % ModuleCPU.CPU.RAM_WORDS).toString(10))
+                .classList
+                .remove(UI_MEM_MAR_CLASS);
+
+            // box new UI memory element
+            document.getElementById(UI_MEM_CELL_ID_PREFIX + (cpu.mar % ModuleCPU.CPU.RAM_WORDS).toString(10))
+                .classList
+                .add(UI_MEM_MAR_CLASS);
+
+            // update HTML numerical element
+            ModuleUtil.updateHTMLwithDiff(cpu.mar, cpu.old_mar, UI_MAR_BINARY, UI_MAR_OCTAL, UI_MAR_HEX);
+        }
 
         // show diffs in value for any registers that have changed
         if (cpu.pc != cpu.old_pc) {
@@ -152,8 +174,11 @@ function appUpdate() {
             ModuleUtil.updateHTMLwithDiff(cpu.pc, cpu.old_pc, UI_PC_BINARY, UI_PC_OCTAL, UI_PC_HEX);
         }
 
-        if (cpu.ir != cpu.old_ir) ModuleUtil.updateHTMLwithDiff(cpu.ir, cpu.old_ir, UI_IR_BINARY, UI_IR_OCTAL, UI_IR_HEX);
-        if (cpu.mar != cpu.old_mar) ModuleUtil.updateHTMLwithDiff(cpu.mar, cpu.old_mar, UI_MAR_BINARY, UI_MAR_OCTAL, UI_MAR_HEX);
+        if (cpu.ir != cpu.old_ir) {
+            ModuleUtil.updateHTMLwithDiff(cpu.ir, cpu.old_ir, UI_IR_BINARY, UI_IR_OCTAL, UI_IR_HEX);
+            UI_IR_MNEMONIC.innerHTML = cpu.getMnemonic();
+        }
+
         if (cpu.a != cpu.old_a) ModuleUtil.updateHTMLwithDiff(cpu.a, cpu.old_a, UI_A_BINARY, UI_A_OCTAL, UI_A_HEX);
         if (cpu.b != cpu.old_b) ModuleUtil.updateHTMLwithDiff(cpu.b, cpu.old_b, UI_B_BINARY, UI_B_OCTAL, UI_B_HEX);
     }
