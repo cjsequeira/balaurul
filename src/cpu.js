@@ -6,29 +6,49 @@ export class CPU {
     static RAM_WORDS = 64;
     static BITS = 12;
 
+    // machine cycle names
+    static M_CYCLE_NAMES = {
+        FETCH: "Fetch",
+        DECODE: "Decode",
+        MEM_READ: "Memory read",
+        MEM_WRITE: "Memory write",
+        INC_PC: "Increment PC",
+        HALT: "Halt CPU",
+    };
+
+    // instructions and their implementation
     static OPCODES = [
-        // 11 opcodes ...
+        // 11 instructions ...
         // NOP: No operation (just increment PC); 0 operands
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: ["INC_PC"] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
 
         // LDA: Load accumulator from address; 1 operand
         {
             name: "LDA",
             num_ops: 1,
             funcs: [CPU.m_incPC, CPU.m_storePCaddrInMAR, CPU.m_storeMARaddrInA, CPU.m_incPC],
-            next_type: ["INC_PC", "MEM_READ", "MEM_READ", "INC_PC"]
+            next_type: [
+                CPU.M_CYCLE_NAMES.INC_PC,
+                CPU.M_CYCLE_NAMES.MEM_READ,
+                CPU.M_CYCLE_NAMES.MEM_READ,
+                CPU.M_CYCLE_NAMES.INC_PC
+            ],
         },
 
-        { name: "ADD", num_ops: 1, funcs: [CPU.m_incPC], next_type: ["INC_PC"] },
-        { name: "SUB", num_ops: 1, funcs: [CPU.m_incPC], next_type: ["INC_PC"] },
-        { name: "STA", num_ops: 1, funcs: [CPU.m_incPC], next_type: ["INC_PC"] },
+        { name: "ADD", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "SUB", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "STA", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
 
         // LDI: Load accumulator from immediate; 1 operand
         {
             name: "LDI",
             num_ops: 1,
             funcs: [CPU.m_incPC, CPU.m_storePCaddrInA, CPU.m_incPC],
-            next_type: ["INC_PC", "MEM_READ", "INC_PC"]
+            next_type: [
+                CPU.M_CYCLE_NAMES.INC_PC,
+                CPU.M_CYCLE_NAMES.MEM_READ,
+                CPU.M_CYCLE_NAMES.INC_PC
+            ],
         },
 
         // JMP: Unconditionally jump to address; 1 operand
@@ -36,23 +56,87 @@ export class CPU {
             name: "JMP",
             num_ops: 1,
             funcs: [CPU.m_incPC, CPU.m_storePCaddrInPC],
-            next_type: ["INC_PC", "MEM_READ"]
+            next_type: [CPU.M_CYCLE_NAMES.INC_PC, CPU.M_CYCLE_NAMES.MEM_READ],
         },
 
-        { name: "JC", num_ops: 1, funcs: [CPU.m_incPC], next_type: ["INC_PC"] },
-        { name: "JZ", num_ops: 1, funcs: [CPU.m_incPC], next_type: ["INC_PC"] },
-        { name: "OUT", num_ops: 0, funcs: [CPU.m_incPC], next_type: ["INC_PC"] },
-        { name: "HLT", num_ops: 0, funcs: [CPU.m_incPC, CPU.m_halt], next_type: ["INC_PC", "HALT"] },
+        { name: "JC", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "JZ", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "OUT", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { 
+            name: "HLT", 
+            num_ops: 0, 
+            funcs: [CPU.m_incPC, CPU.m_halt], 
+            next_type: [CPU.M_CYCLE_NAMES.INC_PC, CPU.M_CYCLE_NAMES.HALT],
+        },
 
-        // ... plus 5 extra NOP opcodes for padding ...
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: ["INC_PC"] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: ["INC_PC"] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: ["INC_PC"] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: ["INC_PC"] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: ["INC_PC"] },
+        // ... plus 53 extra NOP opcodes for padding ...
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
 
-        // ... equals 16 opcodes numbered 0 through 15 (binary 1111, or one nibble)
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },    
+
+        // ... equals 64 instructions numbered 0 through 63 (binary 111 111, or two octal digits)
     ];
+
 
     // **** STATIC MACHINE CYCLE OPERATIONS FOR EACH OPCODE
     // halt CPU
@@ -114,7 +198,7 @@ export class CPU {
         // define and set machine cycle and instruction cycle info
         this.m_cycle = 0;
         this.m_opcode = 0;
-        this.m_next_type = "FETCH";
+        this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
         this.i_cycle = 0;
 
         // define and set CPU-wide internal JavaScript flag indicating whether a change has occurred
@@ -241,6 +325,12 @@ export class CPU {
                 case 1:
                     // Decode IR to get opcode
                     this.m_opcode = this.getOpCodeFromIR();
+
+
+                    console.log("-----> " + this.getMnemonic(this.m_opcode));
+
+
+
                     break;
 
                 // INSTRUCTION-SPECIFIC (machine cycles 2 and beyond)
@@ -259,7 +349,7 @@ export class CPU {
                 // reset machine cycle counter and "next" indicator
                 // next machine cycle will be 0, which is always a "FETCH"
                 this.m_cycle = 0;
-                this.m_next_type = "FETCH";
+                this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
 
                 // indicate that the CPU has finished an instruction step AND a machine step
                 this.i_stepped = true;
@@ -269,7 +359,7 @@ export class CPU {
 
                 if (this.m_cycle == 0) {
                     // if current machine cycle is 0, then next machine cycle type must be a DECODE
-                    this.m_next_type = "DECODE";
+                    this.m_next_type = CPU.M_CYCLE_NAMES.DECODE;
                 } else {
                     // if current machine cycle is not zero, get opcode-specific next machine cycle type
                     this.m_next_type = CPU.OPCODES[this.m_opcode].next_type[this.m_cycle - 1];

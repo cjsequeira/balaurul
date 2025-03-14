@@ -154,6 +154,7 @@ function appUpdate() {
 
             // update HTML numerical element
             ModuleUtil.updateHTMLwithDiff(cpu.mar, cpu.old_mar, UI_MAR_BINARY, UI_MAR_OCTAL, UI_MAR_HEX);
+            UI_MAR_DEC.innerHTML = cpu.mar.toString(10);
         }
 
         // show diffs in value for any registers that have changed
@@ -172,15 +173,26 @@ function appUpdate() {
 
             // update HTML numerical element
             ModuleUtil.updateHTMLwithDiff(cpu.pc, cpu.old_pc, UI_PC_BINARY, UI_PC_OCTAL, UI_PC_HEX);
+            UI_PC_DEC.innerHTML = cpu.pc.toString(10);
         }
 
         if (cpu.ir != cpu.old_ir) {
             ModuleUtil.updateHTMLwithDiff(cpu.ir, cpu.old_ir, UI_IR_BINARY, UI_IR_OCTAL, UI_IR_HEX);
+            UI_IR_DEC.innerHTML = cpu.ir.toString(10);
             UI_IR_MNEMONIC.innerHTML = cpu.getMnemonic();
         }
 
-        if (cpu.a != cpu.old_a) ModuleUtil.updateHTMLwithDiff(cpu.a, cpu.old_a, UI_A_BINARY, UI_A_OCTAL, UI_A_HEX);
-        if (cpu.b != cpu.old_b) ModuleUtil.updateHTMLwithDiff(cpu.b, cpu.old_b, UI_B_BINARY, UI_B_OCTAL, UI_B_HEX);
+        if (cpu.a != cpu.old_a) {
+            ModuleUtil.updateHTMLwithDiff(cpu.a, cpu.old_a, UI_A_BINARY, UI_A_OCTAL, UI_A_HEX);
+            UI_A_DEC.innerHTML = cpu.a.toString(10);
+            UI_A_2S_COMP_DEC.innerHTML = ModuleUtil.twosComplement(cpu.a, 12).toString(10);        
+        }
+
+        if (cpu.b != cpu.old_b) {
+            ModuleUtil.updateHTMLwithDiff(cpu.b, cpu.old_b, UI_B_BINARY, UI_B_OCTAL, UI_B_HEX);
+            UI_B_DEC.innerHTML = cpu.b.toString(10);
+            UI_B_2S_COMP_DEC.innerHTML = ModuleUtil.twosComplement(cpu.b, 12).toString(10);
+        }
     }
 
 
