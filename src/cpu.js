@@ -14,6 +14,7 @@ export class CPU {
         MEM_WRITE: "Memory write",
         INC_PC: "Increment PC",
         HALT: "Halt CPU",
+        ALU: "ALU",
     };
 
     // instructions and their implementation
@@ -35,7 +36,19 @@ export class CPU {
             ],
         },
 
-        { name: "ADD", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        // 0o02: ADD: Add value at address to accumulator using B as a temp register
+        { 
+            name: "ADD", 
+            num_ops: 1, 
+            funcs: [CPU.m_incPC, CPU.m_storePCaddrInB, CPU.m_addBtoA, CPU.m_incPC], 
+            next_type: [
+                CPU.M_CYCLE_NAMES.INC_PC,
+                CPU.M_CYCLE_NAMES.MEM_READ,
+                CPU.M_CYCLE_NAMES.ALU,
+                CPU.M_CYCLE_NAMES.INC_PC
+            ] 
+        },
+
         { name: "SUB", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
 
         // 0o04: STA: Store accumulator in address; 1 operand
@@ -153,6 +166,21 @@ export class CPU {
 
 
     // **** STATIC MACHINE CYCLE OPERATIONS FOR EACH OPCODE
+    // add B to A
+    static m_addBtoA(cpu) {
+        cpu.a += cpu.b;
+
+        // set carry flag if overflow; clear carry flag if no overflow
+        if (cpu.a > Math.pow(2, CPU.BITS)) {
+            cpu.flags.carry = true;
+        } else {
+            cpu.flags.carry = false;
+        }
+
+        // restrict accumulator to only CPU.BITS in size
+        cpu.a %= Math.pow(2, CPU.BITS);
+    }
+
     // halt CPU
     static m_halt(cpu) {
         cpu.halted = true;
@@ -178,6 +206,11 @@ export class CPU {
         cpu.a = cpu.getWordAt(cpu.pc);
     }
 
+    // store into B: word at address in PC
+    static m_storePCaddrInB(cpu) {
+        cpu.b = cpu.getWordAt(cpu.pc);
+    }
+
     // store into MAR: word at address in PC
     static m_storePCaddrInMAR(cpu) {
         cpu.mar = cpu.getWordAt(cpu.pc);
@@ -193,20 +226,26 @@ export class CPU {
     // constructor
     constructor() {
         // **** DEFINE CPU
-        // define memory and registers
+        // define memory, registers, and flags
         this.mem = [];
         this.pc = 0;
         this.ir = 0;
         this.mar = 0;
         this.a = 0;
         this.b = 0;
+        this.flags = {
+            carry: false,
+        };
 
-        // define holders for old register values
+        // define holders for old register values and flags
         this.old_pc = 0;
         this.old_ir = 0;
         this.old_mar = 0;
         this.old_a = 0;
         this.old_b = 0;
+        this.old_flags = {
+            carry: false,
+        }
 
         // define and set input lines
         this.input = {
@@ -240,8 +279,17 @@ export class CPU {
         for (let i = 0; i < CPU.RAM_WORDS; i++) {
             // this.mem.push(Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1)));
 
-            // !!!!!!!!!! 
-            this.mem.push(0o04);
+
+
+
+
+            // !!!!!!!!!!
+            this.mem.push(0o02);
+
+
+
+
+
         }
 
         // fill registers PC, MAR, A, and B with random contents
@@ -336,6 +384,7 @@ export class CPU {
         this.old_mar = this.mar;
         this.old_a = this.a;
         this.old_b = this.b;
+        this.old_flags = this.flags;
 
         // indicate that values are now synchronized
         this.update_ui = false;
