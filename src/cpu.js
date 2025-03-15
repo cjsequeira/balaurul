@@ -277,14 +277,14 @@ export class CPU {
         // **** INITIALIZE CPU
         // fill memory with random contents -- must do before populating IR!
         for (let i = 0; i < CPU.RAM_WORDS; i++) {
-            // this.mem.push(Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1)));
+            this.mem.push(Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1)));
 
 
 
 
 
             // !!!!!!!!!!
-            this.mem.push(0o02);
+            // this.mem.push(0o02);
 
 
 

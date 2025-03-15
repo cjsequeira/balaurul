@@ -235,17 +235,16 @@ function appUpdate() {
 
 // **** BUTTON CALLBACK FUNCTIONS
 function btn_run() {
-    cpu.halted = false;
     cpu.input.run = true;
 }
 
 function btn_stop() {
     cpu.input.run = false;
+    cpu.halted = false;
 }
 
 function btn_m_step() {
     if (!cpu.input.run) {
-        cpu.halted = false;
         cpu.input.m_step = true;
         cpu.input.i_step = false;
 
@@ -255,7 +254,6 @@ function btn_m_step() {
 
 function btn_i_step() {
     if (!cpu.input.run) {
-        cpu.halted = false;
         cpu.input.i_step = true;
         cpu.input.m_step = false;
 
