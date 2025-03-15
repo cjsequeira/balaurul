@@ -43,8 +43,7 @@ export function updateHTMLwithDiff(new_val, old_val, binary, octal, hex) {
     );
 }
 
-// return a decimal number assuming two's complement representation of...
-//  a given number with a given bit length
+// return a decimal number assuming two's complement representation of a given number with a given bit length
 export function twosComplement(number, bits) {
     if (number >= Math.pow(2, bits - 1)) {
         return (number - Math.pow(2, bits));

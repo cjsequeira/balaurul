@@ -139,6 +139,12 @@ function appUpdate() {
     if (cpu.changed) {
         // if something in the CPU has changed, then...
 
+        // iterate through any changed memory cells, updating the UI
+        cpu.ram_changed.forEach((x) => (
+            document.getElementById(UI_MEM_CELL_ID_PREFIX + x.toString(10)).innerHTML 
+            = cpu.memory[x].toString(8).padStart(4, "0"))
+        );
+
         if (cpu.mar != cpu.old_mar) {
             // if the MAR is now pointing to a different UI memory element from what is boxed, then...
 
@@ -157,7 +163,6 @@ function appUpdate() {
             UI_MAR_DEC.innerHTML = cpu.mar.toString(10);
         }
 
-        // show diffs in value for any registers that have changed
         if (cpu.pc != cpu.old_pc) {
             // if the PC is now pointing to a different UI memory element from what is boxed, then...
 

@@ -37,7 +37,19 @@ export class CPU {
 
         { name: "ADD", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
         { name: "SUB", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "STA", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+
+        // STA: Store accumulator in address; 1 operand
+        {
+            name: "STA",
+            num_ops: 1,
+            funcs: [CPU.m_incPC, CPU.m_storePCaddrInMAR, CPU.m_storeAatMARaddr, CPU.m_incPC],
+            next_type: [
+                CPU.M_CYCLE_NAMES.INC_PC,
+                CPU.M_CYCLE_NAMES.MEM_READ,
+                CPU.M_CYCLE_NAMES.MEM_WRITE,
+                CPU.M_CYCLE_NAMES.INC_PC
+            ],
+        },
 
         // LDI: Load accumulator from immediate; 1 operand
         {
@@ -62,10 +74,10 @@ export class CPU {
         { name: "JC", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
         { name: "JZ", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
         { name: "OUT", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { 
-            name: "HLT", 
-            num_ops: 0, 
-            funcs: [CPU.m_incPC, CPU.m_halt], 
+        {
+            name: "HLT",
+            num_ops: 0,
+            funcs: [CPU.m_incPC, CPU.m_halt],
             next_type: [CPU.M_CYCLE_NAMES.INC_PC, CPU.M_CYCLE_NAMES.HALT],
         },
 
@@ -132,7 +144,7 @@ export class CPU {
 
         { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
         { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },    
+        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
 
         // ... equals 64 instructions numbered 0 through 63 (binary 111 111, or two octal digits)
     ];
@@ -147,6 +159,16 @@ export class CPU {
     // increment PC
     static m_incPC(cpu) {
         cpu.incPC();
+    }
+
+    // store into RAM at address in MAR: value in A
+    static m_storeAatMARaddr(cpu) {
+        cpu.putWordAt(cpu.mar, cpu.a);
+    }
+
+    // store into A: word at address in MAR
+    static m_storeMARaddrInA(cpu) {
+        cpu.a = cpu.getWordAt(cpu.mar);
     }
 
     // store into A: word at address in PC
@@ -164,10 +186,6 @@ export class CPU {
         cpu.pc = cpu.getWordAt(cpu.pc);
     }
 
-    // store into A: word at address in MAR
-    static m_storeMARaddrInA(cpu) {
-        cpu.a = cpu.getWordAt(cpu.mar);
-    }
 
     // **** NON-STATIC CLASS METHODS
     // constructor
@@ -201,8 +219,11 @@ export class CPU {
         this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
         this.i_cycle = 0;
 
-        // define and set CPU-wide internal JavaScript flag indicating whether a change has occurred
+        // define and set CPU-wide internal JavaScript flag indicating whether ANY change has occurred
         this.changed = false;
+
+        // define array to hold a list of changed RAM cells
+        this.ram_changed = [];
 
         // define and set indicators for whether CPU has just advanced one machine cycle or instruction cycle
         this.m_stepped = false;
@@ -210,6 +231,7 @@ export class CPU {
 
         // define and set CPU halt status
         this.halted = false;
+
 
         // **** INITIALIZE CPU
         // fill memory with random contents -- must do before populating IR!
@@ -274,6 +296,25 @@ export class CPU {
         this.pc = (this.pc + 1) % Math.pow(2, CPU.BITS);
     }
 
+    // put word value into given address
+    // this function assumes that value AND address are greater than or equal to zero!
+    // only the lowest CPU.BITS number of bits will be stored!
+    putWordAt(address, value) {
+        // wrap around in memory if given address is higher than size of RAM
+        let mod_address = address % CPU.RAM_WORDS;
+
+        // keep only the lowest CPU.BITS number of bits in the value
+        let mod_value = value % Math.pow(2, CPU.BITS);
+
+        if (mod_address >= 0) {
+            // if address greater than zero, store value at address
+            this.memory[mod_address] = mod_value;
+
+            // add to list of changed RAM cells
+            this.ram_changed.push(mod_address);
+        }
+    }
+
     // synchronize old values and new values
     syncOldAndNew() {
         this.old_pc = this.pc;
@@ -284,6 +325,7 @@ export class CPU {
 
         // indicate that values are now synchronized
         this.changed = false;
+        this.ram_changed = [];
     }
 
     // update
@@ -386,5 +428,4 @@ export class CPU {
         // indicate that something has changed in the CPU
         this.changed = true;
     }
-
 };
