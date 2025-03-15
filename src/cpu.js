@@ -19,10 +19,10 @@ export class CPU {
     // instructions and their implementation
     static OPCODES = [
         // 11 instructions ...
-        // NOP: No operation (just increment PC); 0 operands
+        // 0o00: NOP: No operation (just increment PC); 0 operands
         { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
 
-        // LDA: Load accumulator from address; 1 operand
+        // 0o01: LDA: Load accumulator from address; 1 operand
         {
             name: "LDA",
             num_ops: 1,
@@ -38,7 +38,7 @@ export class CPU {
         { name: "ADD", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
         { name: "SUB", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
 
-        // STA: Store accumulator in address; 1 operand
+        // 0o04: STA: Store accumulator in address; 1 operand
         {
             name: "STA",
             num_ops: 1,
@@ -51,7 +51,7 @@ export class CPU {
             ],
         },
 
-        // LDI: Load accumulator from immediate; 1 operand
+        // 0o05: LDI: Load accumulator from immediate; 1 operand
         {
             name: "LDI",
             num_ops: 1,
@@ -63,7 +63,7 @@ export class CPU {
             ],
         },
 
-        // JMP: Unconditionally jump to address; 1 operand
+        // 0o06: JMP: Unconditionally jump to address; 1 operand
         {
             name: "JMP",
             num_ops: 1,
@@ -74,6 +74,8 @@ export class CPU {
         { name: "JC", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
         { name: "JZ", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
         { name: "OUT", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+
+        // 0o12: HLT: Increment PC and halt
         {
             name: "HLT",
             num_ops: 0,
@@ -192,7 +194,7 @@ export class CPU {
     constructor() {
         // **** DEFINE CPU
         // define memory and registers
-        this.memory = [];
+        this.mem = [];
         this.pc = 0;
         this.ir = 0;
         this.mar = 0;
@@ -208,7 +210,7 @@ export class CPU {
 
         // define and set input lines
         this.input = {
-            run: true,
+            run: false,
             m_step: false,
             i_step: false,
         };
@@ -219,8 +221,8 @@ export class CPU {
         this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
         this.i_cycle = 0;
 
-        // define and set CPU-wide internal JavaScript flag indicating whether ANY change has occurred
-        this.changed = false;
+        // define and set CPU-wide internal JavaScript flag indicating whether a UI update is necessary
+        this.update_ui = false;
 
         // define array to hold a list of changed RAM cells
         this.ram_changed = [];
@@ -236,7 +238,10 @@ export class CPU {
         // **** INITIALIZE CPU
         // fill memory with random contents -- must do before populating IR!
         for (let i = 0; i < CPU.RAM_WORDS; i++) {
-            this.memory.push(Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1)));
+            // this.mem.push(Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1)));
+
+            // !!!!!!!!!! 
+            this.mem.push(0o04);
         }
 
         // fill registers PC, MAR, A, and B with random contents
@@ -247,6 +252,9 @@ export class CPU {
 
         // populate IR with content pointed to by PC
         this.ir = this.getWordAt(this.pc);
+
+        // now sync up old values
+        this.syncOldAndNew();
     }
 
     // get word value at given address
@@ -259,7 +267,7 @@ export class CPU {
 
         if (mod_address >= 0) {
             // if address greater than zero, return value pointed to by address
-            value = this.memory[mod_address];
+            value = this.mem[mod_address];
         }
 
         // return value (note: null if given address was negative!)
@@ -307,11 +315,17 @@ export class CPU {
         let mod_value = value % Math.pow(2, CPU.BITS);
 
         if (mod_address >= 0) {
-            // if address greater than zero, store value at address
-            this.memory[mod_address] = mod_value;
+            // if address greater than zero then...
 
-            // add to list of changed RAM cells
-            this.ram_changed.push(mod_address);
+            if (this.mem[mod_address] != mod_value) {
+                // if value at address is different from given value, then ...
+
+                // add to list of changed RAM cells
+                this.ram_changed.push(mod_address);
+
+                // store value at address
+                this.mem[mod_address] = mod_value;
+            }
         }
     }
 
@@ -324,14 +338,22 @@ export class CPU {
         this.old_b = this.b;
 
         // indicate that values are now synchronized
-        this.changed = false;
+        this.update_ui = false;
         this.ram_changed = [];
     }
 
     // update
     update() {
-        // sync old and new CPU values
-        this.syncOldAndNew();
+
+
+
+        console.log("Next machine cycle: " + this.m_cycle + ", " + this.m_next_type);
+
+
+
+
+        // sync old and new CPU values relevant to UI if needed
+        if (this.update_ui) this.syncOldAndNew();
 
         if (
             (!this.halted)
@@ -351,7 +373,7 @@ export class CPU {
 
 
 
-            console.log("Machine cycle " + this.m_cycle + ": " + this.m_next_type);
+
 
 
 
@@ -361,6 +383,7 @@ export class CPU {
                 case 0:
                     // Populate IR with word pointed to by PC
                     this.ir = this.getWordAt(this.pc);
+                    this.update_ui = true;
                     break;
 
                 // DECODE (machine cycle 1)
@@ -379,6 +402,7 @@ export class CPU {
                 default:
                     // call the opcode-specific function for the current machine cycle
                     CPU.OPCODES[this.m_opcode].funcs[this.m_cycle - 2](this);
+                    this.update_ui = true;
                     break;
             }
 
@@ -425,7 +449,5 @@ export class CPU {
             this.i_stepped = false;
         }
 
-        // indicate that something has changed in the CPU
-        this.changed = true;
     }
 };

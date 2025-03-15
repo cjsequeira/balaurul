@@ -1,49 +1,48 @@
 body {
-    background-color: #150200;
-    color: rgba(255, 255, 255, 1.0);
+    background-color: #ebd4cb;
+    color: black;
 }
 
 table {
-    border: 1px #ffffff;
+    border: 1px black;
+}
+
+table.registers {
     border-collapse: collapse;
 }
 
 td {
     text-align: center;
     vertical-align: middle;
-    padding: 2px;
-    margin: 2px;
+    padding: 4px;
 }
 
 td.registers {
     text-align: right;
-    border: 1px solid #ebd4cb;
+    border: 1px solid black;
     font-family: "Lucida Console", "Courier New", monospace;
 }
 
 td.mem_pc {
-    margin: 0px;
     border: 2px solid #da9f93;
 }
 
 td.mem_mar {
-    margin: 0px; 
     border: 2px solid #890620;
 }
 
 td.mem_changed {
-    background-color: #b6465f;
+    background-color: #8e8acd;
 }
 
 th {
     text-align: left;
     vertical-align: middle;
     padding: 4px;
-    margin: 0px;
 }
 
 th.registers {
-    border: 1px solid #ebd4cb;
+    border: 1px solid black;
     font-weight: bold;
     font-family: "Lucida Console", "Courier New", monospace;
 }
@@ -58,10 +57,14 @@ th.registers {
 }
 
 #app_12bit_memory {
-    border: 1px solid #ffffff;
+    border: 1px solid black;
     font-family: "Lucida Console", "Courier New", monospace;
     text-align: center;
     vertical-align: middle;
+}
+
+[id*="app_12bit_memcell_"] {
+    border: 2px solid rgba(0,0,0,0.0);
 }
 
 /* floating div code based on: https://stackoverflow.com/questions/5803023/how-to-place-two-divs-next-to-each-other */
