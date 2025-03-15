@@ -1,5 +1,5 @@
 body {
-    background-color: #ebd4cb;
+    background-color: #f9eee9;
     color: black;
 }
 
@@ -38,7 +38,7 @@ td.mem_changed {
 th {
     text-align: left;
     vertical-align: middle;
-    padding: 4px;
+    padding: 3px;
 }
 
 th.registers {
@@ -64,6 +64,7 @@ th.registers {
 }
 
 [id*="app_12bit_memcell_"] {
+    padding: 2px;
     border: 2px solid rgba(0,0,0,0.0);
 }
 

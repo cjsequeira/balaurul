@@ -344,14 +344,6 @@ export class CPU {
 
     // update
     update() {
-
-
-
-        console.log("Next machine cycle: " + this.m_cycle + ", " + this.m_next_type);
-
-
-
-
         // sync old and new CPU values relevant to UI if needed
         if (this.update_ui) this.syncOldAndNew();
 
@@ -390,12 +382,6 @@ export class CPU {
                 case 1:
                     // Decode IR to get opcode
                     this.m_opcode = this.getOpCodeFromIR();
-
-
-                    console.log("-----> " + this.getMnemonic(this.m_opcode));
-
-
-
                     break;
 
                 // INSTRUCTION-SPECIFIC (machine cycles 2 and beyond)

@@ -23,6 +23,8 @@ const UI_IR_HEX = document.getElementById("app_12bit_ir_hex");
 const UI_IR_DEC = document.getElementById("app_12bit_ir_dec");
 const UI_IR_MNEMONIC = document.getElementById("app_12bit_ir_mnemonic");
 
+const UI_M_NEXT_TYPE = document.getElementById("app_12bit_m_next_type");
+
 const UI_A_BINARY = document.getElementById("app_12bit_a_binary");
 const UI_A_OCTAL = document.getElementById("app_12bit_a_octal");
 const UI_A_HEX = document.getElementById("app_12bit_a_hex");
@@ -108,6 +110,8 @@ function setup() {
     UI_IR_DEC.innerHTML = cpu.ir.toString(10);
     UI_IR_MNEMONIC.innerHTML = cpu.getMnemonic();
 
+    UI_M_NEXT_TYPE.innerHTML = cpu.m_next_type;
+
     UI_A_BINARY.innerHTML = cpu.a.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& ');
     UI_A_OCTAL.innerHTML = cpu.a.toString(8).padStart(4, "0");
     UI_A_HEX.innerHTML = cpu.a.toString(16).padStart(3, "0").toUpperCase();
@@ -147,6 +151,8 @@ function setup() {
 function appUpdate() {
     // update CPU
     cpu.update();
+
+    UI_M_NEXT_TYPE.innerHTML = cpu.m_next_type;
 
     if (cpu.update_ui) {
         // if a UI update is needed, then ...
