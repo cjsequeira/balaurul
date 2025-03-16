@@ -50,7 +50,18 @@ export class CPU {
             ]
         },
 
-        { name: "SUB", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        // 0o03: SUB: Subtract value at address from accumulator using B as a temp register
+        {
+            name: "SUB",
+            num_ops: 1,
+            funcs: [CPU.m_incPC, CPU.m_storePCaddrInB, CPU.m_subBfromA, CPU.m_incPC],
+            next_type: [
+                CPU.M_CYCLE_NAMES.INC_PC,
+                CPU.M_CYCLE_NAMES.MEM_READ,
+                CPU.M_CYCLE_NAMES.ALU,
+                CPU.M_CYCLE_NAMES.INC_PC
+            ]
+        },
 
         // 0o04: STA: Store accumulator in address; 1 operand
         {
@@ -225,7 +236,7 @@ export class CPU {
     // subtract B from A
     static m_subBfromA(cpu) {
         // to subtract, add the two's-complement of B to accumulator
-        cpu.a = (cpu.a + (Math.pow(2, CPU.BITS) - cpu.b)) % Math.pow(CPU.BITS);
+        cpu.a = (cpu.a + (Math.pow(2, CPU.BITS) - cpu.b)) % Math.pow(2, CPU.BITS);
     }
 
 
@@ -284,14 +295,14 @@ export class CPU {
         // **** INITIALIZE CPU
         // fill memory with random contents -- must do before populating IR!
         for (let i = 0; i < CPU.RAM_WORDS; i++) {
-            this.mem.push(Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1)));
+            // this.mem.push(Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1)));
 
 
 
 
 
             // !!!!!!!!!!
-            // this.mem.push(0o02);
+            this.mem.push(0o03);
 
 
 
@@ -299,14 +310,12 @@ export class CPU {
 
         }
 
-        // fill registers PC, MAR, A, and B with random contents
+        // fill registers PC, IR, MAR, A, and B with random contents
         this.pc = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
+        this.ir = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
         this.mar = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
         this.a = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
         this.b = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
-
-        // populate IR with content pointed to by PC
-        this.ir = this.getWordAt(this.pc);
 
         // now sync up old values
         this.syncOldAndNew();
