@@ -1,5 +1,6 @@
 "use strict";
 
+
 // **** CPU CLASS
 export class CPU {
     // **** STATIC CPU PARAMETERS
@@ -37,16 +38,16 @@ export class CPU {
         },
 
         // 0o02: ADD: Add value at address to accumulator using B as a temp register
-        { 
-            name: "ADD", 
-            num_ops: 1, 
-            funcs: [CPU.m_incPC, CPU.m_storePCaddrInB, CPU.m_addBtoA, CPU.m_incPC], 
+        {
+            name: "ADD",
+            num_ops: 1,
+            funcs: [CPU.m_incPC, CPU.m_storePCaddrInB, CPU.m_addBtoA, CPU.m_incPC],
             next_type: [
                 CPU.M_CYCLE_NAMES.INC_PC,
                 CPU.M_CYCLE_NAMES.MEM_READ,
                 CPU.M_CYCLE_NAMES.ALU,
                 CPU.M_CYCLE_NAMES.INC_PC
-            ] 
+            ]
         },
 
         { name: "SUB", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
@@ -171,7 +172,7 @@ export class CPU {
         cpu.a += cpu.b;
 
         // set carry flag if overflow; clear carry flag if no overflow
-        if (cpu.a > Math.pow(2, CPU.BITS)) {
+        if (cpu.a >= Math.pow(2, CPU.BITS)) {
             cpu.flags.carry = true;
         } else {
             cpu.flags.carry = false;
@@ -219,6 +220,12 @@ export class CPU {
     // store into PC: word at address in PC
     static m_storePCaddrInPC(cpu) {
         cpu.pc = cpu.getWordAt(cpu.pc);
+    }
+
+    // subtract B from A
+    static m_subBfromA(cpu) {
+        // to subtract, add the two's-complement of B to accumulator
+        cpu.a = (cpu.a + (Math.pow(2, CPU.BITS) - cpu.b)) % Math.pow(CPU.BITS);
     }
 
 

@@ -29,13 +29,13 @@ const UI_A_BINARY = document.getElementById("app_12bit_a_binary");
 const UI_A_OCTAL = document.getElementById("app_12bit_a_octal");
 const UI_A_HEX = document.getElementById("app_12bit_a_hex");
 const UI_A_DEC = document.getElementById("app_12bit_a_dec");
-const UI_A_2S_COMP_DEC = document.getElementById("app_12bit_a_2s_comp_dec");
+const UI_A_SIGNED_DEC = document.getElementById("app_12bit_a_signed_dec");
 
 const UI_B_BINARY = document.getElementById("app_12bit_b_binary");
 const UI_B_OCTAL = document.getElementById("app_12bit_b_octal");
 const UI_B_HEX = document.getElementById("app_12bit_b_hex");
 const UI_B_DEC = document.getElementById("app_12bit_b_dec");
-const UI_B_2S_COMP_DEC = document.getElementById("app_12bit_b_2s_comp_dec");
+const UI_B_SIGNED_DEC = document.getElementById("app_12bit_b_signed_dec");
 
 const UI_MEM = document.getElementById("app_12bit_memory");
 const UI_MEM_CELL_ID_PREFIX = "app_12bit_memcell_";
@@ -81,7 +81,7 @@ function setup() {
             memory_html += "<td id='"
                 + UI_MEM_CELL_ID_PREFIX
                 + (i * 8 + j).toString(10) + "'>"
-                + cpu.mem[i * 8 + j].toString(8).padStart(4, '0')
+                + ModuleUtil.padSpace("", 4)
                 + "</td>";
         }
 
@@ -93,47 +93,8 @@ function setup() {
 
 
     // **** INITIALIZE UI
-    // show register values
-    UI_PC_BINARY.innerHTML = cpu.pc.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& ');
-    UI_PC_OCTAL.innerHTML = cpu.pc.toString(8).padStart(4, "0");
-    UI_PC_HEX.innerHTML = cpu.pc.toString(16).padStart(3, "0").toUpperCase();
-    UI_PC_DEC.innerHTML = cpu.pc.toString(10);
-
-    UI_MAR_BINARY.innerHTML = cpu.mar.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& ');
-    UI_MAR_OCTAL.innerHTML = cpu.mar.toString(8).padStart(4, "0");
-    UI_MAR_HEX.innerHTML = cpu.mar.toString(16).padStart(3, "0").toUpperCase();
-    UI_MAR_DEC.innerHTML = cpu.mar.toString(10);
-
-    UI_IR_BINARY.innerHTML = cpu.ir.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& ');
-    UI_IR_OCTAL.innerHTML = cpu.ir.toString(8).padStart(4, "0");
-    UI_IR_HEX.innerHTML = cpu.ir.toString(16).padStart(3, "0").toUpperCase();
-    UI_IR_DEC.innerHTML = cpu.ir.toString(10);
-    UI_IR_MNEMONIC.innerHTML = cpu.getMnemonic();
-
-    UI_M_NEXT_TYPE.innerHTML = cpu.m_next_type;
-
-    UI_A_BINARY.innerHTML = cpu.a.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& ');
-    UI_A_OCTAL.innerHTML = cpu.a.toString(8).padStart(4, "0");
-    UI_A_HEX.innerHTML = cpu.a.toString(16).padStart(3, "0").toUpperCase();
-    UI_A_DEC.innerHTML = cpu.a.toString(10);
-    UI_A_2S_COMP_DEC.innerHTML = ModuleUtil.twosComplement(cpu.a, 12).toString(10);
-
-    UI_B_BINARY.innerHTML = cpu.b.toString(2).padStart(12, "0").replace(/\d{3}(?=.)/g, '$& ');
-    UI_B_OCTAL.innerHTML = cpu.b.toString(8).padStart(4, "0");
-    UI_B_HEX.innerHTML = cpu.b.toString(16).padStart(3, "0").toUpperCase();
-    UI_B_DEC.innerHTML = cpu.b.toString(10);
-    UI_B_2S_COMP_DEC.innerHTML = ModuleUtil.twosComplement(cpu.b, 12).toString(10);
-
     // format memory block UI with structure
     UI_MEM.innerHTML = memory_html;
-
-    // draw a box around the memory cells pointed to by the PC and MAR
-    document.getElementById(UI_MEM_CELL_ID_PREFIX + (cpu.pc % ModuleCPU.CPU.RAM_WORDS).toString(10))
-        .classList
-        .add(UI_MEM_PC_CLASS);
-    document.getElementById(UI_MEM_CELL_ID_PREFIX + (cpu.mar % ModuleCPU.CPU.RAM_WORDS).toString(10))
-        .classList
-        .add(UI_MEM_MAR_CLASS);
 
 
     // **** ESTABLISH CALLBACKS FOR BUTTONS
@@ -167,15 +128,21 @@ function appUpdate() {
             .classList
             .remove(UI_MEM_PC_CLASS);
 
-        // delete all RAM UI element highlights
-        cpu.mem.forEach((_, i) =>
+        // draw all RAM values, with no highlights
+        cpu.mem.forEach((_, i) => {
+            // update the value in the cell, in octal
+            document.getElementById(UI_MEM_CELL_ID_PREFIX + i.toString(10))
+                .innerHTML = cpu.mem[i].toString(8).padStart(4, "0");
+
             // remove the highlight style
             document.getElementById(UI_MEM_CELL_ID_PREFIX + i.toString(10))
                 .classList
-                .remove(UI_MEM_CHANGED_CLASS)
-        );
+                .remove(UI_MEM_CHANGED_CLASS);
 
-        // iterate through any changed RAM cells, updating the values and highlights
+            return;
+        });
+
+        // iterate through any changed RAM cells, updating the highlights
         cpu.ram_changed.forEach((address) => {
             // update the value in the cell, in octal
             document.getElementById(UI_MEM_CELL_ID_PREFIX + address.toString(10))
@@ -218,12 +185,12 @@ function appUpdate() {
 
         ModuleUtil.updateHTMLwithDiff(
             cpu.a, cpu.old_a,
-            UI_A_BINARY, UI_A_OCTAL, UI_A_HEX, UI_A_DEC, UI_A_2S_COMP_DEC, ModuleCPU.CPU.BITS
+            UI_A_BINARY, UI_A_OCTAL, UI_A_HEX, UI_A_DEC, UI_A_SIGNED_DEC, ModuleCPU.CPU.BITS
         );
 
         ModuleUtil.updateHTMLwithDiff(
             cpu.b, cpu.old_b,
-            UI_B_BINARY, UI_B_OCTAL, UI_B_HEX, UI_B_DEC, UI_B_2S_COMP_DEC, ModuleCPU.CPU.BITS
+            UI_B_BINARY, UI_B_OCTAL, UI_B_HEX, UI_B_DEC, UI_B_SIGNED_DEC, ModuleCPU.CPU.BITS
         );
     }
 
