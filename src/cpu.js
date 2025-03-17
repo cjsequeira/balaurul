@@ -217,6 +217,7 @@ export class CPU {
     // halt CPU
     static m_halt(cpu) {
         cpu.status.halted = true;
+        cpu.status.running = false;
     }
 
     // if carry, then store into PC: word at address in PC
@@ -311,10 +312,15 @@ export class CPU {
         };
 
         this.status = {
+            doing_m_step: false,
+            doing_i_step: false,
+            running: false,
             halted: false,
+            m_stepped: false,
+            i_stepped: false,
         }
 
-        // define holders for old register, output, and flag values
+        // define holders for old register, output, flag, and status values
         this.old_pc = 0;
         this.old_ir = 0;
         this.old_mar = 0;
@@ -329,11 +335,23 @@ export class CPU {
         };
 
         this.old_status = {
+            doing_m_step: false,
+            doing_i_step: false,
+            running: false,
             halted: false,
+            m_stepped: false,
+            i_stepped: false,
         };
 
         // define and set input lines
         this.input = {
+            run: false,
+            m_step: false,
+            i_step: false,
+        };
+
+        // define holders for old input lines
+        this.old_input = {
             run: false,
             m_step: false,
             i_step: false,
@@ -351,10 +369,6 @@ export class CPU {
 
         // define array to hold a list of changed RAM cells
         this.ram_changed = [];
-
-        // define and set indicators for whether CPU has just advanced one machine cycle or instruction cycle
-        this.m_stepped = false;
-        this.i_stepped = false;
 
 
         // **** INITIALIZE CPU
@@ -400,7 +414,7 @@ export class CPU {
 
     // disassemble IR to a mnemonic
     disassembleIR() {
-            return CPU.OPCODES[this.getOpCodeFromIR()].name;
+        return CPU.OPCODES[this.getOpCodeFromIR()].name;
     }
 
     // increment PC
@@ -449,7 +463,12 @@ export class CPU {
         this.old_flags.zero = this.flags.zero;
 
         // status
-        this.old_status.halted = this.status.halted
+        this.old_status.running = this.status.running;
+        this.old_status.halted = this.status.halted;
+        this.old_status.doing_i_step = this.status.doing_i_step;
+        this.old_status.doing_m_step = this.status.doing_m_step;
+        this.old_status.m_stepped = this.status.m_stepped;
+        this.old_status.i_stepped = this.status.i_stepped;
 
         // RAM changes
         this.ram_changed = [];
@@ -458,22 +477,80 @@ export class CPU {
         this.update_ui = false;
     }
 
+    // scan input lines and adjust CPU status accordingly
+    scanInputs() {
+        // scan run line
+        if (this.input.run) {
+            // only start running if CPU is not halted!
+            if (!this.status.halted) this.status.running = true;
+        } else {
+            // if run line is false, clear "running" AND "halted" statuses
+            this.status.running = false;
+            this.status.halted = false;
+        }
+
+        // scan m_step line
+        if (this.input.m_step) {
+            // if m_step line is true, only do a machine step IF:
+            //  CPU is not running 
+            //  AND CPU is not halted
+            //  AND CPU is not in m_stepped status
+            if ((!this.status.running) && (!this.status.halted) && (!this.status.m_stepped)) {
+                this.status.doing_m_step = true;
+                this.status.doing_i_step = false;
+            }
+        } else {
+            // if m_step line is false, clear the CPU "machine-stepped" and "doing m step" statuses
+            this.status.m_stepped = false;
+            this.status.doing_m_step = false;
+        }
+
+        // scan i_step line
+        if (this.input.i_step) {
+            // if i_step line is true, only do an instruction step IF:
+            //  CPU is not running 
+            //  AND CPU is not halted
+            //  AND CPU is not in i_stepped status
+            if ((!this.status.running) && (!this.status.halted) && (!this.status.i_stepped)) {
+                this.status.doing_i_step = true;
+                this.status.doing_m_step = false;
+            }
+        } else {
+            // if i_step line is false, clear the CPU "instruction-stepped" and "doing i step" statuses
+            this.status.i_stepped = false;
+            this.status.doing_i_step = false;
+        }
+
+        // trigger a UI update if certain input lines have changed
+        if (
+            (this.input.run != this.old_input.run)
+        ) {
+            this.update_ui = true;
+        }
+
+        // sync old and new input line levels
+        this.old_input.run = this.input.run;
+        this.old_input.i_step = this.input.i_step;
+        this.old_input.m_step = this.input.m_step;
+    }
+
     // update
     update() {
+        // scan input lines and adjust CPU status accordingly
+        this.scanInputs();
+
         if (
             (!this.status.halted)
-            &&
-            (
-                this.input.run
-                || (this.input.m_step && !this.m_stepped)
-                || (this.input.i_step && !this.i_stepped)
+            && (
+                this.status.running
+                || (this.status.doing_m_step && !this.status.m_stepped)
+                || (this.status.doing_i_step && !this.status.i_stepped)
             )
-
         ) {
             // if CPU not halted AND ...
-            //  if input "run" is set ...
-            //  or input "m_step" is set and CPU not yet machine-stepped ...
-            //  or input "i_step" is set and CPU not yet instruction-stepped ...
+            //  if status "run" is true ...
+            //  OR, status "doing m step" is true AND CPU not yet machine-stepped ...
+            //  OR, status "doing i step" is true AND CPU not yet instruction-stepped ...
             // then...
 
             // use machine cycle counter to determine what to do
@@ -513,8 +590,11 @@ export class CPU {
                 this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
 
                 // indicate that the CPU has finished an instruction step AND a machine step
-                this.i_stepped = true;
-                this.m_stepped = true;
+                this.status.i_stepped = true;
+                this.status.m_stepped = true;
+
+                // clear "doing i stepped" status
+                this.status.doing_i_step = false;
 
                 // trigger UI update
                 this.update_ui = true;
@@ -533,22 +613,14 @@ export class CPU {
                 this.m_cycle++;
 
                 // indicate that CPU has finished a machine step
-                this.m_stepped = true;
+                this.status.m_stepped = true;
 
-                // if user is stepping by machine cycle, trigger a UI update
-                if (this.input.m_step) this.update_ui = true;
+                // if CPU status is "doing m step", clear "doing m step" status and trigger a UI update
+                if (this.status.doing_m_step) {
+                    this.status.doing_m_step = false;
+                    this.update_ui = true;
+                }
             }
         }
-
-        if (!this.input.m_step) {
-            // if input "machine step" is cleared, clear the CPU "machine-stepped" status
-            this.m_stepped = false;
-        }
-
-        if (!this.input.i_step) {
-            // if input "instruction step" is cleared, clear the CPU "instruction-stepped" status
-            this.i_stepped = false;
-        }
-
     }
 };

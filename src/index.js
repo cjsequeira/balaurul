@@ -46,6 +46,8 @@ const UI_OUT_SIGNED_DEC = document.getElementById("app_12bit_out_signed_dec");
 
 const UI_FLAG_CARRY = document.getElementById("app_12bit_flag_carry");
 const UI_FLAG_ZERO = document.getElementById("app_12bit_flag_zero");
+
+const UI_STATUS_RUNNING = document.getElementById("app_12bit_status_running");
 const UI_STATUS_HALTED = document.getElementById("app_12bit_status_halted");
 
 const UI_MEM = document.getElementById("app_12bit_memory");
@@ -122,10 +124,15 @@ function setup() {
 
 
     // **** ESTABLISH CALLBACKS FOR BUTTONS
-    UI_BUTTON_RUN.addEventListener("click", btn_run);
-    UI_BUTTON_STOP.addEventListener("click", btn_stop);
-    UI_BUTTON_M_STEP.addEventListener("click", btn_m_step);
-    UI_BUTTON_I_STEP.addEventListener("click", btn_i_step);
+    UI_BUTTON_RUN.addEventListener("mousedown", btn_run_down);
+    UI_BUTTON_STOP.addEventListener("mousedown", btn_stop_down);
+    UI_BUTTON_M_STEP.addEventListener("mousedown", btn_m_step_down);
+    UI_BUTTON_I_STEP.addEventListener("mousedown", btn_i_step_down);
+
+    UI_BUTTON_RUN.addEventListener("mouseup", btn_run_up);
+    UI_BUTTON_STOP.addEventListener("mouseup", btn_stop_up);
+    UI_BUTTON_M_STEP.addEventListener("mouseup", btn_m_step_up);
+    UI_BUTTON_I_STEP.addEventListener("mouseup", btn_i_step_up);
 
 
     // **** ESTABLISH APP UPDATE CALLBACK
@@ -183,9 +190,12 @@ function appUpdate() {
             return;
         });
 
-        // show CPU flags and status
+        // show CPU flags
         UI_FLAG_CARRY.innerHTML = ModuleUtil.showDiff(cpu.flags.carry.toString(), cpu.old_flags.carry.toString());
         UI_FLAG_ZERO.innerHTML = ModuleUtil.showDiff(cpu.flags.zero.toString(), cpu.old_flags.zero.toString());
+
+        // show CPU status
+        UI_STATUS_RUNNING.innerHTML = ModuleUtil.showDiff(cpu.status.running.toString(), cpu.old_status.running.toString());
         UI_STATUS_HALTED.innerHTML = ModuleUtil.showDiff(cpu.status.halted.toString(), cpu.old_status.halted.toString());
 
         // box current MAR memory element
@@ -240,28 +250,34 @@ function appUpdate() {
 
 
 // **** BUTTON CALLBACK FUNCTIONS
-function btn_run() {
+function btn_run_down() {
     cpu.input.run = true;
 }
 
-function btn_stop() {
+function btn_stop_down() {
     cpu.input.run = false;
-    cpu.status.halted = false;
-    cpu.update_ui = true;
 }
 
-function btn_m_step() {
-    if (!cpu.input.run) {
-        cpu.input.m_step = true;
-        cpu.input.i_step = false;
-        cpu.m_stepped = false;
-    }
+function btn_m_step_down() {
+    cpu.input.m_step = true;
 }
 
-function btn_i_step() {
-    if (!cpu.input.run) {
-        cpu.input.i_step = true;
-        cpu.input.m_step = false;
-        cpu.i_stepped = false;
-    }
+function btn_i_step_down() {
+    cpu.input.i_step = true;
+}
+
+function btn_run_up() {
+    
+}
+
+function btn_stop_up() {
+    
+}
+
+function btn_m_step_up() {
+    cpu.input.m_step = false;
+}
+
+function btn_i_step_up() {
+    cpu.input.i_step = false;
 }

@@ -17,34 +17,34 @@
                 <h2>Registers</h2>
                 <!-- Registers: PC and IR -->
                 
-                <table class="registers">
+                <table>
                     <tr>
-                        <th class="registers">Register</th>
-                        <th class="registers">Binary&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-                        <th class="registers">Octal</th>
-                        <th class="registers">Hex&nbsp;</th>
-                        <th class="registers">Dec&nbsp;</th>
+                        <th>Register</th>
+                        <th>Binary&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+                        <th>Octal</th>
+                        <th>Hex&nbsp;</th>
+                        <th>Dec&nbsp;</th>
                     </tr>
                     <tr>
                         <th class="registers, mem_pc">PC</th>
-                        <td class="registers" id="app_12bit_pc_binary"></td>
-                        <td class="registers" id="app_12bit_pc_octal"></td>
-                        <td class="registers" id="app_12bit_pc_hex"></td>
-                        <td class="registers" id="app_12bit_pc_dec"></td>
+                        <td id="app_12bit_pc_binary"></td>
+                        <td id="app_12bit_pc_octal"></td>
+                        <td id="app_12bit_pc_hex"></td>
+                        <td id="app_12bit_pc_dec"></td>
                     </tr>
                     <tr>
-                        <th class="registers">IR</th>
-                        <td class="registers" id="app_12bit_ir_binary"></td>
-                        <td class="registers" id="app_12bit_ir_octal"></td>
-                        <td class="registers" id="app_12bit_ir_hex"></td>
-                        <td class="registers" id="app_12bit_ir_dec"></td>
+                        <th>IR</th>
+                        <td id="app_12bit_ir_binary"></td>
+                        <td id="app_12bit_ir_octal"></td>
+                        <td id="app_12bit_ir_hex"></td>
+                        <td id="app_12bit_ir_dec"></td>
                     </tr>
                     <tr>
                         <th class="registers, mem_mar">MAR</th>
-                        <td class="registers" id="app_12bit_mar_binary"></td>
-                        <td class="registers" id="app_12bit_mar_octal"></td>
-                        <td class="registers" id="app_12bit_mar_hex"></td>
-                        <td class="registers" id="app_12bit_mar_dec"></td>
+                        <td id="app_12bit_mar_binary"></td>
+                        <td id="app_12bit_mar_octal"></td>
+                        <td id="app_12bit_mar_hex"></td>
+                        <td id="app_12bit_mar_dec"></td>
                     </tr>
                 </table>
                 
@@ -57,52 +57,54 @@
                 </p>
 
                 <!-- Registers: A, B, OUT -->
-                <table class="registers">
+                <table>
                     <tr>
-                        <th class="registers">Register</th>
-                        <th class="registers">Binary&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-                        <th class="registers">Octal</th>
-                        <th class="registers">Hex&nbsp;</th>
-                        <th class="registers">Dec&nbsp;</th>
-                        <th class="registers">Signed Dec</th>
+                        <th>Register</th>
+                        <th>Binary&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+                        <th>Octal</th>
+                        <th>Hex&nbsp;</th>
+                        <th>Dec&nbsp;</th>
+                        <th>Signed Dec</th>
                     </tr>
                     <tr>
-                        <th class="registers">A</th>
-                        <td class="registers" id="app_12bit_a_binary"></td>
-                        <td class="registers" id="app_12bit_a_octal"></td>
-                        <td class="registers" id="app_12bit_a_hex"></td>
-                        <td class="registers" id="app_12bit_a_dec"></td>
-                        <td class="registers" id="app_12bit_a_signed_dec"></td>
+                        <th>A</th>
+                        <td id="app_12bit_a_binary"></td>
+                        <td id="app_12bit_a_octal"></td>
+                        <td id="app_12bit_a_hex"></td>
+                        <td id="app_12bit_a_dec"></td>
+                        <td id="app_12bit_a_signed_dec"></td>
                     </tr>
                     <tr>
-                        <th class="registers">B</th>
-                        <td class="registers" id="app_12bit_b_binary"></td>
-                        <td class="registers" id="app_12bit_b_octal"></td>
-                        <td class="registers" id="app_12bit_b_hex"></td>
-                        <td class="registers" id="app_12bit_b_dec"></td>
-                        <td class="registers" id="app_12bit_b_signed_dec"></td>
+                        <th>B</th>
+                        <td id="app_12bit_b_binary"></td>
+                        <td id="app_12bit_b_octal"></td>
+                        <td id="app_12bit_b_hex"></td>
+                        <td id="app_12bit_b_dec"></td>
+                        <td id="app_12bit_b_signed_dec"></td>
                     </tr>
                     <tr>
-                        <th class="registers">OUT</th>
-                        <td class="registers" id="app_12bit_out_binary"></td>
-                        <td class="registers" id="app_12bit_out_octal"></td>
-                        <td class="registers" id="app_12bit_out_hex"></td>
-                        <td class="registers" id="app_12bit_out_dec"></td>
-                        <td class="registers" id="app_12bit_out_signed_dec"></td>
+                        <th>OUT</th>
+                        <td id="app_12bit_out_binary"></td>
+                        <td id="app_12bit_out_octal"></td>
+                        <td id="app_12bit_out_hex"></td>
+                        <td id="app_12bit_out_dec"></td>
+                        <td id="app_12bit_out_signed_dec"></td>
                     </tr>
                 </table>
 
                 <h2>Flags and Status</h2>
-                <table class="registers">
+                <table>
                     <tr>
-                        <th class="registers">Carry</th>
-                        <th class="registers">Zero&nbsp;</th>
-                        <th class="registers">Halted</th>
+                        <th>Carry</th>
+                        <th>Zero&nbsp;</th>
+                        <th>Running</th>
+                        <th>Halted</th>
                     </tr>
                     <tr>
-                        <td class="registers" id="app_12bit_flag_carry">&nbsp;</td>
-                        <td class="registers" id="app_12bit_flag_zero">&nbsp;</td>
-                        <td class="registers" id="app_12bit_status_halted">&nbsp;</td>
+                        <td id="app_12bit_flag_carry">&nbsp;</td>
+                        <td id="app_12bit_flag_zero">&nbsp;</td>
+                        <td id="app_12bit_status_running">&nbsp;</td>
+                        <td id="app_12bit_status_halted">&nbsp;</td>
                     </tr>
                 </table>
             </div>
