@@ -5,10 +5,7 @@ body {
 
 table {
     border: 1px black;
-}
-
-table.registers {
-    border-collapse: collapse;
+    margin: 0px;
 }
 
 td {
@@ -31,7 +28,7 @@ td.mem_mar {
     border: 2px solid #890620;
 }
 
-td.mem_changed {
+td.highlight_changed {
     background-color: #8e8acd;
 }
 
@@ -39,6 +36,14 @@ th {
     text-align: left;
     vertical-align: middle;
     padding: 4px;
+}
+
+th.mem_pc {
+    border: 3px solid #da9f93;
+}
+
+th.mem_mar {
+    border: 3px solid #890620;
 }
 
 th.registers {

@@ -21,8 +21,9 @@ const UI_IR_BINARY = document.getElementById("app_12bit_ir_binary");
 const UI_IR_OCTAL = document.getElementById("app_12bit_ir_octal");
 const UI_IR_HEX = document.getElementById("app_12bit_ir_hex");
 const UI_IR_DEC = document.getElementById("app_12bit_ir_dec");
-const UI_IR_MNEMONIC = document.getElementById("app_12bit_ir_mnemonic");
 
+const UI_VAL_AT_PC = document.getElementById("app_12bit_val_at_pc");
+const UI_IR_MNEMONIC = document.getElementById("app_12bit_ir_mnemonic");
 const UI_M_NEXT_TYPE = document.getElementById("app_12bit_m_next_type");
 
 const UI_A_BINARY = document.getElementById("app_12bit_a_binary");
@@ -37,11 +38,21 @@ const UI_B_HEX = document.getElementById("app_12bit_b_hex");
 const UI_B_DEC = document.getElementById("app_12bit_b_dec");
 const UI_B_SIGNED_DEC = document.getElementById("app_12bit_b_signed_dec");
 
+const UI_OUT_BINARY = document.getElementById("app_12bit_out_binary");
+const UI_OUT_OCTAL = document.getElementById("app_12bit_out_octal");
+const UI_OUT_HEX = document.getElementById("app_12bit_out_hex");
+const UI_OUT_DEC = document.getElementById("app_12bit_out_dec");
+const UI_OUT_SIGNED_DEC = document.getElementById("app_12bit_out_signed_dec");
+
+const UI_FLAG_CARRY = document.getElementById("app_12bit_flag_carry");
+const UI_FLAG_ZERO = document.getElementById("app_12bit_flag_zero");
+const UI_STATUS_HALTED = document.getElementById("app_12bit_status_halted");
+
 const UI_MEM = document.getElementById("app_12bit_memory");
 const UI_MEM_CELL_ID_PREFIX = "app_12bit_memcell_";
 const UI_MEM_PC_CLASS = "mem_pc";
 const UI_MEM_MAR_CLASS = "mem_mar";
-const UI_MEM_CHANGED_CLASS = "mem_changed";
+const UI_HIGHLIGHT_CHANGED_CLASS = "highlight_changed";
 const UI_MEM_ROWS = 8;
 const UI_MEM_COLS = 8;
 
@@ -113,10 +124,13 @@ function appUpdate() {
     // update CPU
     cpu.update();
 
-    UI_M_NEXT_TYPE.innerHTML = cpu.m_next_type;
-
     if (cpu.update_ui) {
         // if a UI update is needed, then ...
+
+        // show value at PC, disassembly of IR, and next machine cycle type
+        UI_VAL_AT_PC.innerHTML = cpu.getWordAt(cpu.pc).toString(8).padStart(4, "0");
+        UI_IR_MNEMONIC.innerHTML = cpu.disassembleIR();
+        UI_M_NEXT_TYPE.innerHTML = cpu.m_next_type;        
 
         // delete old MAR box in memory UI element
         document.getElementById(UI_MEM_CELL_ID_PREFIX + (cpu.old_mar % ModuleCPU.CPU.RAM_WORDS).toString(10))
@@ -137,7 +151,7 @@ function appUpdate() {
             // remove the highlight style
             document.getElementById(UI_MEM_CELL_ID_PREFIX + i.toString(10))
                 .classList
-                .remove(UI_MEM_CHANGED_CLASS);
+                .remove(UI_HIGHLIGHT_CHANGED_CLASS);
 
             return;
         });
@@ -151,10 +165,15 @@ function appUpdate() {
             // add the highlight style
             document.getElementById(UI_MEM_CELL_ID_PREFIX + address.toString(10))
                 .classList
-                .add(UI_MEM_CHANGED_CLASS);
+                .add(UI_HIGHLIGHT_CHANGED_CLASS);
 
             return;
         });
+
+        // show CPU flags and status
+        UI_FLAG_CARRY.innerHTML = ModuleUtil.showDiff(cpu.flags.carry.toString(), cpu.old_flags.carry.toString());
+        UI_FLAG_ZERO.innerHTML = ModuleUtil.showDiff(cpu.flags.zero.toString(), cpu.old_flags.zero.toString());
+        UI_STATUS_HALTED.innerHTML = ModuleUtil.showDiff(cpu.status.halted.toString(), cpu.old_status.halted.toString());
 
         // box current MAR memory element
         document.getElementById(UI_MEM_CELL_ID_PREFIX + (cpu.mar % ModuleCPU.CPU.RAM_WORDS).toString(10))
@@ -181,7 +200,6 @@ function appUpdate() {
             cpu.ir, cpu.old_ir,
             UI_IR_BINARY, UI_IR_OCTAL, UI_IR_HEX, UI_IR_DEC
         );
-        UI_IR_MNEMONIC.innerHTML = cpu.getMnemonic();
 
         ModuleUtil.updateHTMLwithDiff(
             cpu.a, cpu.old_a,
@@ -192,6 +210,14 @@ function appUpdate() {
             cpu.b, cpu.old_b,
             UI_B_BINARY, UI_B_OCTAL, UI_B_HEX, UI_B_DEC, UI_B_SIGNED_DEC, ModuleCPU.CPU.BITS
         );
+
+        ModuleUtil.updateHTMLwithDiff(
+            cpu.out, cpu.old_out,
+            UI_OUT_BINARY, UI_OUT_OCTAL, UI_OUT_HEX, UI_OUT_DEC, UI_OUT_SIGNED_DEC, ModuleCPU.CPU.BITS
+        );
+
+        // sync old and new CPU values relevant to UI
+        cpu.syncOldAndNewForUI();
     }
 
 
@@ -207,14 +233,14 @@ function btn_run() {
 
 function btn_stop() {
     cpu.input.run = false;
-    cpu.halted = false;
+    cpu.status.halted = false;
+    cpu.update_ui = true;
 }
 
 function btn_m_step() {
     if (!cpu.input.run) {
         cpu.input.m_step = true;
         cpu.input.i_step = false;
-
         cpu.m_stepped = false;
     }
 }
@@ -223,7 +249,6 @@ function btn_i_step() {
     if (!cpu.input.run) {
         cpu.input.i_step = true;
         cpu.input.m_step = false;
-
         cpu.i_stepped = false;
     }
 }
