@@ -1,23 +1,40 @@
+.mono {
+    font-family: "Lucida Console", "Courier New", monospace;
+}
+
+.show_diff {
+    color: #b6465f;
+    font-weight: bold;
+}
+
+.memory {
+    border: 1px solid black;
+    font-family: "Lucida Console", "Courier New", monospace;
+    text-align: center;
+    vertical-align: middle;
+}
+
 body {
     background-color: #f9eee9;
     color: black;
+    font-family: "Helvetica", "Arial", sans-serif;
 }
 
 table {
     border: 1px black;
     margin: 0px;
+    font-family: "Lucida Console", "Courier New", monospace;
 }
 
 td {
-    text-align: center;
+    text-align: right;
     vertical-align: middle;
     padding: 4px;
+    border: 1px solid black;
 }
 
-td.registers {
-    text-align: right;
-    border: 1px solid black;
-    font-family: "Lucida Console", "Courier New", monospace;
+td.highlight_changed {
+    background-color: #8e8acd;
 }
 
 td.mem_pc {
@@ -28,14 +45,16 @@ td.mem_mar {
     border: 2px solid #890620;
 }
 
-td.highlight_changed {
-    background-color: #8e8acd;
+th.memory {
+    border: 0px;
 }
 
 th {
     text-align: left;
     vertical-align: middle;
     padding: 4px;
+    border: 1px solid black;
+    font-weight: bold;
 }
 
 th.mem_pc {
@@ -44,28 +63,6 @@ th.mem_pc {
 
 th.mem_mar {
     border: 3px solid #890620;
-}
-
-th.registers {
-    border: 1px solid black;
-    font-weight: bold;
-    font-family: "Lucida Console", "Courier New", monospace;
-}
-
-.mnemonic {
-    font-family: "Lucida Console", "Courier New", monospace;
-}
-
-.show_diff {
-    color: #b6465f;
-    font-weight: bold;
-}
-
-#app_12bit_memory {
-    border: 1px solid black;
-    font-family: "Lucida Console", "Courier New", monospace;
-    text-align: center;
-    vertical-align: middle;
 }
 
 [id*="app_12bit_memcell_"] {

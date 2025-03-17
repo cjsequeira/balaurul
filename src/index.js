@@ -49,10 +49,11 @@ const UI_FLAG_ZERO = document.getElementById("app_12bit_flag_zero");
 const UI_STATUS_HALTED = document.getElementById("app_12bit_status_halted");
 
 const UI_MEM = document.getElementById("app_12bit_memory");
-const UI_MEM_CELL_ID_PREFIX = "app_12bit_memcell_";
-const UI_MEM_PC_CLASS = "mem_pc";
-const UI_MEM_MAR_CLASS = "mem_mar";
-const UI_HIGHLIGHT_CHANGED_CLASS = "highlight_changed";
+const UI_TEXT_MEM_CELL_ID_PREFIX = "app_12bit_memcell_";
+const UI_TEXT_MEM_CLASS = "memory";
+const UI_TEXT_MEM_PC_CLASS = "mem_pc";
+const UI_TEXT_MEM_MAR_CLASS = "mem_mar";
+const UI_TEXT_HIGHLIGHT_CHANGED_CLASS = "highlight_changed";
 const UI_MEM_ROWS = 8;
 const UI_MEM_COLS = 8;
 
@@ -75,22 +76,34 @@ window.addEventListener("load", setup());
 function setup() {
     // **** BUILD MEMORY BLOCK UI STRUCTURE IN HTML
     // table opener
-    let memory_html = "<table>";
+    let memory_html = "<table class='" + UI_TEXT_MEM_CLASS + "'>";
+
+    // empty corner at upper left
+    memory_html += "<tr><td id='"
+        + UI_TEXT_MEM_CELL_ID_PREFIX
+        + "'></td>";
 
     // column labels
-    memory_html += "<tr><td></td>"
     for (let j = 0; j < UI_MEM_COLS; j++) {
-        memory_html += "<th>" + "xxx" + j + "</th>";
+        memory_html += "<th class='" + UI_TEXT_MEM_CLASS
+            + "'>"
+            + "xxx"
+            + j
+            + "</th>";
     }
-    memory_html += "</tr>"
+    memory_html += "</tr>";
 
     // each row of memory, with a row label to the left
     for (let i = 0; i < UI_MEM_ROWS; i++) {
-        memory_html += "<tr><th>" + (i * 8).toString(8).padStart(4, '0') + "</th>"
+        memory_html += "<tr><th class='"
+            + UI_TEXT_MEM_CLASS
+            + "'>"
+            + (i * 8).toString(8).padStart(4, '0')
+            + "</th>"
 
         for (let j = 0; j < UI_MEM_COLS; j++) {
             memory_html += "<td id='"
-                + UI_MEM_CELL_ID_PREFIX
+                + UI_TEXT_MEM_CELL_ID_PREFIX
                 + (i * 8 + j).toString(10) + "'>"
                 + ModuleUtil.padSpace("", 4)
                 + "</td>";
@@ -130,28 +143,28 @@ function appUpdate() {
         // show value at PC, disassembly of IR, and next machine cycle type
         UI_VAL_AT_PC.innerHTML = cpu.getWordAt(cpu.pc).toString(8).padStart(4, "0");
         UI_IR_MNEMONIC.innerHTML = cpu.disassembleIR();
-        UI_M_NEXT_TYPE.innerHTML = cpu.m_next_type;        
+        UI_M_NEXT_TYPE.innerHTML = cpu.m_next_type;
 
         // delete old MAR box in memory UI element
-        document.getElementById(UI_MEM_CELL_ID_PREFIX + (cpu.old_mar % ModuleCPU.CPU.RAM_WORDS).toString(10))
+        document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.old_mar % ModuleCPU.CPU.RAM_WORDS).toString(10))
             .classList
-            .remove(UI_MEM_MAR_CLASS);
+            .remove(UI_TEXT_MEM_MAR_CLASS);
 
         // delete old PC box in memory UI element
-        document.getElementById(UI_MEM_CELL_ID_PREFIX + (cpu.old_pc % ModuleCPU.CPU.RAM_WORDS).toString(10))
+        document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.old_pc % ModuleCPU.CPU.RAM_WORDS).toString(10))
             .classList
-            .remove(UI_MEM_PC_CLASS);
+            .remove(UI_TEXT_MEM_PC_CLASS);
 
         // draw all RAM values, with no highlights
         cpu.mem.forEach((_, i) => {
             // update the value in the cell, in octal
-            document.getElementById(UI_MEM_CELL_ID_PREFIX + i.toString(10))
+            document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + i.toString(10))
                 .innerHTML = cpu.mem[i].toString(8).padStart(4, "0");
 
             // remove the highlight style
-            document.getElementById(UI_MEM_CELL_ID_PREFIX + i.toString(10))
+            document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + i.toString(10))
                 .classList
-                .remove(UI_HIGHLIGHT_CHANGED_CLASS);
+                .remove(UI_TEXT_HIGHLIGHT_CHANGED_CLASS);
 
             return;
         });
@@ -159,13 +172,13 @@ function appUpdate() {
         // iterate through any changed RAM cells, updating the highlights
         cpu.ram_changed.forEach((address) => {
             // update the value in the cell, in octal
-            document.getElementById(UI_MEM_CELL_ID_PREFIX + address.toString(10))
+            document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + address.toString(10))
                 .innerHTML = cpu.mem[address].toString(8).padStart(4, "0");
 
             // add the highlight style
-            document.getElementById(UI_MEM_CELL_ID_PREFIX + address.toString(10))
+            document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + address.toString(10))
                 .classList
-                .add(UI_HIGHLIGHT_CHANGED_CLASS);
+                .add(UI_TEXT_HIGHLIGHT_CHANGED_CLASS);
 
             return;
         });
@@ -176,14 +189,14 @@ function appUpdate() {
         UI_STATUS_HALTED.innerHTML = ModuleUtil.showDiff(cpu.status.halted.toString(), cpu.old_status.halted.toString());
 
         // box current MAR memory element
-        document.getElementById(UI_MEM_CELL_ID_PREFIX + (cpu.mar % ModuleCPU.CPU.RAM_WORDS).toString(10))
+        document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.mar % ModuleCPU.CPU.RAM_WORDS).toString(10))
             .classList
-            .add(UI_MEM_MAR_CLASS);
+            .add(UI_TEXT_MEM_MAR_CLASS);
 
         // box current PC memory element
-        document.getElementById(UI_MEM_CELL_ID_PREFIX + (cpu.pc % ModuleCPU.CPU.RAM_WORDS).toString(10))
+        document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.pc % ModuleCPU.CPU.RAM_WORDS).toString(10))
             .classList
-            .add(UI_MEM_PC_CLASS);
+            .add(UI_TEXT_MEM_PC_CLASS);
 
         // update all HTML numerical elements
         ModuleUtil.updateHTMLwithDiff(
