@@ -16,6 +16,7 @@ export class CPU {
         INC_PC: "Increment PC",
         HALT: "Halt CPU",
         ALU: "ALU",
+        OUT: "Out",
     };
 
     // instructions and their implementation
@@ -96,9 +97,30 @@ export class CPU {
             next_type: [CPU.M_CYCLE_NAMES.INC_PC, CPU.M_CYCLE_NAMES.MEM_READ],
         },
 
-        { name: "JC", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "JZ", num_ops: 1, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "OUT", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
+        // 0o07: JC: Jump to address if carry flag set; 1 operand
+        {
+            name: "JC",
+            num_ops: 1,
+            funcs: [CPU.m_incPC, CPU.m_ifCarryThenStorePCaddrInPC],
+            next_type: [CPU.M_CYCLE_NAMES.INC_PC, CPU.M_CYCLE_NAMES.MEM_READ],
+        },
+
+
+        // 0o10: JZ: Jump to address if zero flag set; 1 operand
+        {
+            name: "JZ",
+            num_ops: 1,
+            funcs: [CPU.m_incPC, CPU.m_ifZeroThenStorePCaddrInPC],
+            next_type: [CPU.M_CYCLE_NAMES.INC_PC, CPU.M_CYCLE_NAMES.MEM_READ],
+        },
+
+        // 0o11: OUT: Write accumulator to output
+        {
+            name: "OUT",
+            num_ops: 0,
+            funcs: [CPU.m_out, CPU.m_incPC],
+            next_type: [CPU.M_CYCLE_NAMES.OUT, CPU.M_CYCLE_NAMES.INC_PC]
+        },
 
         // 0o12: HLT: Increment PC and halt
         {
@@ -108,72 +130,14 @@ export class CPU {
             next_type: [CPU.M_CYCLE_NAMES.INC_PC, CPU.M_CYCLE_NAMES.HALT],
         },
 
-        // ... plus 53 extra NOP opcodes for padding ...
+        // ... plus 5 extra NOP opcodes for padding ...
         { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
         { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
         { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
         { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
         { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
 
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        // ... equals 64 instructions numbered 0 through 63 (binary 111 111, or two octal digits)
+        // ... equals 16 instructions (one hexadecimal digit)
     ];
 
 
@@ -182,25 +146,43 @@ export class CPU {
     static m_addBtoA(cpu) {
         cpu.a += cpu.b;
 
-        // set carry flag if overflow; clear carry flag if no overflow
-        if (cpu.a >= Math.pow(2, CPU.BITS)) {
-            cpu.flags.carry = true;
-        } else {
-            cpu.flags.carry = false;
-        }
+        // set carry flag appropriately
+        cpu.flags.carry = (cpu.a >= Math.pow(2, CPU.BITS));
 
         // restrict accumulator to only CPU.BITS in size
         cpu.a %= Math.pow(2, CPU.BITS);
+
+        // set zero flag appropriately
+        cpu.flags.zero = (cpu.a == 0);
     }
 
     // halt CPU
     static m_halt(cpu) {
-        cpu.halted = true;
+        cpu.status.halted = true;
+    }
+
+    // if carry, then store into PC: word at address in PC
+    static m_ifCarryThenStorePCaddrInPC(cpu) {
+        if (cpu.flags.carry) {
+            cpu.pc = cpu.getWordAt(cpu.pc);
+        } else {
+            cpu.incPC();
+        }
+    }
+
+    // if zero, then store into PC: word at address in PC
+    static m_ifZeroThenStorePCaddrInPC(cpu) {
+        if (cpu.flags.zero) cpu.pc = cpu.getWordAt(cpu.pc);
     }
 
     // increment PC
     static m_incPC(cpu) {
         cpu.incPC();
+    }
+
+    // write accumulator to output
+    static m_out(cpu) {
+        cpu.out = cpu.a;
     }
 
     // store into RAM at address in MAR: value in A
@@ -236,7 +218,17 @@ export class CPU {
     // subtract B from A
     static m_subBfromA(cpu) {
         // to subtract, add the two's-complement of B to accumulator
-        cpu.a = (cpu.a + (Math.pow(2, CPU.BITS) - cpu.b)) % Math.pow(2, CPU.BITS);
+        cpu.a += Math.pow(2, CPU.BITS) - cpu.b;
+
+        // set carry flag appropriately
+        // carry calc is inspired by the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
+        cpu.flags.carry = (cpu.a >= Math.pow(2, CPU.BITS));
+
+        // restrict accumulator to only CPU.BITS in size
+        cpu.a %= Math.pow(2, CPU.BITS);
+
+        // set zero flag appropriately
+        cpu.flags.zero = (cpu.a == 0);
     }
 
 
@@ -244,26 +236,43 @@ export class CPU {
     // constructor
     constructor() {
         // **** DEFINE CPU
-        // define memory, registers, and flags
+        // define memory, registers, output, and flags
         this.mem = [];
+
         this.pc = 0;
         this.ir = 0;
         this.mar = 0;
         this.a = 0;
         this.b = 0;
+
+        this.out = 0;
+
         this.flags = {
             carry: false,
+            zero: false,
         };
 
-        // define holders for old register values and flags
+        this.status = {
+            halted: false,
+        }
+
+        // define holders for old register, output, and flag values
         this.old_pc = 0;
         this.old_ir = 0;
         this.old_mar = 0;
         this.old_a = 0;
         this.old_b = 0;
+
+        this.old_out = 0;
+
         this.old_flags = {
             carry: false,
-        }
+            zero: false,
+        };
+
+        this.old_status = {
+            halted: false,
+        };
 
         // define and set input lines
         this.input = {
@@ -277,6 +286,7 @@ export class CPU {
         this.m_opcode = 0;
         this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
         this.i_cycle = 0;
+        this.opcode_addr = 0;
 
         // define and set CPU-wide internal JavaScript flag indicating whether a UI update is necessary
         this.update_ui = false;
@@ -288,37 +298,23 @@ export class CPU {
         this.m_stepped = false;
         this.i_stepped = false;
 
-        // define and set CPU halt status
-        this.halted = false;
-
 
         // **** INITIALIZE CPU
         // fill memory with random contents -- must do before populating IR!
         for (let i = 0; i < CPU.RAM_WORDS; i++) {
-            // this.mem.push(Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1)));
-
-
-
-
-
-            // !!!!!!!!!!
-            this.mem.push(0o03);
-
-
-
-
-
+            this.mem.push(Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1)));
         }
 
-        // fill registers PC, IR, MAR, A, and B with random contents
+        // fill PC, IR, MAR, A, B, and OUT with random contents
         this.pc = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
         this.ir = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
         this.mar = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
         this.a = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
         this.b = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
+        this.out = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
 
-        // now sync up old values
-        this.syncOldAndNew();
+        // now sync up old and new values relevant to UI
+        this.syncOldAndNewForUI();
     }
 
     // get word value at given address
@@ -344,22 +340,9 @@ export class CPU {
         return (this.ir % CPU.OPCODES.length);
     }
 
-    // translate IR value to a text string containing mnemonic, including operands
-    getMnemonic() {
-        // get opcode stored in IR
-        let opcode = this.getOpCodeFromIR();
-
-        // set mnemonic based on opcode and number of operands
-        let mnemonic = CPU.OPCODES[opcode].name;
-
-        for (let i = 0; i < CPU.OPCODES[opcode].num_ops; i++) {
-            let operand = this.getWordAt(this.pc + i + 1);
-
-            // store operand string in octal
-            mnemonic += " " + operand.toString(8).padStart(4, "0");
-        }
-
-        return mnemonic;
+    // disassemble IR to a mnemonic
+    disassembleIR() {
+            return CPU.OPCODES[this.getOpCodeFromIR()].name;
     }
 
     // increment PC
@@ -393,27 +376,34 @@ export class CPU {
         }
     }
 
-    // synchronize old values and new values
-    syncOldAndNew() {
+    // synchronize old values and new values relevant to UI
+    syncOldAndNewForUI() {
+        // registers
         this.old_pc = this.pc;
         this.old_ir = this.ir;
         this.old_mar = this.mar;
         this.old_a = this.a;
         this.old_b = this.b;
-        this.old_flags = this.flags;
+        this.old_out = this.out;
 
-        // indicate that values are now synchronized
-        this.update_ui = false;
+        // flags
+        this.old_flags.carry = this.flags.carry;
+        this.old_flags.zero = this.flags.zero;
+
+        // status
+        this.old_status.halted = this.status.halted
+
+        // RAM changes
         this.ram_changed = [];
+
+        // indicate that values are now synchronized and don't need redrawing
+        this.update_ui = false;
     }
 
     // update
     update() {
-        // sync old and new CPU values relevant to UI if needed
-        if (this.update_ui) this.syncOldAndNew();
-
         if (
-            (!this.halted)
+            (!this.status.halted)
             &&
             (
                 this.input.run
@@ -428,19 +418,16 @@ export class CPU {
             //  or input "i_step" is set and CPU not yet instruction-stepped ...
             // then...
 
-
-
-
-
-
-
             // use machine cycle counter to determine what to do
             switch (this.m_cycle) {
                 // FETCH (machine cycle 0)
                 case 0:
                     // Populate IR with word pointed to by PC
                     this.ir = this.getWordAt(this.pc);
-                    this.update_ui = true;
+
+                    // Save address of word
+                    this.opcode_addr = this.pc;
+
                     break;
 
                 // DECODE (machine cycle 1)
@@ -453,7 +440,6 @@ export class CPU {
                 default:
                     // call the opcode-specific function for the current machine cycle
                     CPU.OPCODES[this.m_opcode].funcs[this.m_cycle - 2](this);
-                    this.update_ui = true;
                     break;
             }
 
@@ -471,6 +457,9 @@ export class CPU {
                 // indicate that the CPU has finished an instruction step AND a machine step
                 this.i_stepped = true;
                 this.m_stepped = true;
+
+                // trigger UI update
+                this.update_ui = true;
             } else {
                 // if instruction cycle is not finished, then...
 
@@ -487,6 +476,9 @@ export class CPU {
 
                 // indicate that CPU has finished a machine step
                 this.m_stepped = true;
+
+                // if user is stepping by machine cycle, trigger a UI update
+                if (this.input.m_step) this.update_ui = true;
             }
         }
 
