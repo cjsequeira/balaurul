@@ -338,6 +338,22 @@ export class CPU {
         this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
     }
 
+    // export RAM as octal strings
+    exportRAM() {
+        let ram_string = "";
+
+        // get number of octal digits in a CPU word, based on CPU.BITS
+        // an octal digit is three bits in size
+        let num_digits = Math.round(CPU.BITS / 3);
+
+        // iterate through all words in memory
+        this.mem.forEach((value) => {
+            ram_string += value.toString(8).padStart(num_digits, "0") + " ";
+        });
+
+        return ram_string;
+    }
+
     // get word value at given address
     getWordAt(address) {
         // wrap around in memory if given address is higher than size of RAM
@@ -444,6 +460,50 @@ export class CPU {
         }
     }
 
+    // replace RAM with contents of a text string IF CPU is on and NOT running
+    // all digits are treated as octal digits
+    // all characters not 0 through 7 are ignored (skipped)
+    // if there are fewer words than CPU.RAM_WORDS, zeros are added to the end
+    // if there are more words than CPU.RAM_WORDS, just the first CPU.RAM_WORDS are stored
+    replaceRAM(in_string) {
+        if ((this.status.on) && (!this.status.running)) {
+            // if CPU is on AND CPU is not running, then...
+            
+            // string containing octal digits
+            let octal = "01234567";
+
+            // pointer to current CPU RAM word being populated
+            let pointer = 0;
+
+            // get number of octal digits in a CPU word, based on CPU.BITS
+            // an octal digit is three bits in size
+            let num_digits = Math.round(CPU.BITS / 3);
+            let word_string = "";
+
+            // convert RAM input string to array for iteration
+            let input = Array.from(in_string);
+
+            // iterate through each character of input array 
+            input.forEach((char) => {
+                if ((octal.indexOf(char) >= 0) && (pointer < this.mem.length)) {
+                    // if character is an octal digit AND there is still RAM to replace, then...
+
+                    // add to word string
+                    word_string += char;
+
+                    // if word string now contains enough digits, write to RAM and reset string
+                    if (word_string.length == num_digits) {
+                        this.mem[pointer] = parseInt(word_string, 8);
+
+                        // reset word string and point to next word in RAM
+                        word_string = "";
+                        pointer++;
+                    }
+                }
+            });
+        }
+    }
+
     // scan input lines and adjust CPU status accordingly
     scanInputs() {
         if (this.input.on) {
@@ -505,7 +565,7 @@ export class CPU {
     update() {
         // scan input lines and adjust CPU status accordingly
         this.scanInputs();
-        
+
         if (this.status.running || this.status.doing_m_step || this.status.doing_i_step) {
             // if CPU is running OR doing m step OR doing i step, then ...
 

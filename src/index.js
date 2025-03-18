@@ -7,7 +7,16 @@ import * as ModuleUtil from "./util.js";
 
 // **** CONSTANTS
 // Web page user interface
+
+const UI_MEM_ROWS = 8;
+const UI_MEM_COLS = 8;
+
+const UI_TEXT_MEM_CELL_ID_PREFIX = "app_12bit_memcell_";
+const UI_TEXT_MEM_CLASS = "memory";
+const UI_TEXT_MEM_PC_CLASS = "mem_pc";
+const UI_TEXT_MEM_MAR_CLASS = "mem_mar";
 const UI_TEXT_CPU_CLASS = "cpu";
+const UI_TEXT_HIGHLIGHT_CHANGED_CLASS = "highlight_changed";
 
 const UI_PC_BINARY = document.getElementById("app_12bit_pc_binary");
 const UI_PC_OCTAL = document.getElementById("app_12bit_pc_octal");
@@ -53,13 +62,8 @@ const UI_STATUS_RUNNING = document.getElementById("app_12bit_status_running");
 const UI_STATUS_HALTED = document.getElementById("app_12bit_status_halted");
 
 const UI_MEM = document.getElementById("app_12bit_memory");
-const UI_TEXT_MEM_CELL_ID_PREFIX = "app_12bit_memcell_";
-const UI_TEXT_MEM_CLASS = "memory";
-const UI_TEXT_MEM_PC_CLASS = "mem_pc";
-const UI_TEXT_MEM_MAR_CLASS = "mem_mar";
-const UI_TEXT_HIGHLIGHT_CHANGED_CLASS = "highlight_changed";
-const UI_MEM_ROWS = 8;
-const UI_MEM_COLS = 8;
+
+const UI_RAM_IMPORT_EXPORT = document.getElementById("app_12bit_ram_import_export");
 
 const UI_CONTROL_ON = document.getElementById("app_12bit_control_on");
 const UI_CONTROL_OFF = document.getElementById("app_12bit_control_off");
@@ -150,6 +154,9 @@ function setup() {
     UI_CONTROL_RESET.addEventListener("mousedown", ctrlResetDown);
     UI_CONTROL_M_STEP.addEventListener("mousedown", ctrlMstepDown);
     UI_CONTROL_I_STEP.addEventListener("mousedown", ctrlIstepDown);
+
+    UI_CONTROL_RAM_IMPORT.addEventListener("click", ctrlRAMimport);
+    UI_CONTROL_RAM_EXPORT.addEventListener("click", ctrlRAMexport);
 
     UI_CONTROL_ON.addEventListener("mouseup", ctrlOnUp);
     UI_CONTROL_OFF.addEventListener("mouseup", ctrlOffUp);
@@ -298,11 +305,13 @@ function syncUIvalues() {
     cpu.mem.forEach((elem, i) => (old_mem[i] = elem));
 }
 
-// **** BUTTON CALLBACK FUNCTIONS
+// **** UI CONTROL CALLBACK FUNCTIONS
 // after each button press, make CPU rescan inputs right away so as not to miss anything
 function ctrlOnDown() {
     UI_CONTROL_ON.disabled = true;
     UI_CONTROL_OFF.disabled = false;
+    UI_CONTROL_RAM_IMPORT.disabled = false;
+    UI_CONTROL_RAM_EXPORT.disabled = false;
 
     cpu.input.on = true;
     cpu.scanInputs();
@@ -312,6 +321,8 @@ function ctrlOnDown() {
 function ctrlOffDown() {
     UI_CONTROL_ON.disabled = false;
     UI_CONTROL_OFF.disabled = true;
+    UI_CONTROL_RAM_IMPORT.disabled = true;
+    UI_CONTROL_RAM_EXPORT.disabled = true;
 
     cpu.input.on = false;
     cpu.scanInputs();
@@ -382,4 +393,15 @@ function ctrlMstepUp() {
 function ctrlIstepUp() {
     cpu.input.i_step = false;
     cpu.scanInputs();
+}
+
+function ctrlRAMimport() {
+    // sync UI values BEFORE RAM replacement
+    syncUIvalues();
+
+    cpu.replaceRAM(UI_RAM_IMPORT_EXPORT.value);
+}
+
+function ctrlRAMexport() {
+    UI_RAM_IMPORT_EXPORT.value = cpu.exportRAM();
 }
