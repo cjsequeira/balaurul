@@ -61,12 +61,13 @@ const UI_TEXT_HIGHLIGHT_CHANGED_CLASS = "highlight_changed";
 const UI_MEM_ROWS = 8;
 const UI_MEM_COLS = 8;
 
-const UI_BUTTON_ON = document.getElementById("app_12bit_control_on");
-const UI_BUTTON_OFF = document.getElementById("app_12bit_control_off");
-const UI_BUTTON_RUN = document.getElementById("app_12bit_control_run");
-const UI_BUTTON_STOP = document.getElementById("app_12bit_control_stop");
-const UI_BUTTON_M_STEP = document.getElementById("app_12bit_control_m_step");
-const UI_BUTTON_I_STEP = document.getElementById("app_12bit_control_i_step");
+const UI_CONTROL_ON = document.getElementById("app_12bit_control_on");
+const UI_CONTROL_OFF = document.getElementById("app_12bit_control_off");
+const UI_CONTROL_RUN = document.getElementById("app_12bit_control_run");
+const UI_CONTROL_STOP = document.getElementById("app_12bit_control_stop");
+const UI_CONTROL_RESET = document.getElementById("app_12bit_control_reset");
+const UI_CONTROL_M_STEP = document.getElementById("app_12bit_control_m_step");
+const UI_CONTROL_I_STEP = document.getElementById("app_12bit_control_i_step");
 
 
 // **** NON-CONSTANTS
@@ -139,20 +140,27 @@ function setup() {
     // format memory block UI with structure
     UI_MEM.innerHTML = memory_html;
 
-    // establish initial status and callbacks for buttons
-    UI_BUTTON_ON.addEventListener("mousedown", btn_on_down);
-    UI_BUTTON_OFF.addEventListener("mousedown", btn_off_down);
-    UI_BUTTON_RUN.addEventListener("mousedown", btn_run_down);
-    UI_BUTTON_STOP.addEventListener("mousedown", btn_stop_down);
-    UI_BUTTON_M_STEP.addEventListener("mousedown", btn_m_step_down);
-    UI_BUTTON_I_STEP.addEventListener("mousedown", btn_i_step_down);
+    // establish initial statuses and callbacks for controls
+    UI_CONTROL_ON.addEventListener("mousedown", ctrlOnDown);
+    UI_CONTROL_OFF.addEventListener("mousedown", ctrlOffDown);
+    UI_CONTROL_RUN.addEventListener("mousedown", ctrlRunDown);
+    UI_CONTROL_STOP.addEventListener("mousedown", ctrlStopDown);
+    UI_CONTROL_RESET.addEventListener("mousedown", ctrlResetDown);
+    UI_CONTROL_M_STEP.addEventListener("mousedown", ctrlMstepDown);
+    UI_CONTROL_I_STEP.addEventListener("mousedown", ctrlIstepDown);
 
-    UI_BUTTON_ON.addEventListener("mouseup", btn_on_up);
-    UI_BUTTON_OFF.addEventListener("mouseup", btn_off_up);
-    UI_BUTTON_RUN.addEventListener("mouseup", btn_run_up);
-    UI_BUTTON_STOP.addEventListener("mouseup", btn_stop_up);
-    UI_BUTTON_M_STEP.addEventListener("mouseup", btn_m_step_up);
-    UI_BUTTON_I_STEP.addEventListener("mouseup", btn_i_step_up);
+    UI_CONTROL_ON.addEventListener("mouseup", ctrlOnUp);
+    UI_CONTROL_OFF.addEventListener("mouseup", ctrlOffUp);
+    UI_CONTROL_RUN.addEventListener("mouseup", ctrlRunUp);
+    UI_CONTROL_STOP.addEventListener("mouseup", ctrlStopUp);
+    UI_CONTROL_RESET.addEventListener("mouseup", ctrlResetUp);
+    UI_CONTROL_M_STEP.addEventListener("mouseup", ctrlMstepUp);
+    UI_CONTROL_I_STEP.addEventListener("mouseup", ctrlIstepUp);
+
+    UI_CONTROL_ON.disabled = false;
+    UI_CONTROL_OFF.disabled = true;
+    UI_CONTROL_RUN.disabled = false;
+    UI_CONTROL_STOP.disabled = true;
 
 
     // **** RESET UI
@@ -288,63 +296,86 @@ function syncUIvalues() {
 
 // **** BUTTON CALLBACK FUNCTIONS
 // after each button press, make CPU rescan inputs right away so as not to miss anything
-function btn_on_down() {
+function ctrlOnDown() {
+    UI_CONTROL_ON.disabled = true;
+    UI_CONTROL_OFF.disabled = false;
+
     cpu.input.on = true;
     cpu.scanInputs();
     syncUIvalues();
 }
 
-function btn_off_down() {
+function ctrlOffDown() {
+    UI_CONTROL_ON.disabled = false;
+    UI_CONTROL_OFF.disabled = true;
+
     cpu.input.on = false;
     cpu.scanInputs();
     resetUI();
 }
 
-function btn_run_down() {
+function ctrlRunDown() {
+    UI_CONTROL_RUN.disabled = true;
+    UI_CONTROL_STOP.disabled = false;
+
     cpu.input.run = true;
     cpu.scanInputs();
 }
 
-function btn_stop_down() {
+function ctrlStopDown() {
+    UI_CONTROL_RUN.disabled = false;
+    UI_CONTROL_STOP.disabled = true;
+    
     cpu.input.run = false;
     cpu.scanInputs();
     syncUIvalues();
 }
 
-function btn_m_step_down() {
+function ctrlResetDown() {
+    cpu.input.reset = true;
+    cpu.scanInputs();
+    syncUIvalues();
+}
+
+function ctrlMstepDown() {
     cpu.input.m_step = true;
     cpu.scanInputs();
     syncUIvalues();
 }
 
-function btn_i_step_down() {
+function ctrlIstepDown() {
     cpu.input.i_step = true;
     cpu.scanInputs();
     syncUIvalues();
 }
 
-function btn_on_up() {
+function ctrlOnUp() {
 
 }
 
-function btn_off_up() {
+function ctrlOffUp() {
 
 }
 
-function btn_run_up() {
+function ctrlRunUp() {
 
 }
 
-function btn_stop_up() {
+function ctrlStopUp() {
 
 }
 
-function btn_m_step_up() {
+function ctrlResetUp() {
+    cpu.input.reset = false;
+    cpu.scanInputs();
+}
+
+function ctrlMstepUp() {
     cpu.input.m_step = false;
     cpu.scanInputs();
 }
 
-function btn_i_step_up() {
+function ctrlIstepUp() {
     cpu.input.i_step = false;
     cpu.scanInputs();
 }

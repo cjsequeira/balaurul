@@ -293,6 +293,7 @@ export class CPU {
 
     // **** NON-STATIC CLASS METHODS
     // constructor
+    // note that the constructor DOES NOT power on OR reset the CPU!
     constructor() {
         // **** DEFINE CPU
         // define memory, registers, output, and flags
@@ -311,6 +312,7 @@ export class CPU {
             zero: false,
         };
 
+        // define and set CPU statuses
         this.status = {
             ready: false,
             doing_m_step: false,
@@ -325,6 +327,7 @@ export class CPU {
         this.input = {
             on: false,
             run: false,
+            reset: false,
             m_step: false,
             i_step: false,
         };
@@ -369,15 +372,16 @@ export class CPU {
         this.pc = (this.pc + 1) % Math.pow(2, CPU.BITS);
     }
 
-    // initialize CPU
-    initCPU() {
-        // reset flags
+    // power on the CPU
+    // note that this DOES NOT reset the program counter!
+    powerOn() {
+        // set startup values for flags
         this.flags = {
             carry: false,
             zero: false,
         };
 
-        // reset status
+        // set startup values for statuses
         this.status = {
             ready: false,
             doing_m_step: false,
@@ -388,18 +392,18 @@ export class CPU {
             i_stepped: false,
         }
 
-        // reset machine cycle info
+        // set startup values for machine cycle info
         this.m_cycle = 0;
         this.m_opcode = 0;
         this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
 
-        // reset RAM to random contents
+        // set RAM to random contents
         this.mem = [];
         for (let i = 0; i < CPU.RAM_WORDS; i++) {
             this.mem.push(Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1)));
         }
 
-        // fill PC, IR, MAR, A, B, and OUT with random contents
+        // set PC, IR, MAR, A, B, and OUT to random contents
         this.pc = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
         this.ir = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
         this.mar = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
@@ -407,8 +411,9 @@ export class CPU {
         this.b = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
         this.out = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
 
-        // set CPU "ready" status to true
+        // set CPU "ready" and "on" statuses to true
         this.status.ready = true;
+        this.status.on = true;
     }
 
     // put word value into given address
@@ -425,16 +430,33 @@ export class CPU {
         this.mem[mod_address] = mod_value;
     }
 
+    // reset CPU
+    reset() {
+        // only "reset" if CPU is on!
+        if (this.status.on) {
+            // clear halt status
+            this.status.halted = false;
+
+            // set program counter to zero
+            this.pc = 0;
+
+            // leave everything else alone!
+        }
+    }
+
     // scan input lines and adjust CPU status accordingly
     scanInputs() {
         if (this.input.on) {
             // if input line is "on" then...
 
-            // set CPU status to "on"
+            // ensure CPU status is "on"
             this.status.on = true;
 
-            // init CPU if CPU not in "ready" status
-            if (!this.status.ready) this.initCPU();
+            // power on the CPU if CPU not in "ready" status
+            if (!this.status.ready) this.powerOn();
+
+            // reset CPU if reset line is true
+            if (this.input.reset) this.reset();
 
             if (this.input.run) {
                 // if "run" input is true, then...
@@ -542,5 +564,6 @@ export class CPU {
             }
         }
     }
+
 
 };
