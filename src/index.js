@@ -7,6 +7,8 @@ import * as ModuleUtil from "./util.js";
 
 // **** CONSTANTS
 // Web page user interface
+const UI_TEXT_CPU_CLASS = "cpu";
+
 const UI_PC_BINARY = document.getElementById("app_12bit_pc_binary");
 const UI_PC_OCTAL = document.getElementById("app_12bit_pc_octal");
 const UI_PC_HEX = document.getElementById("app_12bit_pc_hex");
@@ -59,6 +61,8 @@ const UI_TEXT_HIGHLIGHT_CHANGED_CLASS = "highlight_changed";
 const UI_MEM_ROWS = 8;
 const UI_MEM_COLS = 8;
 
+const UI_BUTTON_ON = document.getElementById("app_12bit_control_on");
+const UI_BUTTON_OFF = document.getElementById("app_12bit_control_off");
 const UI_BUTTON_RUN = document.getElementById("app_12bit_control_run");
 const UI_BUTTON_STOP = document.getElementById("app_12bit_control_stop");
 const UI_BUTTON_M_STEP = document.getElementById("app_12bit_control_m_step");
@@ -68,6 +72,19 @@ const UI_BUTTON_I_STEP = document.getElementById("app_12bit_control_i_step");
 // **** NON-CONSTANTS
 // CPU
 var cpu = new ModuleCPU.CPU();
+
+// holders for old UI values
+var old_pc = null;
+var old_mar = null;
+var old_ir = null;
+var old_a = null;
+var old_b = null;
+var old_out = null;
+var old_flag_carry = null;
+var old_flag_zero = null;
+var old_status_running = null;
+var old_status_halted = null;
+var old_mem = Array(UI_MEM_COLS * UI_MEM_ROWS);
 
 
 // **** MAIN CODE
@@ -81,15 +98,13 @@ function setup() {
     let memory_html = "<table class='" + UI_TEXT_MEM_CLASS + "'>";
 
     // empty corner at upper left
-    memory_html += "<tr><td id='"
-        + UI_TEXT_MEM_CELL_ID_PREFIX
-        + "'></td>";
+    memory_html += "<tr><td id='" + UI_TEXT_MEM_CELL_ID_PREFIX + "'>&nbsp;</td>";
 
     // column labels
     for (let j = 0; j < UI_MEM_COLS; j++) {
-        memory_html += "<th class='" + UI_TEXT_MEM_CLASS
-            + "'>"
-            + "xxx"
+        memory_html += "<th class='"
+            + UI_TEXT_MEM_CLASS
+            + "'>xxx"
             + j
             + "</th>";
     }
@@ -97,18 +112,20 @@ function setup() {
 
     // each row of memory, with a row label to the left
     for (let i = 0; i < UI_MEM_ROWS; i++) {
+        // row label
         memory_html += "<tr><th class='"
             + UI_TEXT_MEM_CLASS
             + "'>"
             + (i * 8).toString(8).padStart(4, '0')
             + "</th>"
 
+        // memory value field
         for (let j = 0; j < UI_MEM_COLS; j++) {
-            memory_html += "<td id='"
+            memory_html += "<td class='"
+                + UI_TEXT_CPU_CLASS
+                + "' id='"
                 + UI_TEXT_MEM_CELL_ID_PREFIX
-                + (i * 8 + j).toString(10) + "'>"
-                + ModuleUtil.padSpace("", 4)
-                + "</td>";
+                + (i * 8 + j).toString(10) + "'>&nbsp;</td>";
         }
 
         memory_html += "</tr>";
@@ -123,16 +140,24 @@ function setup() {
     UI_MEM.innerHTML = memory_html;
 
 
-    // **** ESTABLISH CALLBACKS FOR BUTTONS
+    // **** ESTABLISH INITIAL STATUS AND CALLBACKS FOR BUTTONS
+    UI_BUTTON_ON.addEventListener("mousedown", btn_on_down);
+    UI_BUTTON_OFF.addEventListener("mousedown", btn_off_down);
     UI_BUTTON_RUN.addEventListener("mousedown", btn_run_down);
     UI_BUTTON_STOP.addEventListener("mousedown", btn_stop_down);
     UI_BUTTON_M_STEP.addEventListener("mousedown", btn_m_step_down);
     UI_BUTTON_I_STEP.addEventListener("mousedown", btn_i_step_down);
 
+    UI_BUTTON_ON.addEventListener("mouseup", btn_on_up);
+    UI_BUTTON_OFF.addEventListener("mouseup", btn_off_up);
     UI_BUTTON_RUN.addEventListener("mouseup", btn_run_up);
     UI_BUTTON_STOP.addEventListener("mouseup", btn_stop_up);
     UI_BUTTON_M_STEP.addEventListener("mouseup", btn_m_step_up);
     UI_BUTTON_I_STEP.addEventListener("mouseup", btn_i_step_up);
+
+
+    // **** RESET UI
+    resetUI();
 
 
     // **** ESTABLISH APP UPDATE CALLBACK
@@ -144,59 +169,36 @@ function appUpdate() {
     // update CPU
     cpu.update();
 
-    if (cpu.update_ui) {
-        // if a UI update is needed, then ...
+    if (cpu.status.on) {
+        // if CPU status is "on" then ...
 
         // show value at PC, disassembly of IR, and next machine cycle type
         UI_VAL_AT_PC.innerHTML = cpu.getWordAt(cpu.pc).toString(8).padStart(4, "0");
         UI_IR_MNEMONIC.innerHTML = cpu.disassembleIR();
         UI_M_NEXT_TYPE.innerHTML = cpu.m_next_type;
 
-        // delete old MAR box in memory UI element
-        document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.old_mar % ModuleCPU.CPU.RAM_WORDS).toString(10))
-            .classList
-            .remove(UI_TEXT_MEM_MAR_CLASS);
-
-        // delete old PC box in memory UI element
-        document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.old_pc % ModuleCPU.CPU.RAM_WORDS).toString(10))
-            .classList
-            .remove(UI_TEXT_MEM_PC_CLASS);
-
-        // draw all RAM values, with no highlights
-        cpu.mem.forEach((_, i) => {
+        // draw all RAM values; clear PC and MAR boxes
+        cpu.mem.forEach((elem, i) => {
             // update the value in the cell, in octal
             document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + i.toString(10))
                 .innerHTML = cpu.mem[i].toString(8).padStart(4, "0");
 
-            // remove the highlight style
+            // clear PC and MAR boxes
             document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + i.toString(10))
                 .classList
-                .remove(UI_TEXT_HIGHLIGHT_CHANGED_CLASS);
+                .remove(UI_TEXT_MEM_MAR_CLASS, UI_TEXT_MEM_PC_CLASS);
 
-            return;
+            // update highlighting
+            if (old_mem[i] == elem) {
+                document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + i.toString(10))
+                    .classList
+                    .remove(UI_TEXT_HIGHLIGHT_CHANGED_CLASS);
+            } else {
+                document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + i.toString(10))
+                    .classList
+                    .add(UI_TEXT_HIGHLIGHT_CHANGED_CLASS);
+            }
         });
-
-        // iterate through any changed RAM cells, updating the highlights
-        cpu.ram_changed.forEach((address) => {
-            // update the value in the cell, in octal
-            document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + address.toString(10))
-                .innerHTML = cpu.mem[address].toString(8).padStart(4, "0");
-
-            // add the highlight style
-            document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + address.toString(10))
-                .classList
-                .add(UI_TEXT_HIGHLIGHT_CHANGED_CLASS);
-
-            return;
-        });
-
-        // show CPU flags
-        UI_FLAG_CARRY.innerHTML = ModuleUtil.showDiff(cpu.flags.carry.toString(), cpu.old_flags.carry.toString());
-        UI_FLAG_ZERO.innerHTML = ModuleUtil.showDiff(cpu.flags.zero.toString(), cpu.old_flags.zero.toString());
-
-        // show CPU status
-        UI_STATUS_RUNNING.innerHTML = ModuleUtil.showDiff(cpu.status.running.toString(), cpu.old_status.running.toString());
-        UI_STATUS_HALTED.innerHTML = ModuleUtil.showDiff(cpu.status.halted.toString(), cpu.old_status.halted.toString());
 
         // box current MAR memory element
         document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.mar % ModuleCPU.CPU.RAM_WORDS).toString(10))
@@ -208,39 +210,47 @@ function appUpdate() {
             .classList
             .add(UI_TEXT_MEM_PC_CLASS);
 
+        // show CPU flags
+        UI_FLAG_CARRY.innerHTML = ModuleUtil.showDiff(cpu.flags.carry.toString(), old_flag_carry.toString());
+        UI_FLAG_ZERO.innerHTML = ModuleUtil.showDiff(cpu.flags.zero.toString(), old_flag_zero.toString());
+
+        // show CPU status
+        UI_STATUS_RUNNING.innerHTML = ModuleUtil.showDiff(cpu.status.running.toString(), old_status_running.toString());
+        UI_STATUS_HALTED.innerHTML = ModuleUtil.showDiff(cpu.status.halted.toString(), old_status_halted.toString());
+
         // update all HTML numerical elements
         ModuleUtil.updateHTMLwithDiff(
-            cpu.mar, cpu.old_mar,
+            cpu.mar, old_mar,
             UI_MAR_BINARY, UI_MAR_OCTAL, UI_MAR_HEX, UI_MAR_DEC
         );
 
         ModuleUtil.updateHTMLwithDiff(
-            cpu.pc, cpu.old_pc,
+            cpu.pc, old_pc,
             UI_PC_BINARY, UI_PC_OCTAL, UI_PC_HEX, UI_PC_DEC
         );
 
         ModuleUtil.updateHTMLwithDiff(
-            cpu.ir, cpu.old_ir,
+            cpu.ir, old_ir,
             UI_IR_BINARY, UI_IR_OCTAL, UI_IR_HEX, UI_IR_DEC
         );
 
         ModuleUtil.updateHTMLwithDiff(
-            cpu.a, cpu.old_a,
+            cpu.a, old_a,
             UI_A_BINARY, UI_A_OCTAL, UI_A_HEX, UI_A_DEC, UI_A_SIGNED_DEC, ModuleCPU.CPU.BITS
         );
 
         ModuleUtil.updateHTMLwithDiff(
-            cpu.b, cpu.old_b,
+            cpu.b, old_b,
             UI_B_BINARY, UI_B_OCTAL, UI_B_HEX, UI_B_DEC, UI_B_SIGNED_DEC, ModuleCPU.CPU.BITS
         );
 
         ModuleUtil.updateHTMLwithDiff(
-            cpu.out, cpu.old_out,
+            cpu.out, old_out,
             UI_OUT_BINARY, UI_OUT_OCTAL, UI_OUT_HEX, UI_OUT_DEC, UI_OUT_SIGNED_DEC, ModuleCPU.CPU.BITS
         );
 
-        // sync old and new CPU values relevant to UI
-        cpu.syncOldAndNewForUI();
+        // if CPU is running, sync old UI values
+        if (cpu.status.running) syncUIvalues();
     }
 
 
@@ -248,36 +258,94 @@ function appUpdate() {
     requestAnimationFrame(appUpdate);
 }
 
+// reset UI
+function resetUI() {
+    // for each CPU UI text field on the web page: clear all text; remove boxing and highlighting
+    for (let elem of Array.from(document.getElementsByClassName(UI_TEXT_CPU_CLASS))) {
+        elem.innerHTML = "&nbsp;";
+        elem.classList.remove(
+            UI_TEXT_HIGHLIGHT_CHANGED_CLASS,
+            UI_TEXT_MEM_MAR_CLASS,
+            UI_TEXT_MEM_PC_CLASS
+        );
+    };
+}
+
+// sync "old" UI values to current CPU values
+function syncUIvalues() {
+    old_pc = cpu.pc;
+    old_mar = cpu.mar;
+    old_ir = cpu.ir;
+    old_a = cpu.a;
+    old_b = cpu.b;
+    old_out = cpu.out;
+    old_flag_carry = cpu.flags.carry
+    old_flag_zero = cpu.flags.zero;
+    old_status_running = cpu.status.running;
+    old_status_halted = cpu.status.halted;
+
+    cpu.mem.forEach((elem, i) => (old_mem[i] = elem));
+}
 
 // **** BUTTON CALLBACK FUNCTIONS
+// after each button press, make CPU rescan inputs right away so as not to miss anything
+function btn_on_down() {
+    cpu.input.on = true;
+    cpu.scanInputs();
+    syncUIvalues();
+}
+
+function btn_off_down() {
+    cpu.input.on = false;
+    cpu.scanInputs();
+    resetUI();
+}
+
 function btn_run_down() {
     cpu.input.run = true;
+    cpu.scanInputs();
 }
 
 function btn_stop_down() {
     cpu.input.run = false;
+    cpu.scanInputs();
+    syncUIvalues();
 }
 
 function btn_m_step_down() {
     cpu.input.m_step = true;
+    cpu.scanInputs();
+    syncUIvalues();
 }
 
 function btn_i_step_down() {
     cpu.input.i_step = true;
+    cpu.scanInputs();
+    syncUIvalues();
+}
+
+function btn_on_up() {
+
+}
+
+function btn_off_up() {
+
 }
 
 function btn_run_up() {
-    
+
 }
 
 function btn_stop_up() {
-    
+
 }
 
 function btn_m_step_up() {
     cpu.input.m_step = false;
+    cpu.scanInputs();
 }
 
 function btn_i_step_up() {
     cpu.input.i_step = false;
+    cpu.scanInputs();
 }

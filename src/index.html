@@ -27,33 +27,33 @@
                     </tr>
                     <tr>
                         <th class="registers, mem_pc">PC</th>
-                        <td id="app_12bit_pc_binary"></td>
-                        <td id="app_12bit_pc_octal"></td>
-                        <td id="app_12bit_pc_hex"></td>
-                        <td id="app_12bit_pc_dec"></td>
+                        <td class="cpu" id="app_12bit_pc_binary">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_pc_octal">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_pc_hex">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_pc_dec">&nbsp;</td>
                     </tr>
                     <tr>
                         <th>IR</th>
-                        <td id="app_12bit_ir_binary"></td>
-                        <td id="app_12bit_ir_octal"></td>
-                        <td id="app_12bit_ir_hex"></td>
-                        <td id="app_12bit_ir_dec"></td>
+                        <td class="cpu" id="app_12bit_ir_binary">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_ir_octal">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_ir_hex">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_ir_dec">&nbsp;</td>
                     </tr>
                     <tr>
                         <th class="registers, mem_mar">MAR</th>
-                        <td id="app_12bit_mar_binary"></td>
-                        <td id="app_12bit_mar_octal"></td>
-                        <td id="app_12bit_mar_hex"></td>
-                        <td id="app_12bit_mar_dec"></td>
+                        <td class="cpu" id="app_12bit_mar_binary">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_mar_octal">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_mar_hex">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_mar_dec">&nbsp;</td>
                     </tr>
                 </table>
                 
 
                 <!-- Value at PC; IR disassembly; next machine cycle -->
                 <p>
-                    <div>Value at PC (octal): <span class="mono" id="app_12bit_val_at_pc"></span></div>
-                    <div>IR disassembly: <span class="mono" id="app_12bit_ir_mnemonic"></span></div>
-                    <div>Next machine cycle: <span class="mono" id="app_12bit_m_next_type"></span></div>
+                    <div>Value at PC (octal): <span class="mono, cpu" id="app_12bit_val_at_pc">&nbsp;</span></div>
+                    <div>IR disassembly: <span class="mono, cpu" id="app_12bit_ir_mnemonic">&nbsp;</span></div>
+                    <div>Next machine cycle: <span class="mono, cpu" id="app_12bit_m_next_type">&nbsp;</span></div>
                 </p>
 
                 <!-- Registers: A, B, OUT -->
@@ -68,27 +68,27 @@
                     </tr>
                     <tr>
                         <th>A</th>
-                        <td id="app_12bit_a_binary"></td>
-                        <td id="app_12bit_a_octal"></td>
-                        <td id="app_12bit_a_hex"></td>
-                        <td id="app_12bit_a_dec"></td>
-                        <td id="app_12bit_a_signed_dec"></td>
+                        <td class="cpu" id="app_12bit_a_binary">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_a_octal">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_a_hex">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_a_dec">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_a_signed_dec">&nbsp;</td>
                     </tr>
                     <tr>
                         <th>B</th>
-                        <td id="app_12bit_b_binary"></td>
-                        <td id="app_12bit_b_octal"></td>
-                        <td id="app_12bit_b_hex"></td>
-                        <td id="app_12bit_b_dec"></td>
-                        <td id="app_12bit_b_signed_dec"></td>
+                        <td class="cpu" id="app_12bit_b_binary">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_b_octal">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_b_hex">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_b_dec">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_b_signed_dec">&nbsp;</td>
                     </tr>
                     <tr>
                         <th>OUT</th>
-                        <td id="app_12bit_out_binary"></td>
-                        <td id="app_12bit_out_octal"></td>
-                        <td id="app_12bit_out_hex"></td>
-                        <td id="app_12bit_out_dec"></td>
-                        <td id="app_12bit_out_signed_dec"></td>
+                        <td class="cpu" id="app_12bit_out_binary">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_out_octal">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_out_hex">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_out_dec">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_out_signed_dec">&nbsp;</td>
                     </tr>
                 </table>
 
@@ -97,14 +97,16 @@
                     <tr>
                         <th>Carry</th>
                         <th>Zero&nbsp;</th>
+                        <td style="border: 0px">&nbsp;</td>
                         <th>Running</th>
                         <th>Halted</th>
                     </tr>
                     <tr>
-                        <td id="app_12bit_flag_carry">&nbsp;</td>
-                        <td id="app_12bit_flag_zero">&nbsp;</td>
-                        <td id="app_12bit_status_running">&nbsp;</td>
-                        <td id="app_12bit_status_halted">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_flag_carry">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_flag_zero">&nbsp;</td>
+                        <td style="border: 0px">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_status_running">&nbsp;</td>
+                        <td class="cpu" id="app_12bit_status_halted">&nbsp;</td>
                     </tr>
                 </table>
             </div>
@@ -112,10 +114,12 @@
             <div id="second">
                 <h2>Controls</h2>
                 <p>
+                    <button id="app_12bit_control_on">ON</button>
+                    <button id="app_12bit_control_off">OFF</button>
                     <button id="app_12bit_control_run">RUN</button>
                     <button id="app_12bit_control_stop">STOP</button>
-                    <button id="app_12bit_control_m_step">STEP MACHINE CYCLE</button>
-                    <button id="app_12bit_control_i_step">STEP INSTRUCTION CYCLE</button>
+                    <button id="app_12bit_control_m_step">STEP M</button>
+                    <button id="app_12bit_control_i_step">STEP I</button>
                 </p>
 
                 <h2>RAM (Octal)</h2>

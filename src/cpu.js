@@ -312,6 +312,7 @@ export class CPU {
         };
 
         this.status = {
+            ready: false,
             doing_m_step: false,
             doing_i_step: false,
             running: false,
@@ -319,74 +320,19 @@ export class CPU {
             m_stepped: false,
             i_stepped: false,
         }
-
-        // define holders for old register, output, flag, and status values
-        this.old_pc = 0;
-        this.old_ir = 0;
-        this.old_mar = 0;
-        this.old_a = 0;
-        this.old_b = 0;
-
-        this.old_out = 0;
-
-        this.old_flags = {
-            carry: false,
-            zero: false,
-        };
-
-        this.old_status = {
-            doing_m_step: false,
-            doing_i_step: false,
-            running: false,
-            halted: false,
-            m_stepped: false,
-            i_stepped: false,
-        };
 
         // define and set input lines
         this.input = {
+            on: false,
             run: false,
             m_step: false,
             i_step: false,
         };
 
-        // define holders for old input lines
-        this.old_input = {
-            run: false,
-            m_step: false,
-            i_step: false,
-        };
-
-        // define and set machine cycle and instruction cycle info
+        // define and set machine cycle info
         this.m_cycle = 0;
         this.m_opcode = 0;
         this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
-        this.i_cycle = 0;
-        this.opcode_addr = 0;
-
-        // define and set CPU-wide internal JavaScript flag indicating whether a UI update is necessary
-        this.update_ui = false;
-
-        // define array to hold a list of changed RAM cells
-        this.ram_changed = [];
-
-
-        // **** INITIALIZE CPU
-        // fill memory with random contents -- must do before populating IR!
-        for (let i = 0; i < CPU.RAM_WORDS; i++) {
-            this.mem.push(Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1)));
-        }
-
-        // fill PC, IR, MAR, A, B, and OUT with random contents
-        this.pc = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
-        this.ir = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
-        this.mar = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
-        this.a = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
-        this.b = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
-        this.out = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
-
-        // now sync up old and new values relevant to UI
-        this.syncOldAndNewForUI();
     }
 
     // get word value at given address
@@ -423,6 +369,48 @@ export class CPU {
         this.pc = (this.pc + 1) % Math.pow(2, CPU.BITS);
     }
 
+    // initialize CPU
+    initCPU() {
+        // reset flags
+        this.flags = {
+            carry: false,
+            zero: false,
+        };
+
+        // reset status
+        this.status = {
+            ready: false,
+            doing_m_step: false,
+            doing_i_step: false,
+            running: false,
+            halted: false,
+            m_stepped: false,
+            i_stepped: false,
+        }
+
+        // reset machine cycle info
+        this.m_cycle = 0;
+        this.m_opcode = 0;
+        this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
+
+        // reset RAM to random contents
+        this.mem = [];
+        for (let i = 0; i < CPU.RAM_WORDS; i++) {
+            this.mem.push(Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1)));
+        }
+
+        // fill PC, IR, MAR, A, B, and OUT with random contents
+        this.pc = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
+        this.ir = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
+        this.mar = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
+        this.a = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
+        this.b = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
+        this.out = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
+
+        // set CPU "ready" status to true
+        this.status.ready = true;
+    }
+
     // put word value into given address
     // this function assumes that value AND address are greater than or equal to zero!
     // only the lowest CPU.BITS number of bits will be stored!
@@ -433,125 +421,71 @@ export class CPU {
         // keep only the lowest CPU.BITS number of bits in the value
         let mod_value = value % Math.pow(2, CPU.BITS);
 
-        if (mod_address >= 0) {
-            // if address greater than zero then...
-
-            if (this.mem[mod_address] != mod_value) {
-                // if value at address is different from given value, then ...
-
-                // add to list of changed RAM cells
-                this.ram_changed.push(mod_address);
-
-                // store value at address
-                this.mem[mod_address] = mod_value;
-            }
-        }
-    }
-
-    // synchronize old values and new values relevant to UI
-    syncOldAndNewForUI() {
-        // registers
-        this.old_pc = this.pc;
-        this.old_ir = this.ir;
-        this.old_mar = this.mar;
-        this.old_a = this.a;
-        this.old_b = this.b;
-        this.old_out = this.out;
-
-        // flags
-        this.old_flags.carry = this.flags.carry;
-        this.old_flags.zero = this.flags.zero;
-
-        // status
-        this.old_status.running = this.status.running;
-        this.old_status.halted = this.status.halted;
-        this.old_status.doing_i_step = this.status.doing_i_step;
-        this.old_status.doing_m_step = this.status.doing_m_step;
-        this.old_status.m_stepped = this.status.m_stepped;
-        this.old_status.i_stepped = this.status.i_stepped;
-
-        // RAM changes
-        this.ram_changed = [];
-
-        // indicate that values are now synchronized and don't need redrawing
-        this.update_ui = false;
+        // store value at address
+        this.mem[mod_address] = mod_value;
     }
 
     // scan input lines and adjust CPU status accordingly
     scanInputs() {
-        // scan run line
-        if (this.input.run) {
-            // only start running if CPU is not halted!
-            if (!this.status.halted) this.status.running = true;
+        if (this.input.on) {
+            // if input line is "on" then...
+
+            // set CPU status to "on"
+            this.status.on = true;
+
+            // init CPU if CPU not in "ready" status
+            if (!this.status.ready) this.initCPU();
+
+            if (this.input.run) {
+                // if "run" input is true, then...
+
+                // set CPU status to "running" only if CPU not halted!
+                if (!this.status.halted) this.status.running = true;
+            } else {
+                // if "run" input is false, then... 
+
+                // clear "running" and "halted" statuses
+                this.status.running = false;
+                this.status.halted = false;
+
+                if (this.input.m_step) {
+                    // if m-step input is true, then...
+
+                    // set CPU status to "doing m step" if not in "m_stepped" status
+                    if (!this.status.m_stepped) this.status.doing_m_step = true;
+                } else {
+                    // if m-step input is false, then clear CPU "m_stepped" status
+                    this.status.m_stepped = false;
+                }
+
+                if (this.input.i_step) {
+                    // if i-step input is true, then...
+
+                    // set CPU status to "doing i step" if not in "i_stepped" status
+                    if (!this.status.i_stepped) this.status.doing_i_step = true;
+                } else {
+                    // if i-step input is false AND not doing i step, then clear CPU "i_stepped" status
+                    if (!this.status.doing_i_step) this.status.i_stepped = false;
+                }
+            }
         } else {
-            // if run line is false, clear "running" AND "halted" statuses
+            // if "on" input line is false, clear various statuses
+            this.status.on = false;
             this.status.running = false;
             this.status.halted = false;
-        }
-
-        // scan m_step line
-        if (this.input.m_step) {
-            // if m_step line is true, only do a machine step IF:
-            //  CPU is not running 
-            //  AND CPU is not halted
-            //  AND CPU is not in m_stepped status
-            if ((!this.status.running) && (!this.status.halted) && (!this.status.m_stepped)) {
-                this.status.doing_m_step = true;
-                this.status.doing_i_step = false;
-            }
-        } else {
-            // if m_step line is false, clear the CPU "machine-stepped" and "doing m step" statuses
-            this.status.m_stepped = false;
             this.status.doing_m_step = false;
-        }
-
-        // scan i_step line
-        if (this.input.i_step) {
-            // if i_step line is true, only do an instruction step IF:
-            //  CPU is not running 
-            //  AND CPU is not halted
-            //  AND CPU is not in i_stepped status
-            if ((!this.status.running) && (!this.status.halted) && (!this.status.i_stepped)) {
-                this.status.doing_i_step = true;
-                this.status.doing_m_step = false;
-            }
-        } else {
-            // if i_step line is false, clear the CPU "instruction-stepped" and "doing i step" statuses
-            this.status.i_stepped = false;
             this.status.doing_i_step = false;
+            this.status.ready = false;
         }
-
-        // trigger a UI update if certain input lines have changed
-        if (
-            (this.input.run != this.old_input.run)
-        ) {
-            this.update_ui = true;
-        }
-
-        // sync old and new input line levels
-        this.old_input.run = this.input.run;
-        this.old_input.i_step = this.input.i_step;
-        this.old_input.m_step = this.input.m_step;
     }
 
     // update
     update() {
         // scan input lines and adjust CPU status accordingly
         this.scanInputs();
-
-        if (
-            (!this.status.halted)
-            && (
-                this.status.running
-                || (this.status.doing_m_step && !this.status.m_stepped)
-                || (this.status.doing_i_step && !this.status.i_stepped)
-            )
-        ) {
-            // if CPU not halted AND ...
-            //  if status "run" is true ...
-            //  OR, status "doing m step" is true AND CPU not yet machine-stepped ...
-            //  OR, status "doing i step" is true AND CPU not yet instruction-stepped ...
-            // then...
+        
+        if (this.status.running || this.status.doing_m_step || this.status.doing_i_step) {
+            // if CPU is running OR doing m step OR doing i step, then ...
 
             // use machine cycle counter to determine what to do
             switch (this.m_cycle) {
@@ -560,8 +494,8 @@ export class CPU {
                     // Populate IR with word pointed to by PC
                     this.ir = this.getWordAt(this.pc);
 
-                    // Save address of word
-                    this.opcode_addr = this.pc;
+                    // Next machine cycle must be a DECODE
+                    this.m_next_type = CPU.M_CYCLE_NAMES.DECODE;
 
                     break;
 
@@ -578,49 +512,35 @@ export class CPU {
                     break;
             }
 
-            if ((this.m_cycle - 1) == CPU.OPCODES[this.m_opcode].funcs.length) {
-                // if instruction cycle is finished, then...
+            // increment machine cycle counter
+            this.m_cycle++;
 
-                // increment instruction cycle counter
-                this.i_cycle++;
+            // indicate that CPU has finished a machine step
+            this.status.m_stepped = true;
+            this.status.doing_m_step = false;
 
-                // reset machine cycle counter and "next" indicator
-                // next machine cycle will be 0, which is always a "FETCH"
-                this.m_cycle = 0;
-                this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
+            if (this.m_cycle > 1) {
+                // if we have now passed FETCH and DECODE, then...
 
-                // indicate that the CPU has finished an instruction step AND a machine step
-                this.status.i_stepped = true;
-                this.status.m_stepped = true;
+                if ((this.m_cycle - 2) >= CPU.OPCODES[this.m_opcode].funcs.length) {
+                    // if instruction cycle is finished, then...
 
-                // clear "doing i stepped" status
-                this.status.doing_i_step = false;
+                    // reset machine cycle counter and "next" indicator
+                    // next machine cycle will be 0, which is always a "FETCH"
+                    this.m_cycle = 0;
+                    this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
 
-                // trigger UI update
-                this.update_ui = true;
-            } else {
-                // if instruction cycle is not finished, then...
-
-                if (this.m_cycle == 0) {
-                    // if current machine cycle is 0, then next machine cycle type must be a DECODE
-                    this.m_next_type = CPU.M_CYCLE_NAMES.DECODE;
+                    // indicate that the CPU has finished an instruction step
+                    this.status.i_stepped = true;
+                    this.status.doing_i_step = false;
                 } else {
-                    // if current machine cycle is not zero, get opcode-specific next machine cycle type
-                    this.m_next_type = CPU.OPCODES[this.m_opcode].next_type[this.m_cycle - 1];
-                }
+                    // if instruction cycle is not yet finished, then...
 
-                // increment machine cycle counter
-                this.m_cycle++;
-
-                // indicate that CPU has finished a machine step
-                this.status.m_stepped = true;
-
-                // if CPU status is "doing m step", clear "doing m step" status and trigger a UI update
-                if (this.status.doing_m_step) {
-                    this.status.doing_m_step = false;
-                    this.update_ui = true;
+                    // next machine cycle type is opcode-specific
+                    this.m_next_type = CPU.OPCODES[this.m_opcode].next_type[this.m_cycle - 2];
                 }
             }
         }
     }
+
 };
