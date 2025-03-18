@@ -104,9 +104,9 @@ function setup() {
     for (let j = 0; j < UI_MEM_COLS; j++) {
         memory_html += "<th class='"
             + UI_TEXT_MEM_CLASS
-            + "'>xxx"
+            + "'>&nbsp;xxx"
             + j
-            + "</th>";
+            + "&nbsp;</th>";
     }
     memory_html += "</tr>";
 
@@ -139,8 +139,7 @@ function setup() {
     // format memory block UI with structure
     UI_MEM.innerHTML = memory_html;
 
-
-    // **** ESTABLISH INITIAL STATUS AND CALLBACKS FOR BUTTONS
+    // establish initial status and callbacks for buttons
     UI_BUTTON_ON.addEventListener("mousedown", btn_on_down);
     UI_BUTTON_OFF.addEventListener("mousedown", btn_off_down);
     UI_BUTTON_RUN.addEventListener("mousedown", btn_run_down);

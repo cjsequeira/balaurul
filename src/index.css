@@ -1,3 +1,33 @@
+body {
+    font-size: 90%;
+    background-color: white;
+    font-family: "Helvetica", "Arial", sans-serif;
+}
+
+table {
+    border: 0px;
+    margin: 5px;
+    padding: 0px;
+}
+
+td {
+    text-align: right;
+    vertical-align: middle;
+    padding: 4px;
+    margin: 0px;
+    border: 1px solid black;
+    font-family: "Lucida Console", "Courier New", monospace;
+}
+
+th {
+    text-align: left;
+    vertical-align: middle;
+    padding: 4px;
+    margin: 0px;
+    border: 1px solid black;
+    font-weight: normal;
+}
+
 .mono {
     font-family: "Lucida Console", "Courier New", monospace;
 }
@@ -7,30 +37,14 @@
     font-weight: bold;
 }
 
-.memory {
+.pc_ir_m_cycle {
+    margin: 6px;
+    padding: 8px 2px 7px 2px;
+}
+
+table.memory {
     border: 1px solid black;
-    font-family: "Lucida Console", "Courier New", monospace;
-    text-align: center;
-    vertical-align: middle;
-}
-
-body {
-    background-color: #f9eee9;
-    color: black;
-    font-family: "Helvetica", "Arial", sans-serif;
-}
-
-table {
-    border: 1px black;
-    margin: 0px;
-    font-family: "Lucida Console", "Courier New", monospace;
-}
-
-td {
-    text-align: right;
-    vertical-align: middle;
-    padding: 4px;
-    border: 1px solid black;
+    margin: 7px;
 }
 
 td.highlight_changed {
@@ -49,14 +63,6 @@ th.memory {
     border: 0px;
 }
 
-th {
-    text-align: left;
-    vertical-align: middle;
-    padding: 4px;
-    border: 1px solid black;
-    font-weight: bold;
-}
-
 th.mem_pc {
     border: 3px solid #da9f93;
 }
@@ -65,9 +71,11 @@ th.mem_mar {
     border: 3px solid #890620;
 }
 
-[id*="app_12bit_memcell_"] {
-    padding: 2px;
-    border: 2px solid rgba(0,0,0,0.0);
+#circuit_spy {
+    border-radius: 4px;
+    border: 1px solid gray;
+    background-color: #f9eee9;
+    width: fit-content;
 }
 
 /* floating div code based on: https://stackoverflow.com/questions/5803023/how-to-place-two-divs-next-to-each-other */
@@ -84,4 +92,10 @@ th.mem_mar {
     width: fit-content;
     float: right;
     margin: 5px;
+}
+
+[id*="app_12bit_memcell_"] {
+    padding: 2px;
+    border: 2px solid rgba(0,0,0,0.0);
+    text-align: center;
 }
