@@ -68,6 +68,8 @@ const UI_CONTROL_STOP = document.getElementById("app_12bit_control_stop");
 const UI_CONTROL_RESET = document.getElementById("app_12bit_control_reset");
 const UI_CONTROL_M_STEP = document.getElementById("app_12bit_control_m_step");
 const UI_CONTROL_I_STEP = document.getElementById("app_12bit_control_i_step");
+const UI_CONTROL_RAM_IMPORT = document.getElementById("app_12bit_ram_import");
+const UI_CONTROL_RAM_EXPORT = document.getElementById("app_12bit_ram_export");
 
 
 // **** NON-CONSTANTS
@@ -161,6 +163,8 @@ function setup() {
     UI_CONTROL_OFF.disabled = true;
     UI_CONTROL_RUN.disabled = false;
     UI_CONTROL_STOP.disabled = true;
+    UI_CONTROL_RAM_IMPORT.disabled = true;
+    UI_CONTROL_RAM_EXPORT.disabled = true;
 
 
     // **** RESET UI
