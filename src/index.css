@@ -1,38 +1,36 @@
-html {
-    margin: 0px;
-    height: 100%;
-    width: 100%;
-
-}
-
 body {
-    min-height: 100%;
-    font-size: 90%;
-    background-image: linear-gradient(rgb(255, 255, 255), rgb(206, 207, 235));
+    background-color: rgb(225, 235, 243);
     font-family: "Helvetica", "Arial", sans-serif;
 }
 
+button {
+    font-size: 0.9rem;
+    vertical-align: center;
+    text-align: center;
+    height: 1.5rem;
+}
+
 table {
-    border: 0px;
-    margin: 5px;
-    padding: 0px;
+    border: 0rem;
+    margin: 0.3rem 0.3rem 0.8rem 0.3rem;
+    padding: 0rem;
 }
 
 td {
     text-align: right;
     vertical-align: middle;
-    padding: 4px;
-    margin: 0px;
-    border: 1px solid black;
+    padding: 0.3rem;
+    margin: 0rem;
+    border: 0.1rem solid black;
     font-family: "Lucida Console", "Courier New", monospace;
 }
 
 th {
     text-align: left;
     vertical-align: middle;
-    padding: 4px;
-    margin: 0px;
-    border: 1px solid black;
+    padding: 0.3rem;
+    margin: 0rem;
+    border: 0.1rem solid black;
     font-weight: normal;
 }
 
@@ -46,13 +44,18 @@ th {
 }
 
 .pc_ir_m_cycle {
-    margin: 6px;
-    padding: 8px 2px 7px 2px;
+    margin: 0.4rem;
+    padding: 0rem 0.2rem 0.5rem 0.1rem;
+}
+
+.ram_import_export {
+    margin: 0.5rem;
+    text-align: center;
 }
 
 table.memory {
-    border: 1px solid black;
-    margin: 7px;
+    border: 0.1rem solid black;
+    margin: 0.5rem;
 }
 
 td.highlight_changed {
@@ -60,69 +63,78 @@ td.highlight_changed {
 }
 
 td.mem_pc {
-    border: 2px solid #da9f93;
+    border: 0.2rem solid #da9f93;
 }
 
 td.mem_mar {
-    border: 2px solid #890620;
+    border: 0.2rem solid #890620;
 }
 
 th.memory {
-    border: 0px;
+    border: 0rem;
 }
 
 th.mem_pc {
-    border: 3px solid #da9f93;
+    border: 0.2rem solid #da9f93;
 }
 
 th.mem_mar {
-    border: 3px solid #890620;
+    border: 0.2rem solid #890620;
 }
 
 .circuit_spy {
-    border-radius: 4px;
-    border: 1px solid black;
+    border-radius: 0.2rem;
+    border: 0.1rem solid black;
     background-color: #f9eee9;
     width: fit-content;
+    overflow: hidden;
+    font-size: 85%;
+    padding: 0rem;
+
+    /* CLOSED */
+    /* height: 3.22rem; */
+
+    /* OPEN */
+    height: 28.6rem;
 }
 
 .circuit_spy_header {
-    border-radius: 4px;
+    border-radius: 0.2rem;
     background-color: rgb(210, 231, 169);
 
     font-size: 120%;
     vertical-align: center;
 
-    margin: 10px 11px 0px 11px;
-    padding: 2px;
+    margin: 0.8rem 0.9rem 0rem 0.9rem;
+    padding: 0.3rem;
 }
 
 /* floating div code based on: https://stackoverflow.com/questions/5803023/how-to-place-two-divs-next-to-each-other */
 #app_12bit_wrapper {
     width: fit-content;
     overflow: hidden;
-
-    /* CLOSED */
-    /* height: 6px; */
-
-    /* OPEN */
-    height: 335px;
 }
 
 #app_12bit_first {
     width: fit-content;
     float: left;
-    margin: 5px;
+    margin: 0.5rem;
 }
 
 #app_12bit_second {
     width: fit-content;
     float: right;
-    margin: 5px;
+    margin: 0.5rem;
 }
 
 [id*="app_12bit_memcell_"] {
-    padding: 2px;
-    border: 2px solid rgba(0,0,0,0.0);
+    padding: 0.2rem;
+    border: 0.2rem solid rgba(0,0,0,0.0);
     text-align: center;
+}
+
+#app_12bit_ram_import_export {
+    width: 98%;
+    height: 3.7rem;
+    margin: 0rem 0rem 0.4rem 0rem;
 }
