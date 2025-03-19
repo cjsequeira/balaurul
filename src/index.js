@@ -1,5 +1,7 @@
 "use strict";
 
+// **** MAIN JAVASCRIPT FILE
+
 // **** MODULES
 import * as ModuleCPU from "./cpu.js";
 import * as ModuleUtil from "./util.js";

@@ -1,294 +1,22 @@
 "use strict";
 
+// **** CPU
+
+// **** MODULES
+import * as ModuleCPUconsts from "./cpu_consts.js";
+
 
 // **** CPU CLASS
 export class CPU {
     // **** STATIC CPU PARAMETERS
-    static RAM_WORDS = 64;
-    static BITS = 12;
+    static RAM_WORDS = ModuleCPUconsts.RAM_WORDS;
+    static BITS = ModuleCPUconsts.BITS;
 
     // machine cycle names
-    static M_CYCLE_NAMES = {
-        FETCH: "Fetch",
-        DECODE: "Decode",
-        MEM_READ: "Memory read",
-        MEM_WRITE: "Memory write",
-        INC_PC: "Increment PC",
-        HALT: "Halt CPU",
-        ALU: "ALU",
-        OUT: "Out",
-    };
+    static M_CYCLE_NAMES = ModuleCPUconsts.M_CYCLE_NAMES;
 
     // instructions and their implementation
-    static OPCODES = [
-        // 11 instructions ...
-        // 0o00: NOP: No operation (just increment PC); 0 operands
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        // 0o01: LDA: Load accumulator from address; 1 operand
-        {
-            name: "LDA",
-            num_ops: 1,
-            funcs: [CPU.m_incPC, CPU.m_storePCaddrInMAR, CPU.m_storeMARaddrInA, CPU.m_incPC],
-            next_type: [
-                CPU.M_CYCLE_NAMES.INC_PC,
-                CPU.M_CYCLE_NAMES.MEM_READ,
-                CPU.M_CYCLE_NAMES.MEM_READ,
-                CPU.M_CYCLE_NAMES.INC_PC
-            ],
-        },
-
-        // 0o02: ADD: Add value at address to accumulator using B as a temp register
-        {
-            name: "ADD",
-            num_ops: 1,
-            funcs: [CPU.m_incPC, CPU.m_storePCaddrInB, CPU.m_addBtoA, CPU.m_incPC],
-            next_type: [
-                CPU.M_CYCLE_NAMES.INC_PC,
-                CPU.M_CYCLE_NAMES.MEM_READ,
-                CPU.M_CYCLE_NAMES.ALU,
-                CPU.M_CYCLE_NAMES.INC_PC
-            ]
-        },
-
-        // 0o03: SUB: Subtract value at address from accumulator using B as a temp register
-        {
-            name: "SUB",
-            num_ops: 1,
-            funcs: [CPU.m_incPC, CPU.m_storePCaddrInB, CPU.m_subBfromA, CPU.m_incPC],
-            next_type: [
-                CPU.M_CYCLE_NAMES.INC_PC,
-                CPU.M_CYCLE_NAMES.MEM_READ,
-                CPU.M_CYCLE_NAMES.ALU,
-                CPU.M_CYCLE_NAMES.INC_PC
-            ]
-        },
-
-        // 0o04: STA: Store accumulator in address; 1 operand
-        {
-            name: "STA",
-            num_ops: 1,
-            funcs: [CPU.m_incPC, CPU.m_storePCaddrInMAR, CPU.m_storeAatMARaddr, CPU.m_incPC],
-            next_type: [
-                CPU.M_CYCLE_NAMES.INC_PC,
-                CPU.M_CYCLE_NAMES.MEM_READ,
-                CPU.M_CYCLE_NAMES.MEM_WRITE,
-                CPU.M_CYCLE_NAMES.INC_PC
-            ],
-        },
-
-        // 0o05: LDI: Load accumulator from immediate; 1 operand
-        {
-            name: "LDI",
-            num_ops: 1,
-            funcs: [CPU.m_incPC, CPU.m_storePCaddrInA, CPU.m_incPC],
-            next_type: [
-                CPU.M_CYCLE_NAMES.INC_PC,
-                CPU.M_CYCLE_NAMES.MEM_READ,
-                CPU.M_CYCLE_NAMES.INC_PC
-            ],
-        },
-
-        // 0o06: JMP: Unconditionally jump to address; 1 operand
-        {
-            name: "JMP",
-            num_ops: 1,
-            funcs: [CPU.m_incPC, CPU.m_storePCaddrInPC],
-            next_type: [CPU.M_CYCLE_NAMES.INC_PC, CPU.M_CYCLE_NAMES.MEM_READ],
-        },
-
-        // 0o07: JC: Jump to address if carry flag set; 1 operand
-        {
-            name: "JC",
-            num_ops: 1,
-            funcs: [CPU.m_incPC, CPU.m_ifCarryThenStorePCaddrInPC],
-            next_type: [CPU.M_CYCLE_NAMES.INC_PC, CPU.M_CYCLE_NAMES.MEM_READ],
-        },
-
-
-        // 0o10: JZ: Jump to address if zero flag set; 1 operand
-        {
-            name: "JZ",
-            num_ops: 1,
-            funcs: [CPU.m_incPC, CPU.m_ifZeroThenStorePCaddrInPC],
-            next_type: [CPU.M_CYCLE_NAMES.INC_PC, CPU.M_CYCLE_NAMES.MEM_READ],
-        },
-
-        // 0o11: OUT: Write accumulator to output
-        {
-            name: "OUT",
-            num_ops: 0,
-            funcs: [CPU.m_out, CPU.m_incPC],
-            next_type: [CPU.M_CYCLE_NAMES.OUT, CPU.M_CYCLE_NAMES.INC_PC]
-        },
-
-        // 0o12: HLT: Increment PC and halt
-        {
-            name: "HLT",
-            num_ops: 0,
-            funcs: [CPU.m_incPC, CPU.m_halt],
-            next_type: [CPU.M_CYCLE_NAMES.INC_PC, CPU.M_CYCLE_NAMES.HALT],
-        },
-
-        // ... plus 53 extra NOP opcodes for padding ...
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-        { name: "NOP", num_ops: 0, funcs: [CPU.m_incPC], next_type: [CPU.M_CYCLE_NAMES.INC_PC] },
-
-        // ... equals 64 instructions (two octal digits)
-    ];
-
-
-    // **** STATIC MACHINE CYCLE OPERATIONS FOR EACH OPCODE
-    // add B to A
-    static m_addBtoA(cpu) {
-        cpu.a += cpu.b;
-
-        // set carry flag appropriately
-        cpu.flags.carry = (cpu.a >= Math.pow(2, CPU.BITS));
-
-        // restrict accumulator to only CPU.BITS in size
-        cpu.a %= Math.pow(2, CPU.BITS);
-
-        // set zero flag appropriately
-        cpu.flags.zero = (cpu.a == 0);
-    }
-
-    // halt CPU
-    static m_halt(cpu) {
-        cpu.status.halted = true;
-        cpu.status.running = false;
-    }
-
-    // if carry, then store into PC: word at address in PC
-    static m_ifCarryThenStorePCaddrInPC(cpu) {
-        if (cpu.flags.carry) {
-            cpu.pc = cpu.getWordAt(cpu.pc);
-        } else {
-            cpu.incPC();
-        }
-    }
-
-    // if zero, then store into PC: word at address in PC
-    static m_ifZeroThenStorePCaddrInPC(cpu) {
-        if (cpu.flags.zero) cpu.pc = cpu.getWordAt(cpu.pc);
-    }
-
-    // increment PC
-    static m_incPC(cpu) {
-        cpu.incPC();
-    }
-
-    // write accumulator to output
-    static m_out(cpu) {
-        cpu.out = cpu.a;
-    }
-
-    // store into RAM at address in MAR: value in A
-    static m_storeAatMARaddr(cpu) {
-        cpu.putWordAt(cpu.mar, cpu.a);
-    }
-
-    // store into A: word at address in MAR
-    static m_storeMARaddrInA(cpu) {
-        cpu.a = cpu.getWordAt(cpu.mar);
-    }
-
-    // store into A: word at address in PC
-    static m_storePCaddrInA(cpu) {
-        cpu.a = cpu.getWordAt(cpu.pc);
-    }
-
-    // store into B: word at address in PC
-    static m_storePCaddrInB(cpu) {
-        cpu.b = cpu.getWordAt(cpu.pc);
-    }
-
-    // store into MAR: word at address in PC
-    static m_storePCaddrInMAR(cpu) {
-        cpu.mar = cpu.getWordAt(cpu.pc);
-    }
-
-    // store into PC: word at address in PC
-    static m_storePCaddrInPC(cpu) {
-        cpu.pc = cpu.getWordAt(cpu.pc);
-    }
-
-    // subtract B from A
-    static m_subBfromA(cpu) {
-        // to subtract, add the two's-complement of B to accumulator
-        cpu.a += Math.pow(2, CPU.BITS) - cpu.b;
-
-        // set carry flag appropriately
-        // carry calc is inspired by the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
-        cpu.flags.carry = (cpu.a >= Math.pow(2, CPU.BITS));
-
-        // restrict accumulator to only CPU.BITS in size
-        cpu.a %= Math.pow(2, CPU.BITS);
-
-        // set zero flag appropriately
-        cpu.flags.zero = (cpu.a == 0);
-    }
+    static OPCODES = ModuleCPUconsts.OPCODES;
 
 
     // **** NON-STATIC CLASS METHODS
@@ -346,8 +74,10 @@ export class CPU {
         // an octal digit is three bits in size
         let num_digits = Math.round(CPU.BITS / 3);
 
-        // iterate through all words in memory
-        this.mem.forEach((value) => {
+        // iterate through all words in memory, adding a line break every 8 words
+        this.mem.forEach((value, i) => {
+            if (((i % 8) == 0) && (i > 0)) ram_string += "\r\n";
+
             ram_string += value.toString(8).padStart(num_digits, "0") + " ";
         });
 
@@ -448,16 +178,35 @@ export class CPU {
 
     // reset CPU
     reset() {
-        // only "reset" if CPU is on!
-        if (this.status.on) {
-            // clear halt status
-            this.status.halted = false;
+        // set program counter to zero
+        this.pc = 0;
 
-            // set program counter to zero
-            this.pc = 0;
+        // reset flags
+        this.flags = {
+            carry: false,
+            zero: false,
+        };
 
-            // leave everything else alone!
+        // reset statuses
+        this.status = {
+            ready: false,
+            doing_m_step: false,
+            doing_i_step: false,
+            running: false,
+            halted: false,
+            m_stepped: false,
+            i_stepped: false,
         }
+
+        // reset machine cycle info
+        this.m_cycle = 0;
+        this.m_opcode = 0;
+        this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
+
+        // set CPU "ready" to true
+        this.status.ready = true;
+
+        // leave everything else alone!
     }
 
     // replace RAM with contents of a text string IF CPU is on and NOT running
@@ -468,7 +217,7 @@ export class CPU {
     replaceRAM(in_string) {
         if ((this.status.on) && (!this.status.running)) {
             // if CPU is on AND CPU is not running, then...
-            
+
             // string containing octal digits
             let octal = "01234567";
 
@@ -515,9 +264,6 @@ export class CPU {
             // power on the CPU if CPU not in "ready" status
             if (!this.status.ready) this.powerOn();
 
-            // reset CPU if reset line is true
-            if (this.input.reset) this.reset();
-
             if (this.input.run) {
                 // if "run" input is true, then...
 
@@ -529,6 +275,9 @@ export class CPU {
                 // clear "running" and "halted" statuses
                 this.status.running = false;
                 this.status.halted = false;
+
+                // reset CPU if reset line is true AND CPU is on
+                if ((this.input.reset) && (this.status.on)) this.reset();
 
                 if (this.input.m_step) {
                     // if m-step input is true, then...
