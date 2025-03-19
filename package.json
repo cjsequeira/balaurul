@@ -1,5 +1,5 @@
 {
-    "name": "12bit",
+    "name": "baularul",
     "version": "1.0.0",
     "license": "MIT",
     "scripts": {
@@ -15,7 +15,5 @@
         "parcel": "^2.6.2"
     },
     "dependencies": {
-        "@cubejs-client/core": "^0.31.0",
-        "chart.js": "^4.0.0"
     }
 }
