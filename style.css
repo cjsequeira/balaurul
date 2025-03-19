@@ -1,5 +1,6 @@
 body {
-    background-color: rgb(225, 235, 243);
+    background-color: #fdfffc;
+    color: #011627;
     font-family: "Helvetica", "Arial", sans-serif;
 }
 
@@ -21,7 +22,7 @@ td {
     vertical-align: middle;
     padding: 0.3rem;
     margin: 0rem;
-    border: 0.1rem solid black;
+    border: 0.1rem solid #011627;
     font-family: "Lucida Console", "Courier New", monospace;
 }
 
@@ -30,7 +31,7 @@ th {
     vertical-align: middle;
     padding: 0.3rem;
     margin: 0rem;
-    border: 0.1rem solid black;
+    border: 0.1rem solid #011627;
     font-weight: normal;
 }
 
@@ -39,7 +40,7 @@ th {
 }
 
 .show_diff {
-    color: #b6465f;
+    color: #f71735;
     font-weight: bold;
 }
 
@@ -54,20 +55,20 @@ th {
 }
 
 table.memory {
-    border: 0.1rem solid black;
+    border: 0.1rem solid #011627;
     margin: 0.5rem;
 }
 
 td.highlight_changed {
-    background-color: #8e8acd;
+    background-color: #41ead4
 }
 
 td.mem_pc {
-    border: 0.2rem solid #da9f93;
+    border: 0.2rem solid #f71735;
 }
 
 td.mem_mar {
-    border: 0.2rem solid #890620;
+    border: 0.2rem solid #011627;
 }
 
 th.memory {
@@ -75,17 +76,18 @@ th.memory {
 }
 
 th.mem_pc {
-    border: 0.2rem solid #da9f93;
+    border: 0.2rem solid #f71735;
 }
 
 th.mem_mar {
-    border: 0.2rem solid #890620;
+    border: 0.2rem solid #011627;
 }
 
 .circuit_spy {
     border-radius: 0.2rem;
-    border: 0.1rem solid black;
-    background-color: #f9eee9;
+    border: 0.1rem solid #011627;
+    background-color: #ffe0b6;
+    color: #011627;
     width: fit-content;
     overflow: hidden;
     font-size: 85%;
@@ -100,7 +102,7 @@ th.mem_mar {
 
 .circuit_spy_header {
     border-radius: 0.2rem;
-    background-color: rgb(210, 231, 169);
+    background-color: #41ead4;
 
     font-size: 120%;
     vertical-align: center;
