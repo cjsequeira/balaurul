@@ -209,13 +209,13 @@ export class CPU {
         // leave everything else alone!
     }
 
-    // replace RAM with contents of a text string IF CPU is on and NOT running
+    // replace RAM with contents of a text string IF CPU is on AND "run" input is false
     // all digits are treated as octal digits
     // all characters not 0 through 7 are ignored (skipped)
     // if there are fewer words than CPU.RAM_WORDS, zeros are added to the end
     // if there are more words than CPU.RAM_WORDS, just the first CPU.RAM_WORDS are stored
     replaceRAM(in_string) {
-        if ((this.status.on) && (!this.status.running)) {
+        if ((this.status.on) && (!this.input.run)) {
             // if CPU is on AND CPU is not running, then...
 
             // string containing octal digits
