@@ -3,8 +3,7 @@
     "version": "1.0.0",
     "license": "MIT",
     "scripts": {
-        "dev": "parcel --no-cache src/index.html",
-        "build": "parcel build src/index.html"
+        "dev": "parcel --no-cache index.html"
     },
     "devDependencies": {
         "@eslint/js": "^9.14.0",
