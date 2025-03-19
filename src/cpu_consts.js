@@ -42,9 +42,10 @@ export const OPCODES = [
     {
         name: "ADD",
         num_ops: 1,
-        funcs: [m_incPC, m_storePCaddrInB, m_addBtoA, m_incPC],
+        funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInB, m_addBtoA, m_incPC],
         next_type: [
             M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
             M_CYCLE_NAMES.MEM_READ,
             M_CYCLE_NAMES.ALU,
             M_CYCLE_NAMES.INC_PC
@@ -55,9 +56,10 @@ export const OPCODES = [
     {
         name: "SUB",
         num_ops: 1,
-        funcs: [m_incPC, m_storePCaddrInB, m_subBfromA, m_incPC],
+        funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInB, m_subBfromA, m_incPC],
         next_type: [
             M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
             M_CYCLE_NAMES.MEM_READ,
             M_CYCLE_NAMES.ALU,
             M_CYCLE_NAMES.INC_PC
@@ -254,14 +256,14 @@ function m_storeMARaddrInA(cpu) {
     cpu.a = cpu.getWordAt(cpu.mar);
 }
 
+// store into A: word at address in MAR
+function m_storeMARaddrInB(cpu) {
+    cpu.b = cpu.getWordAt(cpu.mar);
+}
+
 // store into A: word at address in PC
 function m_storePCaddrInA(cpu) {
     cpu.a = cpu.getWordAt(cpu.pc);
-}
-
-// store into B: word at address in PC
-function m_storePCaddrInB(cpu) {
-    cpu.b = cpu.getWordAt(cpu.pc);
 }
 
 // store into MAR: word at address in PC
