@@ -78,7 +78,7 @@ export class CPU {
         this.mem.forEach((value, i) => {
             if (((i % 8) == 0) && (i > 0)) ram_string += "\r\n";
 
-            ram_string += value.toString(8).padStart(num_digits, "0") + " ";
+            ram_string += value.toString(8).padStart(num_digits, "0") + "  ";
         });
 
         return ram_string;

@@ -50,7 +50,7 @@ th {
 }
 
 .ram_import_export {
-    margin: 0.5rem;
+    margin: 0.5rem 0.5rem 0.5rem 3.5rem;
     text-align: center;
 }
 
@@ -102,7 +102,8 @@ th.mem_mar {
 
 .circuit_spy_header {
     border-radius: 0.2rem;
-    background-color: #41ead4;
+    background-color: #f71735;
+    color: #fff7ed;
 
     font-size: 120%;
     vertical-align: center;
@@ -136,7 +137,8 @@ th.mem_mar {
 }
 
 #app_12bit_ram_import_export {
-    width: 98%;
+    width: 23rem;
     height: 3.7rem;
     margin: 0rem 0rem 0.4rem 0rem;
+    resize: none;
 }
