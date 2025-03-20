@@ -20,19 +20,23 @@ table {
 td {
     text-align: right;
     vertical-align: middle;
-    padding: 0.3rem;
+    padding: 0.41rem 0.3rem 0.3rem 0.3rem;
     margin: 0rem;
     border: 0.1rem solid #011627;
+    background-color: #ffea65;
     font-family: "Lucida Console", "Courier New", monospace;
+    font-size: 0.9rem;
 }
 
 th {
     text-align: left;
     vertical-align: middle;
-    padding: 0.3rem;
+    padding: 0.41rem 0.3rem 0.3rem 0.3rem;
     margin: 0rem;
+    background-color: #ffea65;
     border: 0.1rem solid #011627;
     font-weight: normal;
+    font-size: 0.9rem;
 }
 
 .mono {
@@ -47,10 +51,14 @@ th {
 .pc_ir_m_cycle {
     margin: 0.4rem;
     padding: 0rem 0.2rem 0.5rem 0.1rem;
+    color: #ffea65;
+    font-weight: bold;
 }
 
 .ram_import_export {
-    margin: 0.5rem 0.5rem 0.5rem 3.5rem;
+    margin: 0rem 0rem 0rem 3.3rem;
+    padding: 0rem;
+    width: 24.5rem;
     text-align: center;
 }
 
@@ -85,8 +93,8 @@ th.mem_mar {
 
 .circuit_spy {
     border-radius: 0.2rem;
-    border: 0.1rem solid #011627;
-    background-color: #ffe0b6;
+    border: 0.3rem solid #0a4473;
+    background-color: #0085be;
     color: #011627;
     width: fit-content;
     overflow: hidden;
@@ -94,22 +102,22 @@ th.mem_mar {
     padding: 0rem;
 
     /* CLOSED */
-    /* height: 3.22rem; */
+    /* height: 3.44rem; */
 
     /* OPEN */
-    height: 28.6rem;
+    height: 30.2rem;
 }
 
 .circuit_spy_header {
     border-radius: 0.2rem;
-    background-color: #f71735;
-    color: #fff7ed;
+    background-color: #17e4f7;
+    color: #011627;
 
     font-size: 120%;
     vertical-align: center;
 
     margin: 0.8rem 0.9rem 0rem 0.9rem;
-    padding: 0.3rem;
+    padding: 0.4rem 0.3rem 0.3rem 0.3rem;
 }
 
 /* floating div code based on: https://stackoverflow.com/questions/5803023/how-to-place-two-divs-next-to-each-other */
@@ -137,8 +145,11 @@ th.mem_mar {
 }
 
 #app_12bit_ram_import_export {
-    width: 23rem;
-    height: 3.7rem;
+    width: 24.1rem;
+    height: 5.2rem;
     margin: 0rem 0rem 0.4rem 0rem;
+    padding: 0.1rem 0.1rem 0rem 0.4rem;
     resize: none;
+    font-family: "Lucida Console", "Courier New", monospace;
+    font-size: 0.85rem;
 }
