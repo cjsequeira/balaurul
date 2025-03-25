@@ -97,3 +97,15 @@ export function asUnsigned(number, bits) {
 
     return val;
 }
+
+// convert a list of true/false values to a number
+export function boolListToNumber(bool_list) {
+    let out = 0;
+
+    // increment upward through the list, applying increasing powers of 2
+    bool_list.forEach((element, index) => {
+        out += Math.pow(2, index) * element;
+    });
+
+    return out;
+}

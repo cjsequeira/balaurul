@@ -4,6 +4,7 @@
 
 // **** MODULES
 import * as ModuleCPUconsts from "./cpu_consts.js";
+import { boolListToNumber } from "./util.js";
 
 
 // **** CPU CLASS
@@ -47,18 +48,7 @@ export class CPU {
             doing_i_step: false,
             running: false,
             halted: false,
-            m_stepped: false,
-            i_stepped: false,
         }
-
-        // define and set input lines
-        this.input = {
-            on: false,
-            run: false,
-            reset: false,
-            m_step: false,
-            i_step: false,
-        };
 
         // define and set machine cycle info
         this.m_cycle = 0;
@@ -66,20 +56,22 @@ export class CPU {
         this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
     }
 
-    // export RAM as octal strings
+    // export RAM as octal strings if CPU is on; else export empty string
     exportRAM() {
         let ram_string = "";
 
-        // get number of octal digits in a CPU word, based on CPU.BITS
-        // an octal digit is three bits in size
-        let num_digits = Math.round(CPU.BITS / 3);
+        if (this.status.on) {
+            // get number of octal digits in a CPU word, based on CPU.BITS
+            // an octal digit is three bits in size
+            let num_digits = Math.round(CPU.BITS / 3);
 
-        // iterate through all words in memory, adding a line break every 8 words
-        this.mem.forEach((value, i) => {
-            if (((i % 8) == 0) && (i > 0)) ram_string += "\r\n";
+            // iterate through all words in memory, adding a line break every 8 words
+            this.mem.forEach((value, i) => {
+                if (((i % 8) == 0) && (i > 0)) ram_string += "\r\n";
 
-            ram_string += value.toString(8).padStart(num_digits, "0") + "  ";
-        });
+                ram_string += value.toString(8).padStart(num_digits, "0") + " ";
+            });
+        }
 
         return ram_string;
     }
@@ -115,7 +107,7 @@ export class CPU {
     // increment PC
     incPC() {
         // increment PC, wrapping around to zero if needed
-        this.pc = (this.pc + 1) % Math.pow(2, CPU.BITS);
+        this.setPC(this.pc + 1);
     }
 
     // power on the CPU
@@ -134,8 +126,6 @@ export class CPU {
             doing_i_step: false,
             running: false,
             halted: false,
-            m_stepped: false,
-            i_stepped: false,
         }
 
         // set startup values for machine cycle info
@@ -194,8 +184,6 @@ export class CPU {
             doing_i_step: false,
             running: false,
             halted: false,
-            m_stepped: false,
-            i_stepped: false,
         }
 
         // reset machine cycle info
@@ -215,7 +203,7 @@ export class CPU {
     // if there are fewer words than CPU.RAM_WORDS, zeros are added to the end
     // if there are more words than CPU.RAM_WORDS, just the first CPU.RAM_WORDS are stored
     replaceRAM(in_string) {
-        if ((this.status.on) && (!this.input.run)) {
+        if ((this.status.on) && (!this.status.running)) {
             // if CPU is on AND CPU is not running, then...
 
             // string containing octal digits
@@ -254,8 +242,8 @@ export class CPU {
     }
 
     // scan input lines and adjust CPU status accordingly
-    scanInputs() {
-        if (this.input.on) {
+    scanInputs(input) {
+        if (input.on) {
             // if input line is "on" then...
 
             // ensure CPU status is "on"
@@ -264,7 +252,7 @@ export class CPU {
             // power on the CPU if CPU not in "ready" status
             if (!this.status.ready) this.powerOn();
 
-            if (this.input.run) {
+            if (input.run) {
                 // if "run" input is true, then...
 
                 // set CPU status to "running" only if CPU not halted!
@@ -277,26 +265,63 @@ export class CPU {
                 this.status.halted = false;
 
                 // reset CPU if reset line is true AND CPU is on
-                if ((this.input.reset) && (this.status.on)) this.reset();
+                if ((input.reset) && (this.status.on)) this.reset();
 
-                if (this.input.m_step) {
+                if (input.m_step) {
                     // if m-step input is true, then...
 
-                    // set CPU status to "doing m step" if not in "m_stepped" status
-                    if (!this.status.m_stepped) this.status.doing_m_step = true;
-                } else {
-                    // if m-step input is false, then clear CPU "m_stepped" status
-                    this.status.m_stepped = false;
+                    // set CPU status to "doing m step"
+                    this.status.doing_m_step = true;
                 }
 
-                if (this.input.i_step) {
+                if (input.i_step) {
                     // if i-step input is true, then...
 
-                    // set CPU status to "doing i step" if not in "i_stepped" status
-                    if (!this.status.i_stepped) this.status.doing_i_step = true;
-                } else {
-                    // if i-step input is false AND not doing i step, then clear CPU "i_stepped" status
-                    if (!this.status.doing_i_step) this.status.i_stepped = false;
+                    // set CPU status to "doing i step"
+                    this.status.doing_i_step = true;
+                }
+
+                if (input.examine) {
+                    // if examine input is true, then ...
+
+                    // set the PC to the input word
+                    this.setPC(boolListToNumber(input.input_switches));
+
+                    // set "out" to show the value at the memory address pointed to by the PC
+                    this.out = this.getWordAt(this.pc);
+                }
+
+                if (input.examine_next) {
+                    // if examine_next input is true, then ...
+
+                    // increment the PC
+                    this.incPC();
+
+                    // set "out" to show the value at the memory address pointed to by the PC
+                    this.out = this.getWordAt(this.pc);
+                }
+
+                if (input.deposit) {
+                    // if deposit input is true, then ...
+
+                    // write input word into address pointed to by PC
+                    this.putWordAt(this.pc, boolListToNumber(input.input_switches));
+
+                    // set "out" to show the value at the memory address pointed to by the PC
+                    this.out = this.getWordAt(this.pc);
+                }
+
+                if (input.deposit_next) {
+                    // if deposit_next input is true, then ...
+
+                    // FIRST increment the PC
+                    this.incPC();
+
+                    // write input word into address pointed to by PC
+                    this.putWordAt(this.pc, boolListToNumber(input.input_switches));
+
+                    // set "out" to show the value at the memory address pointed to by the PC
+                    this.out = this.getWordAt(this.pc);
                 }
             }
         } else {
@@ -310,11 +335,13 @@ export class CPU {
         }
     }
 
+    // set PC to the given value, wrapping around if needed based on CPU bit size
+    setPC(value) {
+        this.pc = value % Math.pow(2, CPU.BITS);
+    }
+
     // update
     update() {
-        // scan input lines and adjust CPU status accordingly
-        this.scanInputs();
-
         if (this.status.running || this.status.doing_m_step || this.status.doing_i_step) {
             // if CPU is running OR doing m step OR doing i step, then ...
 
@@ -347,7 +374,6 @@ export class CPU {
             this.m_cycle++;
 
             // indicate that CPU has finished a machine step
-            this.status.m_stepped = true;
             this.status.doing_m_step = false;
 
             if (this.m_cycle > 1) {
@@ -362,7 +388,6 @@ export class CPU {
                     this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
 
                     // indicate that the CPU has finished an instruction step
-                    this.status.i_stepped = true;
                     this.status.doing_i_step = false;
                 } else {
                     // if instruction cycle is not yet finished, then...

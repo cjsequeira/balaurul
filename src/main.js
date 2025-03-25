@@ -8,10 +8,58 @@ import * as ModuleUtil from "./util.js";
 
 
 // **** CONSTANTS
-// Web page user interface
+
+// target CPU speed for "fast" mode, in MACHINE CYCLES PER SECOND
+const FAST_TARGET = 1e6 / 60;
+
+// front panel UI elements
+const UI_TEXT_FP_LED_CLASS = "led";
+const UI_TEXT_FP_LED_M_ID_PREFIX = "app_12bit_led_m_";
+const UI_TEXT_FP_LED_PC_ID_PREFIX = "app_12bit_led_pc_";
+const UI_TEXT_FP_LED_IR_ID_PREFIX = "app_12bit_led_ir_";
+const UI_TEXT_FP_LED_MAR_ID_PREFIX = "app_12bit_led_mar_";
+const UI_TEXT_FP_LED_A_ID_PREFIX = "app_12bit_led_a_";
+const UI_TEXT_FP_LED_B_ID_PREFIX = "app_12bit_led_b_";
+const UI_TEXT_FP_LED_OUT_ID_PREFIX = "app_12bit_led_out_";
+
+const UI_TEXT_FP_CONTROL_INPUT_ID_PREFIX = "app_12bit_control_input_";
+const UI_TEXT_FP_CONTROL_INPUT_KEYS = Array.from("=-0987654321");
+const UI_TEXT_FP_CONTROL_OPS_KEYS = Array.from("qwertyuio");
+
+const UI_NUM_FP_SLIDER_X = -20;
+const UI_NUM_FP_SLIDER_Y = -25;
+const UI_NUM_INPUT_SWITCHES = 12;
+
+const UI_FP_LED_FLAG_CARRY = document.getElementById("app_12bit_led_flag_carry");
+const UI_FP_LED_FLAG_ZERO = document.getElementById("app_12bit_led_flag_zero");
+const UI_FP_LED_STATUS_RUNNING = document.getElementById("app_12bit_led_status_running");
+const UI_FP_LED_STATUS_HALTED = document.getElementById("app_12bit_led_status_halted");
+
+const UI_CONTROL_ON_OFF = document.getElementById("app_12bit_control_on_off");
+const UI_CONTROL_RUN_STOP = document.getElementById("app_12bit_control_run_stop");
+const UI_CONTROL_RESET = document.getElementById("app_12bit_control_reset");
+const UI_CONTROL_M_STEP = document.getElementById("app_12bit_control_m_step");
+const UI_CONTROL_I_STEP = document.getElementById("app_12bit_control_i_step");
+const UI_CONTROL_EXAMINE = document.getElementById("app_12bit_control_examine");
+const UI_CONTROL_EXAMINE_NEXT = document.getElementById("app_12bit_control_examine_next");
+const UI_CONTROL_DEPOSIT = document.getElementById("app_12bit_control_deposit");
+const UI_CONTROL_DEPOSIT_NEXT = document.getElementById("app_12bit_control_deposit_next");
+const UI_CONTROL_SPEED = document.getElementById("app_12bit_control_speed");
+const UI_CONTROL_CIRCUIT_SPY = document.getElementById("app_12bit_control_circuit_spy");
+
+
+// circuit spy UI elements
+const UI_CIRCUIT_SPY_PANEL = document.getElementById("app_12bit_circuit_spy");
 
 const UI_MEM_ROWS = 8;
 const UI_MEM_COLS = 8;
+
+const UI_TEXT_CIRCUIT_SPY_OPEN_LEFT = "51rem";
+const UI_TEXT_CIRCUIT_SPY_OPEN_HEIGHT = "40rem";
+const UI_TEXT_CIRCUIT_SPY_CLOSED_LEFT = "23rem";
+const UI_TEXT_CIRCUIT_SPY_CLOSED_HEIGHT = "18rem";
+const UI_TEXT_CIRCUIT_SPY_OPEN_TRANSITION_DELAY = "0s, 0.3s";
+const UI_TEXT_CIRCUIT_SPY_CLOSED_TRANSITION_DELAY = "0.3s, 0s";
 
 const UI_TEXT_MEM_CELL_ID_PREFIX = "app_12bit_memcell_";
 const UI_TEXT_MEM_CLASS = "memory";
@@ -37,7 +85,6 @@ const UI_IR_DEC = document.getElementById("app_12bit_ir_dec");
 
 const UI_VAL_AT_PC = document.getElementById("app_12bit_val_at_pc");
 const UI_IR_MNEMONIC = document.getElementById("app_12bit_ir_mnemonic");
-const UI_M_NEXT_TYPE = document.getElementById("app_12bit_m_next_type");
 
 const UI_A_BINARY = document.getElementById("app_12bit_a_binary");
 const UI_A_OCTAL = document.getElementById("app_12bit_a_octal");
@@ -57,23 +104,9 @@ const UI_OUT_HEX = document.getElementById("app_12bit_out_hex");
 const UI_OUT_DEC = document.getElementById("app_12bit_out_dec");
 const UI_OUT_SIGNED_DEC = document.getElementById("app_12bit_out_signed_dec");
 
-const UI_FLAG_CARRY = document.getElementById("app_12bit_flag_carry");
-const UI_FLAG_ZERO = document.getElementById("app_12bit_flag_zero");
-
-const UI_STATUS_RUNNING = document.getElementById("app_12bit_status_running");
-const UI_STATUS_HALTED = document.getElementById("app_12bit_status_halted");
-
 const UI_MEM = document.getElementById("app_12bit_memory");
 
 const UI_RAM_IMPORT_EXPORT = document.getElementById("app_12bit_ram_import_export");
-
-const UI_CONTROL_ON = document.getElementById("app_12bit_control_on");
-const UI_CONTROL_OFF = document.getElementById("app_12bit_control_off");
-const UI_CONTROL_RUN = document.getElementById("app_12bit_control_run");
-const UI_CONTROL_STOP = document.getElementById("app_12bit_control_stop");
-const UI_CONTROL_RESET = document.getElementById("app_12bit_control_reset");
-const UI_CONTROL_M_STEP = document.getElementById("app_12bit_control_m_step");
-const UI_CONTROL_I_STEP = document.getElementById("app_12bit_control_i_step");
 const UI_CONTROL_RAM_IMPORT = document.getElementById("app_12bit_ram_import");
 const UI_CONTROL_RAM_EXPORT = document.getElementById("app_12bit_ram_export");
 
@@ -89,11 +122,32 @@ var old_ir = null;
 var old_a = null;
 var old_b = null;
 var old_out = null;
-var old_flag_carry = null;
-var old_flag_zero = null;
-var old_status_running = null;
-var old_status_halted = null;
 var old_mem = Array(UI_MEM_COLS * UI_MEM_ROWS);
+
+// define variable for front panel yellow input switch UI handles
+var ui_input_switches = [];
+
+// input signal lines object
+var fp_input = {
+    on: false,
+    run: false,
+    reset: false,
+
+    m_step: false,
+    i_step: false,
+
+    examine: false,
+    examine_next: false,
+
+    deposit: false,
+    deposit_next: false,
+
+    slow: false,
+    circuit_spy: false,
+
+    input_switches: Array(UI_NUM_INPUT_SWITCHES).fill(false),
+};
+
 
 
 // **** MAIN CODE
@@ -144,58 +198,88 @@ function setup() {
     memory_html += "</table>";
 
 
+    // generate handles for input switches
+    for (let i = 0; i < ModuleCPU.CPU.BITS; i++) {
+        // build each input switch UI object
+        ui_input_switches.push(document.getElementById(UI_TEXT_FP_CONTROL_INPUT_ID_PREFIX + i.toString(10)));
+
+        // add mouseclick event handler
+        ui_input_switches[i].addEventListener(
+            "click",
+            () => {
+                toggleSwitch(ui_input_switches[i], 0, UI_NUM_FP_SLIDER_Y);
+                fp_input.input_switches[i] = !fp_input.input_switches[i];
+            });
+    }
+
+
+
     // **** INITIALIZE UI
     // format memory block UI with structure
     UI_MEM.innerHTML = memory_html;
 
     // establish initial statuses and callbacks for controls
-    UI_CONTROL_ON.addEventListener("mousedown", ctrlOnDown);
-    UI_CONTROL_OFF.addEventListener("mousedown", ctrlOffDown);
-    UI_CONTROL_RUN.addEventListener("mousedown", ctrlRunDown);
-    UI_CONTROL_STOP.addEventListener("mousedown", ctrlStopDown);
-    UI_CONTROL_RESET.addEventListener("mousedown", ctrlResetDown);
-    UI_CONTROL_M_STEP.addEventListener("mousedown", ctrlMstepDown);
-    UI_CONTROL_I_STEP.addEventListener("mousedown", ctrlIstepDown);
+    UI_CONTROL_ON_OFF.addEventListener("click", ctrlOnOff);
+    UI_CONTROL_RUN_STOP.addEventListener("click", ctrlRunStop);
+
+    UI_CONTROL_RESET.addEventListener("mousedown", () => UI_CONTROL_RESET.style.opacity = 1.0);
+    UI_CONTROL_M_STEP.addEventListener("mousedown", () => UI_CONTROL_M_STEP.style.opacity = 1.0);
+    UI_CONTROL_I_STEP.addEventListener("mousedown", () => UI_CONTROL_I_STEP.style.opacity = 1.0);
+    UI_CONTROL_EXAMINE.addEventListener("mousedown", () => UI_CONTROL_EXAMINE.style.opacity = 1.0);
+    UI_CONTROL_EXAMINE_NEXT.addEventListener("mousedown", () => UI_CONTROL_EXAMINE_NEXT.style.opacity = 1.0);
+    UI_CONTROL_DEPOSIT.addEventListener("mousedown", () => UI_CONTROL_DEPOSIT.style.opacity = 1.0);
+    UI_CONTROL_DEPOSIT_NEXT.addEventListener("mousedown", () => UI_CONTROL_DEPOSIT_NEXT.style.opacity = 1.0);
 
     UI_CONTROL_RAM_IMPORT.addEventListener("click", ctrlRAMimport);
     UI_CONTROL_RAM_EXPORT.addEventListener("click", ctrlRAMexport);
 
-    UI_CONTROL_ON.addEventListener("mouseup", ctrlOnUp);
-    UI_CONTROL_OFF.addEventListener("mouseup", ctrlOffUp);
-    UI_CONTROL_RUN.addEventListener("mouseup", ctrlRunUp);
-    UI_CONTROL_STOP.addEventListener("mouseup", ctrlStopUp);
-    UI_CONTROL_RESET.addEventListener("mouseup", ctrlResetUp);
-    UI_CONTROL_M_STEP.addEventListener("mouseup", ctrlMstepUp);
-    UI_CONTROL_I_STEP.addEventListener("mouseup", ctrlIstepUp);
+    UI_CONTROL_RESET.addEventListener("mouseup", () => ctrlButtonUp(UI_CONTROL_RESET, "reset"));
+    UI_CONTROL_M_STEP.addEventListener("mouseup", () => ctrlButtonUp(UI_CONTROL_M_STEP, "m_step"));
+    UI_CONTROL_I_STEP.addEventListener("mouseup", () => ctrlButtonUp(UI_CONTROL_I_STEP, "i_step"));
+    UI_CONTROL_EXAMINE.addEventListener("mouseup", () => ctrlButtonUp(UI_CONTROL_EXAMINE, "examine"));
+    UI_CONTROL_EXAMINE_NEXT.addEventListener("mouseup", () => ctrlButtonUp(UI_CONTROL_EXAMINE_NEXT, "examine_next"));
+    UI_CONTROL_DEPOSIT.addEventListener("mouseup", () => ctrlButtonUp(UI_CONTROL_DEPOSIT, "deposit"));
+    UI_CONTROL_DEPOSIT_NEXT.addEventListener("mouseup", () => ctrlButtonUp(UI_CONTROL_DEPOSIT_NEXT, "deposit_next"));
 
-    UI_CONTROL_ON.disabled = false;
-    UI_CONTROL_OFF.disabled = true;
-    UI_CONTROL_RUN.disabled = false;
-    UI_CONTROL_STOP.disabled = true;
-    UI_CONTROL_RAM_IMPORT.disabled = true;
-    UI_CONTROL_RAM_EXPORT.disabled = true;
+    UI_CONTROL_SPEED.addEventListener("click", ctrlSpeed)
+    UI_CONTROL_CIRCUIT_SPY.addEventListener("click", ctrlCircuitSpy)
 
 
     // **** RESET UI
     resetUI();
+    
+    // change the visibility property for circuit spy 
+    // note that it is underneath the front panel on startup!
+    UI_CIRCUIT_SPY_PANEL.style.visibility = "visible";
 
 
     // **** ESTABLISH APP UPDATE CALLBACK
     requestAnimationFrame(appUpdate);
 }
 
+
 // app update callback for requestAnimationFrame()
 function appUpdate() {
-    // update CPU
-    cpu.update();
+    // update CPU once or multiple times based on "speed" UI switch
+    if (fp_input.slow) {
+        // slow mode? update only once (roughly 60 machine cycles per second)
+        cpu.update();
+    } else {
+        // fast mode? update to meet the speed target
+        for (let i = 0; i < FAST_TARGET; i++) {
+            cpu.update();
+        }
+    }
 
     if (cpu.status.on) {
         // if CPU status is "on" then ...
 
+        // update LEDs
+        updateLEDs();
+
         // show value at PC, disassembly of IR, and next machine cycle type
         UI_VAL_AT_PC.innerHTML = cpu.getWordAt(cpu.pc).toString(8).padStart(4, "0");
         UI_IR_MNEMONIC.innerHTML = cpu.disassembleIR();
-        UI_M_NEXT_TYPE.innerHTML = cpu.m_next_type;
 
         // draw all RAM values; clear PC and MAR boxes
         cpu.mem.forEach((elem, i) => {
@@ -229,14 +313,6 @@ function appUpdate() {
         document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.pc % ModuleCPU.CPU.RAM_WORDS).toString(10))
             .classList
             .add(UI_TEXT_MEM_PC_CLASS);
-
-        // show CPU flags
-        UI_FLAG_CARRY.innerHTML = ModuleUtil.showDiff(cpu.flags.carry.toString(), old_flag_carry.toString());
-        UI_FLAG_ZERO.innerHTML = ModuleUtil.showDiff(cpu.flags.zero.toString(), old_flag_zero.toString());
-
-        // show CPU status
-        UI_STATUS_RUNNING.innerHTML = ModuleUtil.showDiff(cpu.status.running.toString(), old_status_running.toString());
-        UI_STATUS_HALTED.innerHTML = ModuleUtil.showDiff(cpu.status.halted.toString(), old_status_halted.toString());
 
         // update all HTML numerical elements
         ModuleUtil.updateHTMLwithDiff(
@@ -289,6 +365,9 @@ function resetUI() {
             UI_TEXT_MEM_PC_CLASS
         );
     };
+
+    // clear all LEDs
+    clearLEDs();
 }
 
 // sync "old" UI values to current CPU values
@@ -299,106 +378,112 @@ function syncUIvalues() {
     old_a = cpu.a;
     old_b = cpu.b;
     old_out = cpu.out;
-    old_flag_carry = cpu.flags.carry
-    old_flag_zero = cpu.flags.zero;
-    old_status_running = cpu.status.running;
-    old_status_halted = cpu.status.halted;
 
     cpu.mem.forEach((elem, i) => (old_mem[i] = elem));
 }
 
+function updateLEDs() {
+    // first clear all LEDs
+    clearLEDs();
+
+    // do LEDs for registers
+    for (let i = 0; i < ModuleCPU.CPU.BITS; i++) {
+        if (cpu.pc & Math.pow(2, i)) document.getElementById(UI_TEXT_FP_LED_PC_ID_PREFIX + i.toString(10)).style.opacity = 1.0;
+        if (cpu.ir & Math.pow(2, i)) document.getElementById(UI_TEXT_FP_LED_IR_ID_PREFIX + i.toString(10)).style.opacity = 1.0;
+        if (cpu.mar & Math.pow(2, i)) document.getElementById(UI_TEXT_FP_LED_MAR_ID_PREFIX + i.toString(10)).style.opacity = 1.0;
+        if (cpu.a & Math.pow(2, i)) document.getElementById(UI_TEXT_FP_LED_A_ID_PREFIX + i.toString(10)).style.opacity = 1.0;
+        if (cpu.b & Math.pow(2, i)) document.getElementById(UI_TEXT_FP_LED_B_ID_PREFIX + i.toString(10)).style.opacity = 1.0;
+        if (cpu.out & Math.pow(2, i)) document.getElementById(UI_TEXT_FP_LED_OUT_ID_PREFIX + i.toString(10)).style.opacity = 1.0;
+    }
+
+    // do LEDs for machine cycles
+    document.getElementById(UI_TEXT_FP_LED_M_ID_PREFIX + cpu.m_next_type).style.opacity = 1.0;
+
+    // do LEDs for CPU flags and status
+    UI_FP_LED_FLAG_CARRY.style.opacity = cpu.flags.carry * 1.0;
+    UI_FP_LED_FLAG_ZERO.style.opacity = cpu.flags.zero * 1.0;
+    UI_FP_LED_STATUS_RUNNING.style.opacity = cpu.status.running * 1.0;
+    UI_FP_LED_STATUS_HALTED.style.opacity = cpu.status.halted * 1.0;
+}
+
+function clearLEDs() {
+    for (let elem of Array.from(document.getElementsByClassName(UI_TEXT_FP_LED_CLASS))) {
+        elem.style.opacity = 0.0;
+    };
+}
+
+
 // **** UI CONTROL CALLBACK FUNCTIONS
-// after each button press, make CPU rescan inputs right away so as not to miss anything
-function ctrlOnDown() {
-    UI_CONTROL_ON.disabled = true;
-    UI_CONTROL_OFF.disabled = false;
-    UI_CONTROL_RAM_IMPORT.disabled = false;
-    UI_CONTROL_RAM_EXPORT.disabled = false;
+// after each control use, make CPU rescan inputs right away so as not to miss anything
+function ctrlOnOff() {
+    toggleSwitch(UI_CONTROL_ON_OFF, 0, UI_NUM_FP_SLIDER_Y);
 
-    cpu.input.on = true;
-    cpu.scanInputs();
+    if (!fp_input.on) {
+        fp_input.on = true;
+        cpu.scanInputs(fp_input);
+        syncUIvalues();
+    } else {
+        fp_input.on = false;
+        cpu.scanInputs(fp_input);
+        resetUI();
+    }
+}
+
+function ctrlRunStop() {
+    toggleSwitch(UI_CONTROL_RUN_STOP, 0, UI_NUM_FP_SLIDER_Y);
+
+    if (!fp_input.run) {
+        fp_input.run = true;
+        cpu.scanInputs(fp_input);
+    } else {
+        fp_input.run = false;
+        cpu.scanInputs(fp_input);
+    }
+}
+
+function ctrlSpeed() {
+    toggleSwitch(UI_CONTROL_SPEED, UI_NUM_FP_SLIDER_X, 0);
+
+    fp_input.slow = !fp_input.slow;
+
+    // this is a special control not attached to the CPU, so we do not tell CPU to scan inputs!
+}
+
+function ctrlCircuitSpy() {
+    toggleSwitch(UI_CONTROL_CIRCUIT_SPY, UI_NUM_FP_SLIDER_X, 0);
+
+    fp_input.circuit_spy = !fp_input.circuit_spy;
+
+    if (fp_input.circuit_spy) {
+        UI_CIRCUIT_SPY_PANEL.style.transitionDelay = UI_TEXT_CIRCUIT_SPY_OPEN_TRANSITION_DELAY;
+        UI_CIRCUIT_SPY_PANEL.style.left = UI_TEXT_CIRCUIT_SPY_OPEN_LEFT;
+        UI_CIRCUIT_SPY_PANEL.style.height = UI_TEXT_CIRCUIT_SPY_OPEN_HEIGHT;
+    } else {
+        UI_CIRCUIT_SPY_PANEL.style.transitionDelay = UI_TEXT_CIRCUIT_SPY_CLOSED_TRANSITION_DELAY;
+        UI_CIRCUIT_SPY_PANEL.style.left = UI_TEXT_CIRCUIT_SPY_CLOSED_LEFT;
+        UI_CIRCUIT_SPY_PANEL.style.height = UI_TEXT_CIRCUIT_SPY_CLOSED_HEIGHT;
+    }
+
+    // this is a special control not attached to the CPU, so we do not tell CPU to scan inputs!
+}
+
+function ctrlButtonUp(ui_button, input_key) {
+    // sync UI
     syncUIvalues();
-}
 
-function ctrlOffDown() {
-    UI_CONTROL_ON.disabled = false;
-    UI_CONTROL_OFF.disabled = true;
-    UI_CONTROL_RAM_IMPORT.disabled = true;
-    UI_CONTROL_RAM_EXPORT.disabled = true;
+    ui_button.style.opacity = 0.0;
 
-    cpu.input.on = false;
-    cpu.scanInputs();
-    resetUI();
-}
+    // set line indicated by input_key to high and scan
+    fp_input[input_key] = true;
+    cpu.scanInputs(fp_input);
 
-function ctrlRunDown() {
-    UI_CONTROL_RUN.disabled = true;
-    UI_CONTROL_STOP.disabled = false;
-
-    cpu.input.run = true;
-    cpu.scanInputs();
-}
-
-function ctrlStopDown() {
-    UI_CONTROL_RUN.disabled = false;
-    UI_CONTROL_STOP.disabled = true;
-    
-    cpu.input.run = false;
-    cpu.scanInputs();
-    syncUIvalues();
-}
-
-function ctrlResetDown() {
-    cpu.input.reset = true;
-    cpu.scanInputs();
-    syncUIvalues();
-}
-
-function ctrlMstepDown() {
-    cpu.input.m_step = true;
-    cpu.scanInputs();
-    syncUIvalues();
-}
-
-function ctrlIstepDown() {
-    cpu.input.i_step = true;
-    cpu.scanInputs();
-    syncUIvalues();
-}
-
-function ctrlOnUp() {
-
-}
-
-function ctrlOffUp() {
-
-}
-
-function ctrlRunUp() {
-
-}
-
-function ctrlStopUp() {
-
-}
-
-function ctrlResetUp() {
-    cpu.input.reset = false;
-    cpu.scanInputs();
-}
-
-function ctrlMstepUp() {
-    cpu.input.m_step = false;
-    cpu.scanInputs();
-}
-
-function ctrlIstepUp() {
-    cpu.input.i_step = false;
-    cpu.scanInputs();
+    // set line indicated by input_key back to low and scan
+    fp_input[input_key] = false;
+    cpu.scanInputs(fp_input);
 }
 
 function ctrlRAMimport() {
-    // sync UI values BEFORE RAM replacement
+    // sync UI
     syncUIvalues();
 
     cpu.replaceRAM(UI_RAM_IMPORT_EXPORT.value);
@@ -406,4 +491,19 @@ function ctrlRAMimport() {
 
 function ctrlRAMexport() {
     UI_RAM_IMPORT_EXPORT.value = cpu.exportRAM();
+}
+
+
+// **** UI SWITCH VISUAL TOGGLE FUNCTION
+function toggleSwitch(ui_switch, transform_x, transform_y) {
+    ui_switch.style.transform = "none";
+
+    if (ui_switch.style.translate == "") {
+        ui_switch.style.translate = transform_x.toString(10)
+            + "px "
+            + transform_y.toString(10)
+            + "px"
+    } else {
+        ui_switch.style.translate = "";
+    }
 }

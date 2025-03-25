@@ -10,14 +10,14 @@ export const BITS = 12;
 
 // machine cycle names
 export const M_CYCLE_NAMES = {
-    FETCH: "Fetch",
-    DECODE: "Decode",
-    MEM_READ: "Memory read",
-    MEM_WRITE: "Memory write",
-    INC_PC: "Increment PC",
-    HALT: "Halt CPU",
-    ALU: "ALU",
-    OUT: "Out",
+    FETCH: "fetch",
+    DECODE: "decode",
+    MEM_READ: "mem_read",
+    MEM_WRITE: "mem_write",
+    INC_PC: "inc_pc",
+    HALT: "halt",
+    ALU: "alu",
+    OUT: "out",
 };
 
 export const OPCODES = [

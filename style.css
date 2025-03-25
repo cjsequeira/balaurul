@@ -1,43 +1,126 @@
 body {
-    background-color: #fdfffc;
-    color: #011627;
+    background-color: #02071c;
+    color: #eaf0f6;
+
     font-family: "Helvetica", "Arial", sans-serif;
 }
 
 button {
     font-size: 0.9rem;
+
     vertical-align: center;
     text-align: center;
+
     height: 1.5rem;
+}
+
+div.front_panel {
+    width: 800px;
+
+    margin: 1rem;
+    padding: 0rem;
+
+    border: 0rem;
+    border-radius: 1rem;
+
+    height: 393.9605110337px;
+    
+    background-image: url("./assets/front_panel.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+
+    position: relative;
+
+    z-index: 10;
+}
+
+img.led {
+    width: 31px;
+    height: 31px;
+
+    border: 0rem;
+
+    margin: 0rem;
+    padding: 0rem;
+
+    opacity: 0.0;
+
+    position: absolute;
+}
+
+
+img.slider {
+    width: 37px;
+    height: 36px;
+
+    border: 0rem;
+
+    margin: 0rem;
+    padding: 0rem;
+
+    opacity: 1.0;
+
+    position: absolute;
+
+    transform: none;
+
+    transition: translate 0.1s;
+}
+
+img.button {
+    width: 28px;
+    height: 43px;
+
+    border: 0rem;
+
+    margin: 0rem;
+    padding: 0rem;
+
+    opacity: 0.0;
+
+    position: absolute;
+
+    transition: opacity 0.1s;
 }
 
 table {
     border: 0rem;
-    margin: 0.3rem 0.3rem 0.8rem 0.3rem;
+
+    margin: 0rem;
     padding: 0rem;
 }
 
 td {
     text-align: right;
     vertical-align: middle;
-    padding: 0.41rem 0.3rem 0.3rem 0.3rem;
-    margin: 0rem;
+
     border: 0.1rem solid #011627;
+
+    padding: 0.05rem;
+    margin: 0rem;
+
     background-color: #ffea65;
+
     font-family: "Lucida Console", "Courier New", monospace;
-    font-size: 0.9rem;
+    font-size: 0.74rem;
 }
 
 th {
     text-align: left;
     vertical-align: middle;
-    padding: 0.41rem 0.3rem 0.3rem 0.3rem;
-    margin: 0rem;
+
     background-color: #ffea65;
+
     border: 0.1rem solid #011627;
+
+    padding: 0.3rem;
+    margin: 0rem;
+
     font-weight: normal;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
+
+
 
 .mono {
     font-family: "Lucida Console", "Courier New", monospace;
@@ -45,26 +128,29 @@ th {
 
 .show_diff {
     color: #f71735;
+
     font-weight: bold;
 }
 
 .pc_ir_m_cycle {
-    margin: 0.4rem;
-    padding: 0rem 0.2rem 0.5rem 0.1rem;
     color: #ffea65;
+
     font-weight: bold;
+
+    margin: 0.9rem 0.3rem 0.9rem 0.3rem;
 }
 
 .ram_import_export {
-    margin: 0rem 0rem 0rem 3.3rem;
-    padding: 0rem;
-    width: 24.5rem;
+    width: 22rem;
+
     text-align: center;
+
+    margin: 0.1rem 0.1rem 0.1rem 2.5rem;
 }
 
 table.memory {
     border: 0.1rem solid #011627;
-    margin: 0.5rem;
+    margin: 1rem 0rem 0rem 0rem;
 }
 
 td.highlight_changed {
@@ -72,11 +158,11 @@ td.highlight_changed {
 }
 
 td.mem_pc {
-    border: 0.2rem solid #f71735;
+    border: 0.2rem solid #0d00ff;
 }
 
 td.mem_mar {
-    border: 0.2rem solid #011627;
+    border: 0.2rem solid #eb02fc;
 }
 
 th.memory {
@@ -84,72 +170,57 @@ th.memory {
 }
 
 th.mem_pc {
-    border: 0.2rem solid #f71735;
+    border: 0.2rem solid #0d00ff;
 }
 
 th.mem_mar {
-    border: 0.2rem solid #011627;
+    border: 0.2rem solid #eb02fc;
 }
 
-.circuit_spy {
-    border-radius: 0.2rem;
+
+#app_12bit_circuit_spy {
+    border-radius: 1rem;
     border: 0.3rem solid #0a4473;
-    background-color: #0085be;
-    color: #011627;
-    width: fit-content;
-    overflow: hidden;
-    font-size: 85%;
-    padding: 0rem;
 
-    /* CLOSED */
-    /* height: 3.44rem; */
+    margin: 1rem;
+    padding: 0.4rem;
 
-    /* OPEN */
-    height: 30.2rem;
-}
-
-.circuit_spy_header {
-    border-radius: 0.2rem;
-    background-color: #17e4f7;
+    background-color: #005c84;
     color: #011627;
 
-    font-size: 120%;
-    vertical-align: center;
+    width: 25.5rem;
+    height: 18rem;
 
-    margin: 0.8rem 0.9rem 0rem 0.9rem;
-    padding: 0.4rem 0.3rem 0.3rem 0.3rem;
-}
+    position: absolute;
+    top: 0rem;
+    left: 23rem;
 
-/* floating div code based on: https://stackoverflow.com/questions/5803023/how-to-place-two-divs-next-to-each-other */
-#app_12bit_wrapper {
-    width: fit-content;
+    visibility: hidden;
+
+    transition: left 0.3s, height 0.3s;
+    transition-delay: 0s, 1s;
+    transition-property: left, height;
+
+    z-index: 5;
+
     overflow: hidden;
-}
-
-#app_12bit_first {
-    width: fit-content;
-    float: left;
-    margin: 0.5rem;
-}
-
-#app_12bit_second {
-    width: fit-content;
-    float: right;
-    margin: 0.5rem;
 }
 
 [id*="app_12bit_memcell_"] {
-    padding: 0.2rem;
-    border: 0.2rem solid rgba(0,0,0,0.0);
+    border: 0.1rem solid rgba(0,0,0,0.0);
+
     text-align: center;
 }
 
 #app_12bit_ram_import_export {
-    width: 24.1rem;
-    height: 5.2rem;
-    margin: 0rem 0rem 0.4rem 0rem;
-    padding: 0.1rem 0.1rem 0rem 0.4rem;
+    width: 100%;
+    height: 4rem;
+
     resize: none;
+
     font-family: "Lucida Console", "Courier New", monospace;
-    font-size: 0.85rem;
+    font-size: 0.93rem;
+    
+    margin: 0.1rem;
+    padding: 0.2rem;
 }
