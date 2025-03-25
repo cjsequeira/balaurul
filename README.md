@@ -1,14 +1,21 @@
-# Balaurul
+# Balaurul, version Unu
 A virtual, custom 12-bit CPU. Written by Chris Musei-Sequeira
 
+Live at https://cjsequeira.github.io/baularul/
+
 ## Inspirations
+* The [Altair 8800](https://en.wikipedia.org/wiki/Altair_8800) and [s2js Altair 8800 online simulator](https://s2js.com/altair/)
+* [Baulari](https://en.wikipedia.org/wiki/Balaur) in Romanian folklore
 * [Ben Eater's 8-bit CPU](https://eater.net/8bit)
 * [Daniel Grießhaber's SAP-1](https://dangrie158.github.io/SAP-1/)
-* The [PDP-12](https://en.wikipedia.org/wiki/PDP-12)
-* The [Altair 8800](https://en.wikipedia.org/wiki/Altair_8800) and [s2js Altair 8800 online simulator](https://s2js.com/altair/)
 * The [Intel 8080 Microcomputer System User's Manual published September 1975](https://archive.ph/GFz3V)
-* Marco Schweighauser's [Simple 8-Bit Assembler Simulator](https://schweigi.github.io/assembler-simulator/)
-* [Baulari](https://en.wikipedia.org/wiki/Balaur) in Romanian folklore
+* [Marco Schweighauser's Simple 8-Bit Assembler Simulator](https://schweigi.github.io/assembler-simulator/)
+* The [PDP-11](https://en.wikipedia.org/wiki/PDP-11) and [PDP-12](https://en.wikipedia.org/wiki/PDP-12) minicomputers
+
+## Coming next?
+* Keyboard shortcuts
+* New instruction set! (Hooray for breaking changes!)
+* SOUND? (Probably not)
 
 ## Instructions
 | Opcode (Octal) | Description | Mnemonic | Operand (If Applicable) | Total Width (Words)
