@@ -54,6 +54,10 @@ export class CPU {
         this.m_cycle = 0;
         this.m_opcode = 0;
         this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
+
+        // define and set machine cycle and instruction cycle counters
+        this.elapsed_m = 0;
+        this.elapsed_i = 0;
     }
 
     // export RAM as octal strings if CPU is on; else export empty string
@@ -94,14 +98,14 @@ export class CPU {
     }
 
     // get opcode stored in IR
-    getOpCodeFromIR() {
+    getOpCodeFrom(value) {
         // use mod operator so there is never an invalid opcode!
-        return (this.ir % CPU.OPCODES.length);
+        return (value % CPU.OPCODES.length);
     }
 
-    // disassemble IR to a mnemonic
-    disassembleIR() {
-        return CPU.OPCODES[this.getOpCodeFromIR()].name;
+    // disassemble value to a mnemonic
+    disassemble(value) {
+        return CPU.OPCODES[this.getOpCodeFrom(value)].name;
     }
 
     // increment PC
@@ -132,6 +136,10 @@ export class CPU {
         this.m_cycle = 0;
         this.m_opcode = 0;
         this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
+
+        // reset machine cycle and instruction cycle counters
+        this.elapsed_m = 0;
+        this.elapsed_i = 0;
 
         // set RAM to random contents
         this.mem = [];
@@ -190,6 +198,10 @@ export class CPU {
         this.m_cycle = 0;
         this.m_opcode = 0;
         this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
+
+        // reset machine cycle and instruction cycle counters
+        this.elapsed_m = 0;
+        this.elapsed_i = 0;
 
         // set CPU "ready" to true
         this.status.ready = true;
@@ -345,7 +357,7 @@ export class CPU {
         if (this.status.running || this.status.doing_m_step || this.status.doing_i_step) {
             // if CPU is running OR doing m step OR doing i step, then ...
 
-            // use machine cycle counter to determine what to do
+            // use machine cycle indicator to determine what to do
             switch (this.m_cycle) {
                 // FETCH (machine cycle 0)
                 case 0:
@@ -360,7 +372,7 @@ export class CPU {
                 // DECODE (machine cycle 1)
                 case 1:
                     // Decode IR to get opcode
-                    this.m_opcode = this.getOpCodeFromIR();
+                    this.m_opcode = this.getOpCodeFrom(this.ir);
                     break;
 
                 // INSTRUCTION-SPECIFIC (machine cycles 2 and beyond)
@@ -370,8 +382,11 @@ export class CPU {
                     break;
             }
 
-            // increment machine cycle counter
+            // increment machine cycle indicator
             this.m_cycle++;
+
+            // increment machine cycle counter
+            this.elapsed_m++;
 
             // indicate that CPU has finished a machine step
             this.status.doing_m_step = false;
@@ -382,13 +397,16 @@ export class CPU {
                 if ((this.m_cycle - 2) >= CPU.OPCODES[this.m_opcode].funcs.length) {
                     // if instruction cycle is finished, then...
 
-                    // reset machine cycle counter and "next" indicator
+                    // reset machine cycle indicator and "next" indicator
                     // next machine cycle will be 0, which is always a "FETCH"
                     this.m_cycle = 0;
                     this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
 
                     // indicate that the CPU has finished an instruction step
                     this.status.doing_i_step = false;
+
+                    // increment instruction cycle counter
+                    this.elapsed_i++;
                 } else {
                     // if instruction cycle is not yet finished, then...
 
@@ -398,6 +416,4 @@ export class CPU {
             }
         }
     }
-
-
 };

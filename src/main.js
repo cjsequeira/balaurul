@@ -55,9 +55,9 @@ const UI_MEM_ROWS = 8;
 const UI_MEM_COLS = 8;
 
 const UI_TEXT_CIRCUIT_SPY_OPEN_LEFT = "51rem";
-const UI_TEXT_CIRCUIT_SPY_OPEN_HEIGHT = "40rem";
+const UI_TEXT_CIRCUIT_SPY_OPEN_HEIGHT = "42.5rem";
 const UI_TEXT_CIRCUIT_SPY_CLOSED_LEFT = "23rem";
-const UI_TEXT_CIRCUIT_SPY_CLOSED_HEIGHT = "18rem";
+const UI_TEXT_CIRCUIT_SPY_CLOSED_HEIGHT = "21rem";
 const UI_TEXT_CIRCUIT_SPY_OPEN_TRANSITION_DELAY = "0s, 0.3s";
 const UI_TEXT_CIRCUIT_SPY_CLOSED_TRANSITION_DELAY = "0.3s, 0s";
 
@@ -85,6 +85,9 @@ const UI_IR_DEC = document.getElementById("app_12bit_ir_dec");
 
 const UI_VAL_AT_PC = document.getElementById("app_12bit_val_at_pc");
 const UI_IR_MNEMONIC = document.getElementById("app_12bit_ir_mnemonic");
+const UI_PC_MNEMONIC = document.getElementById("app_12bit_pc_mnemonic");
+const UI_ELAPSED_M = document.getElementById("app_12bit_elapsed_m");
+const UI_ELAPSED_I = document.getElementById("app_12bit_elapsed_i");
 
 const UI_A_BINARY = document.getElementById("app_12bit_a_binary");
 const UI_A_OCTAL = document.getElementById("app_12bit_a_octal");
@@ -277,9 +280,16 @@ function appUpdate() {
         // update LEDs
         updateLEDs();
 
-        // show value at PC, disassembly of IR, and next machine cycle type
+        // show value at PC
         UI_VAL_AT_PC.innerHTML = cpu.getWordAt(cpu.pc).toString(8).padStart(4, "0");
-        UI_IR_MNEMONIC.innerHTML = cpu.disassembleIR();
+
+        // show disassembly of IR and disassembly of word at PC
+        UI_IR_MNEMONIC.innerHTML = cpu.disassemble(cpu.ir);
+        UI_PC_MNEMONIC.innerHTML = cpu.disassemble(cpu.getWordAt(cpu.pc));
+
+        // show elapsed machine cycles and instruction cycles
+        UI_ELAPSED_M.innerHTML = cpu.elapsed_m.toLocaleString();
+        UI_ELAPSED_I.innerHTML = cpu.elapsed_i.toLocaleString();
 
         // draw all RAM values; clear PC and MAR boxes
         cpu.mem.forEach((elem, i) => {
