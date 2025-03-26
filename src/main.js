@@ -26,7 +26,7 @@ const UI_TEXT_FP_CONTROL_INPUT_KEYS = Array.from("=-0987654321");
 const UI_TEXT_FP_CONTROL_OPS_KEYS = Array.from("qwertyuio");
 
 const UI_NUM_FP_SLIDER_X = -20;
-const UI_NUM_FP_SLIDER_Y = -25;
+const UI_NUM_FP_SLIDER_Y = -17;
 const UI_NUM_INPUT_SWITCHES = 12;
 
 const UI_FP_LED_FLAG_CARRY = document.getElementById("app_12bit_led_flag_carry");
