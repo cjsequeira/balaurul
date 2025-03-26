@@ -6,7 +6,6 @@
 import * as ModuleCPU from "./cpu.js";
 import * as ModuleUtil from "./util.js";
 
-
 // **** CONSTANTS
 
 // target CPU speed for "fast" mode, in MACHINE CYCLES PER SECOND
@@ -127,7 +126,38 @@ var old_b = null;
 var old_out = null;
 var old_mem = Array(UI_MEM_COLS * UI_MEM_ROWS);
 
-// define variable for front panel yellow input switch UI handles
+// holders for LED brightnesses
+var LEDaccumulators = {
+    pc: Array(12).fill(0.0),
+    mar: Array(12).fill(0.0),
+    ir: Array(12).fill(0.0),
+    a: Array(12).fill(0.0),
+    b: Array(12).fill(0.0),
+    out: Array(12).fill(0.0),
+
+    m_cycle: {
+        [ModuleCPU.CPU.M_CYCLE_NAMES.FETCH]: 0.0,
+        [ModuleCPU.CPU.M_CYCLE_NAMES.DECODE]: 0.0,
+        [ModuleCPU.CPU.M_CYCLE_NAMES.MEM_READ]: 0.0,
+        [ModuleCPU.CPU.M_CYCLE_NAMES.MEM_WRITE]: 0.0,
+        [ModuleCPU.CPU.M_CYCLE_NAMES.INC_PC]: 0.0,
+        [ModuleCPU.CPU.M_CYCLE_NAMES.HALT]: 0.0,
+        [ModuleCPU.CPU.M_CYCLE_NAMES.ALU]: 0.0,
+        [ModuleCPU.CPU.M_CYCLE_NAMES.OUT]: 0.0,
+    },
+
+    flags: {
+        carry: 0.0,
+        zero: 0.0,
+    },
+
+    status: {
+        running: 0.0,
+        halted: 0.0
+    },
+}
+
+// holder for front panel yellow input switch UI handles
 var ui_input_switches = [];
 
 // input signal lines object
@@ -201,7 +231,7 @@ function setup() {
     memory_html += "</table>";
 
 
-    // generate handles for input switches
+    // **** GENERATE HANDLES FOR INPUT SWITCHES
     for (let i = 0; i < ModuleCPU.CPU.BITS; i++) {
         // build each input switch UI object
         ui_input_switches.push(document.getElementById(UI_TEXT_FP_CONTROL_INPUT_ID_PREFIX + i.toString(10)));
@@ -216,12 +246,11 @@ function setup() {
     }
 
 
-
     // **** INITIALIZE UI
     // format memory block UI with structure
     UI_MEM.innerHTML = memory_html;
 
-    // establish initial statuses and callbacks for controls
+    // establish callbacks for controls
     UI_CONTROL_ON_OFF.addEventListener("click", ctrlOnOff);
     UI_CONTROL_RUN_STOP.addEventListener("click", ctrlRunStop);
 
@@ -250,9 +279,9 @@ function setup() {
 
     // **** RESET UI
     resetUI();
-    
+
     // change the visibility property for circuit spy 
-    // note that it is underneath the front panel on startup!
+    // note that it is intentionally underneath the front panel on startup!
     UI_CIRCUIT_SPY_PANEL.style.visibility = "visible";
 
 
@@ -266,11 +295,18 @@ function appUpdate() {
     // update CPU once or multiple times based on "speed" UI switch
     if (fp_input.slow) {
         // slow mode? update only once (roughly 60 machine cycles per second)
+
+        clearLEDs();
         cpu.update();
+        accumulateLEDs(1.0);
     } else {
         // fast mode? update to meet the speed target
+
+        clearLEDs();
+
         for (let i = 0; i < FAST_TARGET; i++) {
             cpu.update();
+            accumulateLEDs(FAST_TARGET);
         }
     }
 
@@ -278,7 +314,7 @@ function appUpdate() {
         // if CPU status is "on" then ...
 
         // update LEDs
-        updateLEDs();
+        redrawLEDs();
 
         // show value at PC
         UI_VAL_AT_PC.innerHTML = cpu.getWordAt(cpu.pc).toString(8).padStart(4, "0");
@@ -392,33 +428,88 @@ function syncUIvalues() {
     cpu.mem.forEach((elem, i) => (old_mem[i] = elem));
 }
 
-function updateLEDs() {
-    // first clear all LEDs
-    clearLEDs();
-
-    // do LEDs for registers
+// accumulate LED brightnesses
+function accumulateLEDs(scale) {
+    // accumulate LEDs for registers
     for (let i = 0; i < ModuleCPU.CPU.BITS; i++) {
-        if (cpu.pc & Math.pow(2, i)) document.getElementById(UI_TEXT_FP_LED_PC_ID_PREFIX + i.toString(10)).style.opacity = 1.0;
-        if (cpu.ir & Math.pow(2, i)) document.getElementById(UI_TEXT_FP_LED_IR_ID_PREFIX + i.toString(10)).style.opacity = 1.0;
-        if (cpu.mar & Math.pow(2, i)) document.getElementById(UI_TEXT_FP_LED_MAR_ID_PREFIX + i.toString(10)).style.opacity = 1.0;
-        if (cpu.a & Math.pow(2, i)) document.getElementById(UI_TEXT_FP_LED_A_ID_PREFIX + i.toString(10)).style.opacity = 1.0;
-        if (cpu.b & Math.pow(2, i)) document.getElementById(UI_TEXT_FP_LED_B_ID_PREFIX + i.toString(10)).style.opacity = 1.0;
-        if (cpu.out & Math.pow(2, i)) document.getElementById(UI_TEXT_FP_LED_OUT_ID_PREFIX + i.toString(10)).style.opacity = 1.0;
+        if (cpu.pc & Math.pow(2, i)) LEDaccumulators.pc[i] += 1.0 / scale;
+        if (cpu.ir & Math.pow(2, i)) LEDaccumulators.ir[i] += 1.0 / scale;
+        if (cpu.mar & Math.pow(2, i)) LEDaccumulators.mar[i] += 1.0 / scale;
+        if (cpu.a & Math.pow(2, i)) LEDaccumulators.a[i] += 1.0 / scale;
+        if (cpu.b & Math.pow(2, i)) LEDaccumulators.b[i] += 1.0 / scale;
+        if (cpu.out & Math.pow(2, i)) LEDaccumulators.out[i] += 1.0 / scale;
     }
 
-    // do LEDs for machine cycles
-    document.getElementById(UI_TEXT_FP_LED_M_ID_PREFIX + cpu.m_next_type).style.opacity = 1.0;
+    // accumulate LEDs for machine cycles
+    LEDaccumulators.m_cycle[cpu.m_next_type] += 1.0 / scale;
 
-    // do LEDs for CPU flags and status
-    UI_FP_LED_FLAG_CARRY.style.opacity = cpu.flags.carry * 1.0;
-    UI_FP_LED_FLAG_ZERO.style.opacity = cpu.flags.zero * 1.0;
-    UI_FP_LED_STATUS_RUNNING.style.opacity = cpu.status.running * 1.0;
-    UI_FP_LED_STATUS_HALTED.style.opacity = cpu.status.halted * 1.0;
+    // accumulate LEDs for CPU flags and status
+    LEDaccumulators.flags.carry += (cpu.flags.carry * 1.0) / scale;
+    LEDaccumulators.flags.zero += (cpu.flags.zero * 1.0) / scale;
+    LEDaccumulators.status.running += (cpu.status.running * 1.0) / scale;
+    LEDaccumulators.status.halted += (cpu.status.halted * 1.0) / scale;
+}
+
+// redraw all LEDs based on accumulated brightness
+function redrawLEDs() {
+    // redraw LEDs for registers
+    for (let i = 0; i < ModuleCPU.CPU.BITS; i++) {
+        document.getElementById(UI_TEXT_FP_LED_PC_ID_PREFIX + i.toString(10)).style.opacity = LEDaccumulators.pc[i];
+        document.getElementById(UI_TEXT_FP_LED_IR_ID_PREFIX + i.toString(10)).style.opacity = LEDaccumulators.ir[i];
+        document.getElementById(UI_TEXT_FP_LED_MAR_ID_PREFIX + i.toString(10)).style.opacity = LEDaccumulators.mar[i];
+        document.getElementById(UI_TEXT_FP_LED_A_ID_PREFIX + i.toString(10)).style.opacity = LEDaccumulators.a[i];
+        document.getElementById(UI_TEXT_FP_LED_B_ID_PREFIX + i.toString(10)).style.opacity = LEDaccumulators.b[i];
+        document.getElementById(UI_TEXT_FP_LED_OUT_ID_PREFIX + i.toString(10)).style.opacity = LEDaccumulators.out[i];
+    }
+
+    // redraw LEDs for machine cycles
+    for (let key in ModuleCPU.CPU.M_CYCLE_NAMES) {
+        document.getElementById(UI_TEXT_FP_LED_M_ID_PREFIX + ModuleCPU.CPU.M_CYCLE_NAMES[key])
+            .style.opacity = LEDaccumulators.m_cycle[ModuleCPU.CPU.M_CYCLE_NAMES[key]];
+    }
+
+    // redraw LEDs for CPU flags and status
+    UI_FP_LED_FLAG_CARRY.style.opacity = LEDaccumulators.flags.carry;
+    UI_FP_LED_FLAG_ZERO.style.opacity = LEDaccumulators.flags.zero;
+    UI_FP_LED_STATUS_RUNNING.style.opacity = LEDaccumulators.status.running;
+    UI_FP_LED_STATUS_HALTED.style.opacity = LEDaccumulators.status.halted;
 }
 
 function clearLEDs() {
+    // reset UI LED opacity to zero
     for (let elem of Array.from(document.getElementsByClassName(UI_TEXT_FP_LED_CLASS))) {
         elem.style.opacity = 0.0;
+    }
+
+    // clear the LED accumulators
+    LEDaccumulators = {
+        pc: Array(12).fill(0.0),
+        mar: Array(12).fill(0.0),
+        ir: Array(12).fill(0.0),
+        a: Array(12).fill(0.0),
+        b: Array(12).fill(0.0),
+        out: Array(12).fill(0.0),
+
+        m_cycle: {
+            [ModuleCPU.CPU.M_CYCLE_NAMES.FETCH]: 0.0,
+            [ModuleCPU.CPU.M_CYCLE_NAMES.DECODE]: 0.0,
+            [ModuleCPU.CPU.M_CYCLE_NAMES.MEM_READ]: 0.0,
+            [ModuleCPU.CPU.M_CYCLE_NAMES.MEM_WRITE]: 0.0,
+            [ModuleCPU.CPU.M_CYCLE_NAMES.INC_PC]: 0.0,
+            [ModuleCPU.CPU.M_CYCLE_NAMES.HALT]: 0.0,
+            [ModuleCPU.CPU.M_CYCLE_NAMES.ALU]: 0.0,
+            [ModuleCPU.CPU.M_CYCLE_NAMES.OUT]: 0.0,
+        },
+
+        flags: {
+            carry: 0.0,
+            zero: 0.0,
+        },
+
+        status: {
+            running: 0.0,
+            halted: 0.0
+        },
     };
 }
 
