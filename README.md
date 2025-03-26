@@ -1,7 +1,7 @@
 # Balaurul, version Unu
 A virtual, custom 12-bit CPU. Written by Chris Musei-Sequeira
 
-Live at https://cjsequeira.github.io/baularul/
+Live at https://cjsequeira.github.io/balaurul/
 
 ## Inspirations
 * The [Altair 8800](https://en.wikipedia.org/wiki/Altair_8800) and [s2js Altair 8800 online simulator](https://s2js.com/altair/)
