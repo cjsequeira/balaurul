@@ -32,3 +32,7 @@ Live at https://cjsequeira.github.io/baularul/
 | 0011 | OUT | Write accumulator to output | | 1
 | 0012 | HLT | Increment program counter and halt | | 1
 | 0013 to 0077 | NOP | No operation | | 1
+
+## Version history
+
+* 1.0.0: Initial version
