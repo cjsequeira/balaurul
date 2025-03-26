@@ -23,11 +23,12 @@ const UI_TEXT_FP_LED_OUT_ID_PREFIX = "app_12bit_led_out_";
 
 const UI_TEXT_FP_CONTROL_INPUT_ID_PREFIX = "app_12bit_control_input_";
 const UI_TEXT_FP_CONTROL_INPUT_KEYS = Array.from("=-0987654321");
-const UI_TEXT_FP_CONTROL_OPS_KEYS = Array.from("qwertyuio");
 
 const UI_NUM_FP_SLIDER_X = -20;
 const UI_NUM_FP_SLIDER_Y = -17;
 const UI_NUM_INPUT_SWITCHES = 12;
+
+const UI_FRONT_PANEL = document.getElementById("app_12bit_front_panel");
 
 const UI_FP_LED_FLAG_CARRY = document.getElementById("app_12bit_led_flag_carry");
 const UI_FP_LED_FLAG_ZERO = document.getElementById("app_12bit_led_flag_zero");
@@ -125,6 +126,9 @@ var old_a = null;
 var old_b = null;
 var old_out = null;
 var old_mem = Array(UI_MEM_COLS * UI_MEM_ROWS);
+
+// holder for keyboard shortcuts
+var keys = {};
 
 // holders for LED brightnesses
 var LEDaccumulators = {
@@ -243,6 +247,15 @@ function setup() {
                 toggleSwitch(ui_input_switches[i], 0, UI_NUM_FP_SLIDER_Y);
                 fp_input.input_switches[i] = !fp_input.input_switches[i];
             });
+
+        // build up keyboard shortcut list
+        keys = {
+            ...keys,
+            [UI_TEXT_FP_CONTROL_INPUT_KEYS[i]]: () => {
+                toggleSwitch(ui_input_switches[i], 0, UI_NUM_FP_SLIDER_Y);
+                fp_input.input_switches[i] = !fp_input.input_switches[i];
+            }
+        };
     }
 
 
@@ -250,7 +263,7 @@ function setup() {
     // format memory block UI with structure
     UI_MEM.innerHTML = memory_html;
 
-    // establish callbacks for controls
+    // establish mouse callbacks for controls
     UI_CONTROL_ON_OFF.addEventListener("click", ctrlOnOff);
     UI_CONTROL_RUN_STOP.addEventListener("click", ctrlRunStop);
 
@@ -275,6 +288,22 @@ function setup() {
 
     UI_CONTROL_SPEED.addEventListener("click", ctrlSpeed)
     UI_CONTROL_CIRCUIT_SPY.addEventListener("click", ctrlCircuitSpy)
+
+    // establish keypress callbacks for controls
+    keys = {
+        ...keys,
+        "q": ctrlOnOff,
+        "w": ctrlRunStop,
+        "e": () => ctrlButtonUp(UI_CONTROL_RESET, "reset"),
+        "r": () => ctrlButtonUp(UI_CONTROL_M_STEP, "m_step"),
+        "t": () => ctrlButtonUp(UI_CONTROL_I_STEP, "i_step"),
+        "y": () => ctrlButtonUp(UI_CONTROL_EXAMINE, "examine"),
+        "u": () => ctrlButtonUp(UI_CONTROL_EXAMINE_NEXT, "examine_next"),
+        "i": () => ctrlButtonUp(UI_CONTROL_DEPOSIT, "deposit"),
+        "o": () => ctrlButtonUp(UI_CONTROL_DEPOSIT_NEXT, "deposit_next"),
+    };
+
+    document.addEventListener("keyup", (event) => handleKeys(event));
 
 
     // **** RESET UI
@@ -515,7 +544,16 @@ function clearLEDs() {
 
 
 // **** UI CONTROL CALLBACK FUNCTIONS
-// after each control use, make CPU rescan inputs right away so as not to miss anything
+function handleKeys(event) {
+    if (event.target == document.getElementsByTagName("body")[0]) {
+        // if recipient of key-up is the main body (e.g. not the circuit spy text editor), then ...
+        let key = event.key.toLowerCase();
+
+        // execute associated callback for keypress
+        if (key in keys) keys[key]();
+    }
+}
+
 function ctrlOnOff() {
     toggleSwitch(UI_CONTROL_ON_OFF, 0, UI_NUM_FP_SLIDER_Y);
 
