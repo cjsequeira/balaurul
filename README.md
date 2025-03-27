@@ -30,7 +30,8 @@ Live at https://cjsequeira.github.io/balaurul/
 | 0010 | JZ | Jump to address if zero flag is set | Address (1 word) | 2 | 4
 | 0011 | OUT | Write accumulator to output | | 1 | 4
 | 0012 | HLT | Increment program counter and halt | | 1 | 4
-| 0013 to 0077 | NOP | No operation | | 1 | 3
+| 0013 | IN | Store input switches in accumulator | | 1 | 4
+| 0014 to 0077 | NOP | No operation | | 1 | 3
 
 ## Version history
 
