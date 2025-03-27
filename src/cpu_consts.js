@@ -233,7 +233,11 @@ function m_ifCarryThenStorePCaddrInPC(cpu) {
 
 // if zero, then store into PC: word at address in PC
 function m_ifZeroThenStorePCaddrInPC(cpu) {
-    if (cpu.flags.zero) cpu.pc = cpu.getWordAt(cpu.pc);
+    if (cpu.flags.zero) {
+        cpu.pc = cpu.getWordAt(cpu.pc);
+    } else {
+        cpu.incPC();
+    }
 }
 
 // increment PC
