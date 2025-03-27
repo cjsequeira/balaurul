@@ -17,6 +17,7 @@ export const M_CYCLE_NAMES = {
     INC_PC: "inc_pc",
     HALT: "halt",
     ALU: "alu",
+    IN: "in",
     OUT: "out",
 };
 
@@ -122,7 +123,14 @@ export const OPCODES = [
         next_type: [M_CYCLE_NAMES.INC_PC, M_CYCLE_NAMES.HALT],
     },
 
-    // ... plus 53 extra NOP opcodes for padding ...
+    // 0o13: IN: Store input switch statuses into accumulator
+    {
+        name: "IN",
+        funcs: [m_in, m_incPC],
+        next_type: [M_CYCLE_NAMES.IN, M_CYCLE_NAMES.INC_PC],
+    },
+
+    // ... plus 52 extra NOP opcodes for padding ...
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
@@ -192,8 +200,9 @@ export const OPCODES = [
 
 
 // **** STATIC MACHINE CYCLE OPERATIONS FOR EACH OPCODE
-// add B to A
+// add B to accumulator
 function m_addBtoA(cpu) {
+    // add B to accumulator
     cpu.a += cpu.b;
 
     // set carry flag appropriately
@@ -213,6 +222,7 @@ function m_halt(cpu) {
 }
 
 // if carry, then store into PC: word at address in PC
+// otherwise, just increment PC
 function m_ifCarryThenStorePCaddrInPC(cpu) {
     if (cpu.flags.carry) {
         cpu.pc = cpu.getWordAt(cpu.pc);
@@ -222,12 +232,19 @@ function m_ifCarryThenStorePCaddrInPC(cpu) {
 }
 
 // if zero, then store into PC: word at address in PC
+// otherwise, just increment PC
 function m_ifZeroThenStorePCaddrInPC(cpu) {
     if (cpu.flags.zero) {
         cpu.pc = cpu.getWordAt(cpu.pc);
     } else {
         cpu.incPC();
     }
+}
+
+// store input switch value in the accumulator
+// this assumes that the latest input switch statuses have already been scanned!
+function m_in(cpu) {
+    cpu.a = cpu.input_switch_value;
 }
 
 // increment PC
@@ -240,22 +257,22 @@ function m_out(cpu) {
     cpu.out = cpu.a;
 }
 
-// store into RAM at address in MAR: value in A
+// store into RAM at address in MAR: value in accumulator
 function m_storeAatMARaddr(cpu) {
     cpu.putWordAt(cpu.mar, cpu.a);
 }
 
-// store into A: word at address in MAR
+// store into accumulator: word at address in MAR
 function m_storeMARaddrInA(cpu) {
     cpu.a = cpu.getWordAt(cpu.mar);
 }
 
-// store into A: word at address in MAR
+// store into B: word at address in MAR
 function m_storeMARaddrInB(cpu) {
     cpu.b = cpu.getWordAt(cpu.mar);
 }
 
-// store into A: word at address in PC
+// store into accumulator: word at address in PC
 function m_storePCaddrInA(cpu) {
     cpu.a = cpu.getWordAt(cpu.pc);
 }
@@ -270,7 +287,7 @@ function m_storePCaddrInPC(cpu) {
     cpu.pc = cpu.getWordAt(cpu.pc);
 }
 
-// subtract B from A
+// subtract B from accumulator
 function m_subBfromA(cpu) {
     // to subtract, add the two's-complement of B to accumulator
     cpu.a += Math.pow(2, BITS) - cpu.b;

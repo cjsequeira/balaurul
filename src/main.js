@@ -28,8 +28,6 @@ const UI_NUM_FP_SLIDER_X = -20;
 const UI_NUM_FP_SLIDER_Y = -17;
 const UI_NUM_INPUT_SWITCHES = 12;
 
-const UI_FRONT_PANEL = document.getElementById("app_12bit_front_panel");
-
 const UI_FP_LED_FLAG_CARRY = document.getElementById("app_12bit_led_flag_carry");
 const UI_FP_LED_FLAG_ZERO = document.getElementById("app_12bit_led_flag_zero");
 const UI_FP_LED_STATUS_RUNNING = document.getElementById("app_12bit_led_status_running");
@@ -131,35 +129,7 @@ var old_mem = Array(UI_MEM_COLS * UI_MEM_ROWS);
 var keys = {};
 
 // holders for LED brightnesses
-var LEDaccumulators = {
-    pc: Array(12).fill(0.0),
-    mar: Array(12).fill(0.0),
-    ir: Array(12).fill(0.0),
-    a: Array(12).fill(0.0),
-    b: Array(12).fill(0.0),
-    out: Array(12).fill(0.0),
-
-    m_cycle: {
-        [ModuleCPU.CPU.M_CYCLE_NAMES.FETCH]: 0.0,
-        [ModuleCPU.CPU.M_CYCLE_NAMES.DECODE]: 0.0,
-        [ModuleCPU.CPU.M_CYCLE_NAMES.MEM_READ]: 0.0,
-        [ModuleCPU.CPU.M_CYCLE_NAMES.MEM_WRITE]: 0.0,
-        [ModuleCPU.CPU.M_CYCLE_NAMES.INC_PC]: 0.0,
-        [ModuleCPU.CPU.M_CYCLE_NAMES.HALT]: 0.0,
-        [ModuleCPU.CPU.M_CYCLE_NAMES.ALU]: 0.0,
-        [ModuleCPU.CPU.M_CYCLE_NAMES.OUT]: 0.0,
-    },
-
-    flags: {
-        carry: 0.0,
-        zero: 0.0,
-    },
-
-    status: {
-        running: 0.0,
-        halted: 0.0
-    },
-}
+var LEDaccumulators = {};
 
 // holder for front panel yellow input switch UI handles
 var ui_input_switches = [];
@@ -244,8 +214,14 @@ function setup() {
         ui_input_switches[i].addEventListener(
             "click",
             () => {
+                // toggle this UI switch
                 toggleSwitch(ui_input_switches[i], 0, UI_NUM_FP_SLIDER_Y);
+
+                // invert the value of this UI switch
                 fp_input.input_switches[i] = !fp_input.input_switches[i];
+
+                // tell CPU to rescan inputs
+                cpu.scanInputs(fp_input);
             });
 
         // build up keyboard shortcut list
@@ -504,14 +480,20 @@ function redrawLEDs() {
     UI_FP_LED_STATUS_HALTED.style.opacity = LEDaccumulators.status.halted;
 }
 
+// clear LEDs
 function clearLEDs() {
     // reset UI LED opacity to zero
     for (let elem of Array.from(document.getElementsByClassName(UI_TEXT_FP_LED_CLASS))) {
         elem.style.opacity = 0.0;
     }
 
-    // clear the LED accumulators
-    LEDaccumulators = {
+    // clear all LED accumulators
+    LEDaccumulators = zeroedLEDaccumulators();
+}
+
+// return zeroed LED accumulators
+function zeroedLEDaccumulators() {
+    return {
         pc: Array(12).fill(0.0),
         mar: Array(12).fill(0.0),
         ir: Array(12).fill(0.0),
@@ -527,6 +509,7 @@ function clearLEDs() {
             [ModuleCPU.CPU.M_CYCLE_NAMES.INC_PC]: 0.0,
             [ModuleCPU.CPU.M_CYCLE_NAMES.HALT]: 0.0,
             [ModuleCPU.CPU.M_CYCLE_NAMES.ALU]: 0.0,
+            [ModuleCPU.CPU.M_CYCLE_NAMES.IN]: 0.0,
             [ModuleCPU.CPU.M_CYCLE_NAMES.OUT]: 0.0,
         },
 
