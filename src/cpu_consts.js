@@ -23,12 +23,11 @@ export const M_CYCLE_NAMES = {
 export const OPCODES = [
     // 11 instructions ...
     // 0o00: NOP: No operation (just increment PC); 0 operands
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
     // 0o01: LDA: Load accumulator from address; 1 operand
     {
         name: "LDA",
-        num_ops: 1,
         funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInA, m_incPC],
         next_type: [
             M_CYCLE_NAMES.INC_PC,
@@ -41,7 +40,6 @@ export const OPCODES = [
     // 0o02: ADD: Add value at address to accumulator using B as a temp register
     {
         name: "ADD",
-        num_ops: 1,
         funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInB, m_addBtoA, m_incPC],
         next_type: [
             M_CYCLE_NAMES.INC_PC,
@@ -55,7 +53,6 @@ export const OPCODES = [
     // 0o03: SUB: Subtract value at address from accumulator using B as a temp register
     {
         name: "SUB",
-        num_ops: 1,
         funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInB, m_subBfromA, m_incPC],
         next_type: [
             M_CYCLE_NAMES.INC_PC,
@@ -69,7 +66,6 @@ export const OPCODES = [
     // 0o04: STA: Store accumulator in address; 1 operand
     {
         name: "STA",
-        num_ops: 1,
         funcs: [m_incPC, m_storePCaddrInMAR, m_storeAatMARaddr, m_incPC],
         next_type: [
             M_CYCLE_NAMES.INC_PC,
@@ -82,7 +78,6 @@ export const OPCODES = [
     // 0o05: LDI: Load accumulator from immediate; 1 operand
     {
         name: "LDI",
-        num_ops: 1,
         funcs: [m_incPC, m_storePCaddrInA, m_incPC],
         next_type: [
             M_CYCLE_NAMES.INC_PC,
@@ -94,7 +89,6 @@ export const OPCODES = [
     // 0o06: JMP: Unconditionally jump to address; 1 operand
     {
         name: "JMP",
-        num_ops: 1,
         funcs: [m_incPC, m_storePCaddrInPC],
         next_type: [M_CYCLE_NAMES.INC_PC, M_CYCLE_NAMES.MEM_READ],
     },
@@ -102,7 +96,6 @@ export const OPCODES = [
     // 0o07: JC: Jump to address if carry flag set; 1 operand
     {
         name: "JC",
-        num_ops: 1,
         funcs: [m_incPC, m_ifCarryThenStorePCaddrInPC],
         next_type: [M_CYCLE_NAMES.INC_PC, M_CYCLE_NAMES.MEM_READ],
     },
@@ -111,7 +104,6 @@ export const OPCODES = [
     // 0o10: JZ: Jump to address if zero flag set; 1 operand
     {
         name: "JZ",
-        num_ops: 1,
         funcs: [m_incPC, m_ifZeroThenStorePCaddrInPC],
         next_type: [M_CYCLE_NAMES.INC_PC, M_CYCLE_NAMES.MEM_READ],
     },
@@ -119,7 +111,6 @@ export const OPCODES = [
     // 0o11: OUT: Write accumulator to output
     {
         name: "OUT",
-        num_ops: 0,
         funcs: [m_out, m_incPC],
         next_type: [M_CYCLE_NAMES.OUT, M_CYCLE_NAMES.INC_PC]
     },
@@ -127,75 +118,74 @@ export const OPCODES = [
     // 0o12: HLT: Increment PC and halt
     {
         name: "HLT",
-        num_ops: 0,
         funcs: [m_incPC, m_halt],
         next_type: [M_CYCLE_NAMES.INC_PC, M_CYCLE_NAMES.HALT],
     },
 
     // ... plus 53 extra NOP opcodes for padding ...
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", num_ops: 0, funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
     // ... equals 64 instructions (two octal digits)
 ];
