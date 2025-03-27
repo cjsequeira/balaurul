@@ -17,20 +17,20 @@ Live at https://cjsequeira.github.io/balaurul/
 * SOUND? (Probably not)
 
 ## Instructions
-| Opcode (Octal) | Description | Mnemonic | Operand (If Applicable) | Total Width (Words)
-| --- | --- | --- | --- | --- |
-| 0000 | NOP | No operation | | 1
-| 0001 | LDA | Load accumulator from address | Address (1 word) | 2
-| 0002 | ADD | Add word in address to accumulator | Address (1 word) | 2
-| 0003 | SUB | Subtract word in address from accumulator | Address (1 word) | 2
-| 0004 | STA | Store accumulator at address | Address (1 word) | 2
-| 0005 | LDI | Load immediate value to accumulator | Immediate value (1 word) | 2
-| 0006 | JMP | Unconditionally jump to address | Address (1 word) | 2
-| 0007 | JC | Jump to addres if carry flag is set | Address (1 word) | 2
-| 0010 | JZ | Jump to address if zero flag is set | Address (1 word) | 2
-| 0011 | OUT | Write accumulator to output | | 1
-| 0012 | HLT | Increment program counter and halt | | 1
-| 0013 to 0077 | NOP | No operation | | 1
+| Opcode (Octal) | Description | Mnemonic | Operand (If Applicable) | Total Width (Words) | Num. of Machine Cycles
+| --- | --- | --- | --- | --- | --- |
+| 0000 | NOP | No operation | | 1 | 3
+| 0001 | LDA | Load accumulator from address | Address (1 word) | 2 | 7
+| 0002 | ADD | Add word in address to accumulator | Address (1 word) | 2 | 7
+| 0003 | SUB | Subtract word in address from accumulator | Address (1 word) | 2 | 7
+| 0004 | STA | Store accumulator at address | Address (1 word) | 2 | 6
+| 0005 | LDI | Load immediate value to accumulator | Immediate value (1 word) | 2 | 5
+| 0006 | JMP | Unconditionally jump to address | Address (1 word) | 2 | 4
+| 0007 | JC | Jump to addres if carry flag is set | Address (1 word) | 2 | 4
+| 0010 | JZ | Jump to address if zero flag is set | Address (1 word) | 2 | 4
+| 0011 | OUT | Write accumulator to output | | 1 | 4
+| 0012 | HLT | Increment program counter and halt | | 1 | 4
+| 0013 to 0077 | NOP | No operation | | 1 | 3
 
 ## Version history
 
