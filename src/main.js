@@ -9,7 +9,7 @@ import * as ModuleUtil from "./util.js";
 // **** CONSTANTS
 
 // target CPU speed for "fast" mode, in MACHINE CYCLES PER SECOND
-const FAST_TARGET = 1e6 / 60;
+const FAST_TARGET = Math.round(1e6 / 60.0);
 
 // front panel UI elements
 const UI_TEXT_FP_LED_CLASS = "led";

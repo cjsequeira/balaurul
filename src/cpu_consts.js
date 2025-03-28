@@ -8,6 +8,9 @@ export const RAM_WORDS = 64;
 // bit size of CPU
 export const BITS = 12;
 
+// storage location for program counter during CALL
+export const CALL_ADDR = 0o77;
+
 // machine cycle names
 export const M_CYCLE_NAMES = {
     FETCH: "fetch",
@@ -55,15 +58,24 @@ export const OPCODES = [
 
 
     // **** 0o10 - 0o17: ZERO-OPERAND INSTRUCTIONS
-    // 0o10 - 0o15: To be implemented (NOP)
-    // 10: [Increment accumulator]
-    // 11: [Decrement accumulator]
+    // 0o10: Increment accumulator
+    {
+        name: "INC",
+        funcs: [m_incA, m_incPC],
+        next_type: [M_CYCLE_NAMES.ALU, M_CYCLE_NAMES.INC_PC]
+    },
+
+    // 0o11: Decrement accumulator
+    {
+        name: "DEC",
+        funcs: [m_decA, m_incPC],
+        next_type: [M_CYCLE_NAMES.ALU, M_CYCLE_NAMES.INC_PC]
+    },
+
     // 12: [Rotate accumulator left]
     // 13: [Rotate accumulator left through carry]
     // 14: [Rotate accumulator right]
     // 15: [Rotate accumulator right through carry]
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
@@ -86,7 +98,6 @@ export const OPCODES = [
         ],
     },
 
-    // 0o21 - 0o30: To be implemented (NOP)
     // 21: [Add immediate value to accumulator]
     // 22: [Add immediate value plus carry to accumulator]
     // 23: [Subtract immediate value from accumulator]
@@ -156,7 +167,6 @@ export const OPCODES = [
         ]
     },
 
-    // 0o44 - 0o50: To be implemented (NOP)
     // 44: [Subtract value in address from accumulator with borrow]
     // 45: [AND value in address with accumulator]
     // 46: [OR value in address with accumulator]
@@ -211,16 +221,34 @@ export const OPCODES = [
         next_type: [M_CYCLE_NAMES.INC_PC, M_CYCLE_NAMES.MEM_READ],
     },
 
-    // 0o63 - 0o67: To be implemented (NOP)
     // 63: [Jump to address if not carry]
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+
     // 64: [Jump to address if not zero]
-    // 65: [Call subroutine]
-    // 66: [Return from subroutine]
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+
+    // 0o65: CALL: Call subroutine at address; 1 operand
+    {
+        name: "CALL",
+        funcs: [m_incPC, m_storePCinCallAddr, m_storePCaddrInPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_WRITE,
+            M_CYCLE_NAMES.MEM_READ
+        ],
+    },
+
+    // 66: RET: Return from subroutine
+    {
+        name: "RET",
+        funcs: [m_getPCfromCallAddr, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.INC_PC,
+        ],
+    },
+
     // 67: [Load program counter from accumulator]    
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
     // 0o70 - 0o77: Reserved (NOP)
@@ -249,6 +277,27 @@ function m_addBtoA(cpu) {
 
     // set zero flag appropriately
     cpu.flags.zero = (cpu.a == 0);
+}
+
+// decrement accumulator
+function m_decA(cpu) {
+    // to decrement, add the two's-complement of 1 to accumulator
+    cpu.a += Math.pow(2, BITS) - 1;
+
+    // set carry flag appropriately
+    // carry calc is inspired by the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
+    cpu.flags.carry = (cpu.a >= Math.pow(2, BITS));
+
+    // restrict accumulator to only BITS in size
+    cpu.a %= Math.pow(2, BITS);
+
+    // set zero flag appropriately
+    cpu.flags.zero = (cpu.a == 0);
+}
+
+// get PC from call storage address
+function m_getPCfromCallAddr(cpu) {
+    cpu.pc = cpu.getWordAt(CALL_ADDR);
 }
 
 // halt CPU
@@ -283,6 +332,21 @@ function m_in(cpu) {
     cpu.a = cpu.input_switch_value;
 }
 
+// increment accumulator
+function m_incA(cpu) {
+    // increment accumulator
+    cpu.a++;
+
+    // set carry flag appropriately
+    cpu.flags.carry = (cpu.a >= Math.pow(2, BITS));
+
+    // restrict accumulator to only BITS in size
+    cpu.a %= Math.pow(2, BITS);
+
+    // set zero flag appropriately
+    cpu.flags.zero = (cpu.a == 0);
+}
+
 // increment PC
 function m_incPC(cpu) {
     cpu.incPC();
@@ -306,6 +370,11 @@ function m_storeMARaddrInA(cpu) {
 // store into B: word at address in MAR
 function m_storeMARaddrInB(cpu) {
     cpu.b = cpu.getWordAt(cpu.mar);
+}
+
+// store PC into call storage address
+function m_storePCinCallAddr(cpu) {
+    cpu.putWordAt(CALL_ADDR, cpu.pc);
 }
 
 // store into accumulator: word at address in PC
