@@ -5,6 +5,8 @@
 // **** MODULES
 import * as ModuleCPU from "./cpu.js";
 import * as ModuleUtil from "./util.js";
+import * as ModuleUI from "./module_ui.js"
+
 
 // **** CONSTANTS
 
@@ -12,7 +14,7 @@ import * as ModuleUtil from "./util.js";
 const FAST_TARGET = 1e6;
 
 // number of elements in LED brightness running average
-const NUM_LED_AVERAGE = 4;
+const NUM_LED_AVERAGE = 3;
 
 // front panel UI elements
 const UI_TEXT_FP_LED_CLASS = "led";
@@ -119,14 +121,17 @@ const UI_CONTROL_RAM_EXPORT = document.getElementById("app_12bit_ram_export");
 // CPU
 var cpu = new ModuleCPU.CPU();
 
-// holders for old UI values
-var old_pc = 0;
-var old_mar = 0;
-var old_ir = 0;
-var old_a = 0;
-var old_b = 0;
-var old_out = 0;
-var old_mem = Array(UI_MEM_COLS * UI_MEM_ROWS);
+// holders for old values
+var old = {
+    pc: 0,
+    mar: 0,
+    ir: 0,
+    a: 0,
+    b: 0,
+    out: 0,
+    mem: Array(UI_MEM_COLS * UI_MEM_ROWS),
+};
+
 var last_time = 0;
 
 // holder for keyboard shortcuts
@@ -161,13 +166,12 @@ var fp_input = {
 };
 
 
-
 // **** MAIN CODE
-window.addEventListener("load", setup());
+window.addEventListener("load", sideEffect_setup());
 
 
 // **** FUNCTIONS
-function setup() {
+function sideEffect_setup() {
     // **** BUILD MEMORY BLOCK UI STRUCTURE IN HTML
     // table opener
     let memory_html = "<table class='" + UI_TEXT_MEM_CLASS + "'>";
@@ -213,7 +217,9 @@ function setup() {
     // **** GENERATE HANDLES FOR INPUT SWITCHES
     for (let i = 0; i < ModuleCPU.CPU.BITS; i++) {
         // build each input switch UI object
-        ui_input_switches.push(document.getElementById(UI_TEXT_FP_CONTROL_INPUT_ID_PREFIX + i.toString(10)));
+        ui_input_switches.push(
+            document.getElementById(UI_TEXT_FP_CONTROL_INPUT_ID_PREFIX + i.toString(10))
+        );
 
         // add mouseclick event handler
         ui_input_switches[i].addEventListener(
@@ -248,24 +254,38 @@ function setup() {
     UI_CONTROL_ON_OFF.addEventListener("click", ctrlOnOff);
     UI_CONTROL_RUN_STOP.addEventListener("click", ctrlRunStop);
 
-    UI_CONTROL_RESET.addEventListener("mousedown", () => UI_CONTROL_RESET.style.opacity = 1.0);
-    UI_CONTROL_M_STEP.addEventListener("mousedown", () => UI_CONTROL_M_STEP.style.opacity = 1.0);
-    UI_CONTROL_I_STEP.addEventListener("mousedown", () => UI_CONTROL_I_STEP.style.opacity = 1.0);
-    UI_CONTROL_EXAMINE.addEventListener("mousedown", () => UI_CONTROL_EXAMINE.style.opacity = 1.0);
-    UI_CONTROL_EXAMINE_NEXT.addEventListener("mousedown", () => UI_CONTROL_EXAMINE_NEXT.style.opacity = 1.0);
-    UI_CONTROL_DEPOSIT.addEventListener("mousedown", () => UI_CONTROL_DEPOSIT.style.opacity = 1.0);
-    UI_CONTROL_DEPOSIT_NEXT.addEventListener("mousedown", () => UI_CONTROL_DEPOSIT_NEXT.style.opacity = 1.0);
+    UI_CONTROL_RESET.addEventListener("mousedown",
+        () => UI_CONTROL_RESET.style.opacity = 1.0);
+    UI_CONTROL_M_STEP.addEventListener("mousedown",
+        () => UI_CONTROL_M_STEP.style.opacity = 1.0);
+    UI_CONTROL_I_STEP.addEventListener("mousedown",
+        () => UI_CONTROL_I_STEP.style.opacity = 1.0);
+    UI_CONTROL_EXAMINE.addEventListener("mousedown",
+        () => UI_CONTROL_EXAMINE.style.opacity = 1.0);
+    UI_CONTROL_EXAMINE_NEXT.addEventListener("mousedown",
+        () => UI_CONTROL_EXAMINE_NEXT.style.opacity = 1.0);
+    UI_CONTROL_DEPOSIT.addEventListener("mousedown",
+        () => UI_CONTROL_DEPOSIT.style.opacity = 1.0);
+    UI_CONTROL_DEPOSIT_NEXT.addEventListener("mousedown",
+        () => UI_CONTROL_DEPOSIT_NEXT.style.opacity = 1.0);
 
     UI_CONTROL_RAM_IMPORT.addEventListener("click", ctrlRAMimport);
     UI_CONTROL_RAM_EXPORT.addEventListener("click", ctrlRAMexport);
 
-    UI_CONTROL_RESET.addEventListener("mouseup", () => ctrlButtonUp(UI_CONTROL_RESET, "reset"));
-    UI_CONTROL_M_STEP.addEventListener("mouseup", () => ctrlButtonUp(UI_CONTROL_M_STEP, "m_step"));
-    UI_CONTROL_I_STEP.addEventListener("mouseup", () => ctrlButtonUp(UI_CONTROL_I_STEP, "i_step"));
-    UI_CONTROL_EXAMINE.addEventListener("mouseup", () => ctrlButtonUp(UI_CONTROL_EXAMINE, "examine"));
-    UI_CONTROL_EXAMINE_NEXT.addEventListener("mouseup", () => ctrlButtonUp(UI_CONTROL_EXAMINE_NEXT, "examine_next"));
-    UI_CONTROL_DEPOSIT.addEventListener("mouseup", () => ctrlButtonUp(UI_CONTROL_DEPOSIT, "deposit"));
-    UI_CONTROL_DEPOSIT_NEXT.addEventListener("mouseup", () => ctrlButtonUp(UI_CONTROL_DEPOSIT_NEXT, "deposit_next"));
+    UI_CONTROL_RESET.addEventListener("mouseup",
+        () => ctrlButtonUp(UI_CONTROL_RESET, "reset"));
+    UI_CONTROL_M_STEP.addEventListener("mouseup",
+        () => ctrlButtonUp(UI_CONTROL_M_STEP, "m_step"));
+    UI_CONTROL_I_STEP.addEventListener("mouseup",
+        () => ctrlButtonUp(UI_CONTROL_I_STEP, "i_step"));
+    UI_CONTROL_EXAMINE.addEventListener("mouseup",
+        () => ctrlButtonUp(UI_CONTROL_EXAMINE, "examine"));
+    UI_CONTROL_EXAMINE_NEXT.addEventListener("mouseup",
+        () => ctrlButtonUp(UI_CONTROL_EXAMINE_NEXT, "examine_next"));
+    UI_CONTROL_DEPOSIT.addEventListener("mouseup",
+        () => ctrlButtonUp(UI_CONTROL_DEPOSIT, "deposit"));
+    UI_CONTROL_DEPOSIT_NEXT.addEventListener("mouseup",
+        () => ctrlButtonUp(UI_CONTROL_DEPOSIT_NEXT, "deposit_next"));
 
     UI_CONTROL_SPEED.addEventListener("click", ctrlSpeed)
     UI_CONTROL_CIRCUIT_SPY.addEventListener("click", ctrlCircuitSpy)
@@ -288,7 +308,7 @@ function setup() {
 
 
     // **** RESET UI
-    resetUI();
+    sideEffect_resetUI();
 
     // change the visibility property for circuit spy 
     // note that it is intentionally underneath the front panel on startup!
@@ -298,12 +318,12 @@ function setup() {
     last_time = performance.now();
 
     // **** ESTABLISH APP UPDATE CALLBACK
-    requestAnimationFrame(appUpdate);
+    requestAnimationFrame(sideEffect_appUpdate);
 }
 
 
 // app update callback for requestAnimationFrame()
-function appUpdate() {
+function sideEffect_appUpdate() {
     // define holders
     let cur_time = 0;
     let elapsed_time = 0;
@@ -319,14 +339,14 @@ function appUpdate() {
     last_time = cur_time;
 
     // clear LEDs and the accumulators for the current rolling average index
-    clearLEDs();
-    LEDaccumulators[LEDindex] = zeroedLEDaccumulators();
+    sideEffect_clearLEDs();
+    LEDaccumulators[LEDindex] = ModuleUI.zeroedLEDaccumulators();
 
     // update CPU once or multiple times based on "speed" UI switch
     if (fp_input.slow) {
         // slow mode? update CPU just once
         cpu.update();
-        accumulateLEDs(1.0, LEDindex);
+        LEDaccumulators[LEDindex] = accumulateLEDs(cpu, LEDaccumulators[LEDindex], 1.0);
     } else {
         // fast mode? update to meet the speed target
 
@@ -336,7 +356,7 @@ function appUpdate() {
         // update CPU to meet the speed target
         for (let i = 0; i < update_target; i++) {
             cpu.update();
-            accumulateLEDs(update_target, LEDindex);
+            LEDaccumulators[LEDindex] = accumulateLEDs(cpu, LEDaccumulators[LEDindex], update_target);
         }
     }
 
@@ -350,7 +370,7 @@ function appUpdate() {
         // if CPU status is "on" then ...
 
         // update LEDs
-        redrawLEDs();
+        sideEffect_redrawLEDs();
 
         // show value at PC
         UI_VAL_AT_PC.innerHTML = cpu.getWordAt(cpu.pc).toString(8).padStart(4, "0");
@@ -375,7 +395,7 @@ function appUpdate() {
                 .remove(UI_TEXT_MEM_MAR_CLASS, UI_TEXT_MEM_PC_CLASS);
 
             // update highlighting
-            if (old_mem[i] == elem) {
+            if (old.mem[i] == elem) {
                 document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + i.toString(10))
                     .classList
                     .remove(UI_TEXT_HIGHLIGHT_CHANGED_CLASS);
@@ -387,58 +407,61 @@ function appUpdate() {
         });
 
         // box current MAR memory element
-        document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.mar % ModuleCPU.CPU.RAM_WORDS).toString(10))
-            .classList
-            .add(UI_TEXT_MEM_MAR_CLASS);
+        document.getElementById(
+            UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.mar % ModuleCPU.CPU.RAM_WORDS).toString(10)
+        ).classList.add(UI_TEXT_MEM_MAR_CLASS);
 
         // box current PC memory element
-        document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.pc % ModuleCPU.CPU.RAM_WORDS).toString(10))
-            .classList
-            .add(UI_TEXT_MEM_PC_CLASS);
+        document.getElementById(
+            UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.pc % ModuleCPU.CPU.RAM_WORDS).toString(10)
+        ).classList.add(UI_TEXT_MEM_PC_CLASS);
 
         // update all HTML numerical elements
         ModuleUtil.updateHTMLwithDiff(
-            cpu.mar, old_mar,
+            cpu.mar, old.mar,
             UI_MAR_BINARY, UI_MAR_OCTAL, UI_MAR_HEX, UI_MAR_DEC
         );
 
         ModuleUtil.updateHTMLwithDiff(
-            cpu.pc, old_pc,
+            cpu.pc, old.pc,
             UI_PC_BINARY, UI_PC_OCTAL, UI_PC_HEX, UI_PC_DEC
         );
 
         ModuleUtil.updateHTMLwithDiff(
-            cpu.ir, old_ir,
+            cpu.ir, old.ir,
             UI_IR_BINARY, UI_IR_OCTAL, UI_IR_HEX, UI_IR_DEC
         );
 
         ModuleUtil.updateHTMLwithDiff(
-            cpu.a, old_a,
-            UI_A_BINARY, UI_A_OCTAL, UI_A_HEX, UI_A_DEC, UI_A_SIGNED_DEC, ModuleCPU.CPU.BITS
+            cpu.a, old.a,
+            UI_A_BINARY, UI_A_OCTAL, UI_A_HEX, UI_A_DEC, UI_A_SIGNED_DEC,
+            ModuleCPU.CPU.BITS
         );
 
         ModuleUtil.updateHTMLwithDiff(
-            cpu.b, old_b,
-            UI_B_BINARY, UI_B_OCTAL, UI_B_HEX, UI_B_DEC, UI_B_SIGNED_DEC, ModuleCPU.CPU.BITS
+            cpu.b, old.b,
+            UI_B_BINARY, UI_B_OCTAL, UI_B_HEX, UI_B_DEC, UI_B_SIGNED_DEC,
+            ModuleCPU.CPU.BITS
         );
 
         ModuleUtil.updateHTMLwithDiff(
-            cpu.out, old_out,
-            UI_OUT_BINARY, UI_OUT_OCTAL, UI_OUT_HEX, UI_OUT_DEC, UI_OUT_SIGNED_DEC, ModuleCPU.CPU.BITS
+            cpu.out, old.out,
+            UI_OUT_BINARY, UI_OUT_OCTAL, UI_OUT_HEX, UI_OUT_DEC, UI_OUT_SIGNED_DEC,
+            ModuleCPU.CPU.BITS
         );
 
         // if CPU is running, sync old UI values
-        if (cpu.status.running) syncUIvalues();
+        if (cpu.status.running) old = ModuleUI.syncedUIvalues(cpu);
     }
 
 
     // **** GET BACK IN QUEUE
-    requestAnimationFrame(appUpdate);
+    requestAnimationFrame(sideEffect_appUpdate);
 }
 
 // reset UI
-function resetUI() {
-    // for each CPU UI text field on the web page: clear all text; remove boxing and highlighting
+function sideEffect_resetUI() {
+    // for each CPU UI text field on web page: clear all text; remove boxing and highlighting
     for (let elem of Array.from(document.getElementsByClassName(UI_TEXT_CPU_CLASS))) {
         elem.innerHTML = "&nbsp;";
         elem.classList.remove(
@@ -449,48 +472,60 @@ function resetUI() {
     };
 
     // clear all LEDs
-    clearLEDs();
+    sideEffect_clearLEDs();
 
     // zero out LED accumulators
-    LEDaccumulators = Array(NUM_LED_AVERAGE).fill(zeroedLEDaccumulators());
+    LEDaccumulators = Array(NUM_LED_AVERAGE).fill(ModuleUI.zeroedLEDaccumulators());
 }
 
-// sync "old" UI values to current CPU values
-function syncUIvalues() {
-    old_pc = cpu.pc;
-    old_mar = cpu.mar;
-    old_ir = cpu.ir;
-    old_a = cpu.a;
-    old_b = cpu.b;
-    old_out = cpu.out;
 
-    cpu.mem.forEach((elem, i) => (old_mem[i] = elem));
-}
 
 // accumulate LED brightnesses
-function accumulateLEDs(scale, index) {
-    // accumulate LEDs for registers
-    for (let i = 0; i < ModuleCPU.CPU.BITS; i++) {
-        if (cpu.pc & Math.pow(2, i)) LEDaccumulators[index].pc[i] += 1.0 / scale;
-        if (cpu.ir & Math.pow(2, i)) LEDaccumulators[index].ir[i] += 1.0 / scale;
-        if (cpu.mar & Math.pow(2, i)) LEDaccumulators[index].mar[i] += 1.0 / scale;
-        if (cpu.a & Math.pow(2, i)) LEDaccumulators[index].a[i] += 1.0 / scale;
-        if (cpu.b & Math.pow(2, i)) LEDaccumulators[index].b[i] += 1.0 / scale;
-        if (cpu.out & Math.pow(2, i)) LEDaccumulators[index].out[i] += 1.0 / scale;
+function accumulateLEDs(cpu, accum, scale) {
+    return {
+        pc: accum.pc.map(
+            (val, i) => (cpu.pc & Math.pow(2, i)) ? val + 1.0 / scale : val
+        ),
+
+        ir: accum.ir.map(
+            (val, i) => (cpu.ir & Math.pow(2, i)) ? val + 1.0 / scale : val
+        ),
+
+        mar: accum.mar.map(
+            (val, i) => (cpu.mar & Math.pow(2, i)) ? val + 1.0 / scale : val
+        ),
+
+        a: accum.a.map(
+            (val, i) => (cpu.a & Math.pow(2, i)) ? val + 1.0 / scale : val
+        ),
+
+        b: accum.b.map(
+            (val, i) => (cpu.pc & Math.pow(2, i)) ? val + 1.0 / scale : val
+        ),
+
+        out: accum.out.map(
+            (val, i) => (cpu.out & Math.pow(2, i)) ? val + 1.0 / scale : val
+        ),
+
+        m_cycle: {
+            ...accum.m_cycle,
+            [cpu.m_next_type]: accum.m_cycle[cpu.m_next_type] += 1.0 / scale,
+        },
+
+        flags: {
+            carry: accum.flags.carry + (cpu.flags.carry * 1.0) / scale,
+            zero: accum.flags.zero + (cpu.flags.zero * 1.0) / scale,
+        },
+
+        status: {
+            running: accum.status.running + (cpu.status.running * 1.0) / scale,
+            halted: accum.status.halted + (cpu.status.halted * 1.0) / scale,
+        }
     }
-
-    // accumulate LEDs for machine cycles
-    LEDaccumulators[index].m_cycle[cpu.m_next_type] += 1.0 / scale;
-
-    // accumulate LEDs for CPU flags and status
-    LEDaccumulators[index].flags.carry += (cpu.flags.carry * 1.0) / scale;
-    LEDaccumulators[index].flags.zero += (cpu.flags.zero * 1.0) / scale;
-    LEDaccumulators[index].status.running += (cpu.status.running * 1.0) / scale;
-    LEDaccumulators[index].status.halted += (cpu.status.halted * 1.0) / scale;
 }
 
 // redraw all LEDs based on accumulated brightness, using a rolling average
-function redrawLEDs() {
+function sideEffect_redrawLEDs() {
     // redraw LEDs for registers
     for (let i = 0; i < ModuleCPU.CPU.BITS; i++) {
         document.getElementById(UI_TEXT_FP_LED_PC_ID_PREFIX + i.toString(10)).style.opacity =
@@ -509,8 +544,10 @@ function redrawLEDs() {
 
     // redraw LEDs for machine cycles
     for (let key in ModuleCPU.CPU.M_CYCLE_NAMES) {
-        document.getElementById(UI_TEXT_FP_LED_M_ID_PREFIX + ModuleCPU.CPU.M_CYCLE_NAMES[key]).style.opacity =
-            LEDaccumulators.reduce((a, cur) => a + cur.m_cycle[ModuleCPU.CPU.M_CYCLE_NAMES[key]], 0) / LEDaccumulators.length;
+        document.getElementById(UI_TEXT_FP_LED_M_ID_PREFIX + ModuleCPU.CPU.M_CYCLE_NAMES[key])
+            .style.opacity =
+            LEDaccumulators.reduce((a, cur) => a + cur.m_cycle[ModuleCPU.CPU.M_CYCLE_NAMES[key]], 0)
+            / LEDaccumulators.length;
     }
 
     // redraw LEDs for CPU flags and status
@@ -525,46 +562,14 @@ function redrawLEDs() {
 }
 
 // clear LEDs
-function clearLEDs() {
+function sideEffect_clearLEDs() {
     // reset UI LED opacity to zero
     for (let elem of Array.from(document.getElementsByClassName(UI_TEXT_FP_LED_CLASS))) {
         elem.style.opacity = 0.0;
     }
 }
 
-// return zeroed LED accumulators
-function zeroedLEDaccumulators() {
-    return ({
-        pc: Array(12).fill(0.0),
-        mar: Array(12).fill(0.0),
-        ir: Array(12).fill(0.0),
-        a: Array(12).fill(0.0),
-        b: Array(12).fill(0.0),
-        out: Array(12).fill(0.0),
 
-        m_cycle: {
-            [ModuleCPU.CPU.M_CYCLE_NAMES.FETCH]: 0.0,
-            [ModuleCPU.CPU.M_CYCLE_NAMES.DECODE]: 0.0,
-            [ModuleCPU.CPU.M_CYCLE_NAMES.MEM_READ]: 0.0,
-            [ModuleCPU.CPU.M_CYCLE_NAMES.MEM_WRITE]: 0.0,
-            [ModuleCPU.CPU.M_CYCLE_NAMES.INC_PC]: 0.0,
-            [ModuleCPU.CPU.M_CYCLE_NAMES.HALT]: 0.0,
-            [ModuleCPU.CPU.M_CYCLE_NAMES.ALU]: 0.0,
-            [ModuleCPU.CPU.M_CYCLE_NAMES.IN]: 0.0,
-            [ModuleCPU.CPU.M_CYCLE_NAMES.OUT]: 0.0,
-        },
-
-        flags: {
-            carry: 0.0,
-            zero: 0.0,
-        },
-
-        status: {
-            running: 0.0,
-            halted: 0.0
-        },
-    });
-}
 
 
 // **** UI CONTROL CALLBACK FUNCTIONS
@@ -587,11 +592,11 @@ function ctrlOnOff() {
     } else {
         fp_input.on = false;
         cpu.scanInputs(fp_input);
-        
+
     }
 
-    resetUI();
-    syncUIvalues();
+    sideEffect_resetUI();
+    old = ModuleUI.syncedUIvalues(cpu);
 }
 
 function ctrlRunStop() {
@@ -634,7 +639,7 @@ function ctrlCircuitSpy() {
 
 function ctrlButtonUp(ui_button, input_key) {
     // sync UI
-    syncUIvalues();
+    old = ModuleUI.syncedUIvalues(cpu);
 
     ui_button.style.opacity = 0.0;
 
@@ -649,7 +654,7 @@ function ctrlButtonUp(ui_button, input_key) {
 
 function ctrlRAMimport() {
     // sync UI
-    syncUIvalues();
+    old = ModuleUI.syncedUIvalues(cpu);
 
     cpu.replaceRAM(UI_RAM_IMPORT_EXPORT.value);
 }
