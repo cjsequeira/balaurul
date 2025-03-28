@@ -584,12 +584,14 @@ function ctrlOnOff() {
     if (!fp_input.on) {
         fp_input.on = true;
         cpu.scanInputs(fp_input);
-        syncUIvalues();
     } else {
         fp_input.on = false;
         cpu.scanInputs(fp_input);
-        resetUI();
+        
     }
+
+    resetUI();
+    syncUIvalues();
 }
 
 function ctrlRunStop() {
