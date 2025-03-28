@@ -87,7 +87,7 @@ export class CPU {
     getWordAt(address) {
         // wrap around in memory if given address is higher than size of RAM
         let mod_address = address % CPU.RAM_WORDS;
-        
+
         // return value at wrapped-around memory address
         return this.mem[mod_address];
     }
