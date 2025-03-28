@@ -9,7 +9,10 @@ import * as ModuleUtil from "./util.js";
 // **** CONSTANTS
 
 // target CPU speed for "fast" mode, in MACHINE CYCLES PER SECOND
-const FAST_TARGET = Math.round(1e6 / 60.0);
+const FAST_TARGET = 1e6;
+
+// number of elements in LED brightness running average
+const NUM_LED_AVERAGE = 4;
 
 // front panel UI elements
 const UI_TEXT_FP_LED_CLASS = "led";
@@ -117,19 +120,21 @@ const UI_CONTROL_RAM_EXPORT = document.getElementById("app_12bit_ram_export");
 var cpu = new ModuleCPU.CPU();
 
 // holders for old UI values
-var old_pc = null;
-var old_mar = null;
-var old_ir = null;
-var old_a = null;
-var old_b = null;
-var old_out = null;
+var old_pc = 0;
+var old_mar = 0;
+var old_ir = 0;
+var old_a = 0;
+var old_b = 0;
+var old_out = 0;
 var old_mem = Array(UI_MEM_COLS * UI_MEM_ROWS);
+var last_time = 0;
 
 // holder for keyboard shortcuts
 var keys = {};
 
 // holders for LED brightnesses
-var LEDaccumulators = {};
+var LEDaccumulators = Array(NUM_LED_AVERAGE);
+var LEDindex = 0;
 
 // holder for front panel yellow input switch UI handles
 var ui_input_switches = [];
@@ -289,6 +294,8 @@ function setup() {
     // note that it is intentionally underneath the front panel on startup!
     UI_CIRCUIT_SPY_PANEL.style.visibility = "visible";
 
+    // initialize "last time" to current time
+    last_time = performance.now();
 
     // **** ESTABLISH APP UPDATE CALLBACK
     requestAnimationFrame(appUpdate);
@@ -297,24 +304,48 @@ function setup() {
 
 // app update callback for requestAnimationFrame()
 function appUpdate() {
+    // define holders
+    let cur_time = 0;
+    let elapsed_time = 0;
+    let update_target = 0;
+
+
+    // **** UPDATE CPU
+    // get milliseconds elapsed since last app update call
+    cur_time = performance.now();
+    elapsed_time = cur_time - last_time;
+
+    // save current time
+    last_time = cur_time;
+
+    // clear LEDs and the accumulators for the current rolling average index
+    clearLEDs();
+    LEDaccumulators[LEDindex] = zeroedLEDaccumulators();
+
     // update CPU once or multiple times based on "speed" UI switch
     if (fp_input.slow) {
-        // slow mode? update only once (roughly 60 machine cycles per second)
-
-        clearLEDs();
+        // slow mode? update CPU just once
         cpu.update();
-        accumulateLEDs(1.0);
+        accumulateLEDs(1.0, LEDindex);
     } else {
         // fast mode? update to meet the speed target
 
-        clearLEDs();
+        // calculate number of CPU updates to do
+        update_target = FAST_TARGET * elapsed_time / 1000;
 
-        for (let i = 0; i < FAST_TARGET; i++) {
+        // update CPU to meet the speed target
+        for (let i = 0; i < update_target; i++) {
             cpu.update();
-            accumulateLEDs(FAST_TARGET);
+            accumulateLEDs(update_target, LEDindex);
         }
     }
 
+    // rotate the LED accumulator index for a rolling average
+    LEDindex++;
+    if (LEDindex >= NUM_LED_AVERAGE) LEDindex = 0;
+
+
+    // **** DRAW CPU INFO 
     if (cpu.status.on) {
         // if CPU status is "on" then ...
 
@@ -419,6 +450,9 @@ function resetUI() {
 
     // clear all LEDs
     clearLEDs();
+
+    // zero out LED accumulators
+    LEDaccumulators = Array(NUM_LED_AVERAGE).fill(zeroedLEDaccumulators());
 }
 
 // sync "old" UI values to current CPU values
@@ -434,50 +468,60 @@ function syncUIvalues() {
 }
 
 // accumulate LED brightnesses
-function accumulateLEDs(scale) {
+function accumulateLEDs(scale, index) {
     // accumulate LEDs for registers
     for (let i = 0; i < ModuleCPU.CPU.BITS; i++) {
-        if (cpu.pc & Math.pow(2, i)) LEDaccumulators.pc[i] += 1.0 / scale;
-        if (cpu.ir & Math.pow(2, i)) LEDaccumulators.ir[i] += 1.0 / scale;
-        if (cpu.mar & Math.pow(2, i)) LEDaccumulators.mar[i] += 1.0 / scale;
-        if (cpu.a & Math.pow(2, i)) LEDaccumulators.a[i] += 1.0 / scale;
-        if (cpu.b & Math.pow(2, i)) LEDaccumulators.b[i] += 1.0 / scale;
-        if (cpu.out & Math.pow(2, i)) LEDaccumulators.out[i] += 1.0 / scale;
+        if (cpu.pc & Math.pow(2, i)) LEDaccumulators[index].pc[i] += 1.0 / scale;
+        if (cpu.ir & Math.pow(2, i)) LEDaccumulators[index].ir[i] += 1.0 / scale;
+        if (cpu.mar & Math.pow(2, i)) LEDaccumulators[index].mar[i] += 1.0 / scale;
+        if (cpu.a & Math.pow(2, i)) LEDaccumulators[index].a[i] += 1.0 / scale;
+        if (cpu.b & Math.pow(2, i)) LEDaccumulators[index].b[i] += 1.0 / scale;
+        if (cpu.out & Math.pow(2, i)) LEDaccumulators[index].out[i] += 1.0 / scale;
     }
 
     // accumulate LEDs for machine cycles
-    LEDaccumulators.m_cycle[cpu.m_next_type] += 1.0 / scale;
+    LEDaccumulators[index].m_cycle[cpu.m_next_type] += 1.0 / scale;
 
     // accumulate LEDs for CPU flags and status
-    LEDaccumulators.flags.carry += (cpu.flags.carry * 1.0) / scale;
-    LEDaccumulators.flags.zero += (cpu.flags.zero * 1.0) / scale;
-    LEDaccumulators.status.running += (cpu.status.running * 1.0) / scale;
-    LEDaccumulators.status.halted += (cpu.status.halted * 1.0) / scale;
+    LEDaccumulators[index].flags.carry += (cpu.flags.carry * 1.0) / scale;
+    LEDaccumulators[index].flags.zero += (cpu.flags.zero * 1.0) / scale;
+    LEDaccumulators[index].status.running += (cpu.status.running * 1.0) / scale;
+    LEDaccumulators[index].status.halted += (cpu.status.halted * 1.0) / scale;
 }
 
-// redraw all LEDs based on accumulated brightness
+// redraw all LEDs based on accumulated brightness, using a rolling average
 function redrawLEDs() {
     // redraw LEDs for registers
     for (let i = 0; i < ModuleCPU.CPU.BITS; i++) {
-        document.getElementById(UI_TEXT_FP_LED_PC_ID_PREFIX + i.toString(10)).style.opacity = LEDaccumulators.pc[i];
-        document.getElementById(UI_TEXT_FP_LED_IR_ID_PREFIX + i.toString(10)).style.opacity = LEDaccumulators.ir[i];
-        document.getElementById(UI_TEXT_FP_LED_MAR_ID_PREFIX + i.toString(10)).style.opacity = LEDaccumulators.mar[i];
-        document.getElementById(UI_TEXT_FP_LED_A_ID_PREFIX + i.toString(10)).style.opacity = LEDaccumulators.a[i];
-        document.getElementById(UI_TEXT_FP_LED_B_ID_PREFIX + i.toString(10)).style.opacity = LEDaccumulators.b[i];
-        document.getElementById(UI_TEXT_FP_LED_OUT_ID_PREFIX + i.toString(10)).style.opacity = LEDaccumulators.out[i];
+        document.getElementById(UI_TEXT_FP_LED_PC_ID_PREFIX + i.toString(10)).style.opacity =
+            LEDaccumulators.reduce((a, cur) => a + cur.pc[i], 0) / LEDaccumulators.length;
+        document.getElementById(UI_TEXT_FP_LED_IR_ID_PREFIX + i.toString(10)).style.opacity =
+            LEDaccumulators.reduce((a, cur) => a + cur.ir[i], 0) / LEDaccumulators.length;
+        document.getElementById(UI_TEXT_FP_LED_MAR_ID_PREFIX + i.toString(10)).style.opacity =
+            LEDaccumulators.reduce((a, cur) => a + cur.mar[i], 0) / LEDaccumulators.length;
+        document.getElementById(UI_TEXT_FP_LED_A_ID_PREFIX + i.toString(10)).style.opacity =
+            LEDaccumulators.reduce((a, cur) => a + cur.a[i], 0) / LEDaccumulators.length;
+        document.getElementById(UI_TEXT_FP_LED_B_ID_PREFIX + i.toString(10)).style.opacity =
+            LEDaccumulators.reduce((a, cur) => a + cur.b[i], 0) / LEDaccumulators.length;
+        document.getElementById(UI_TEXT_FP_LED_OUT_ID_PREFIX + i.toString(10)).style.opacity =
+            LEDaccumulators.reduce((a, cur) => a + cur.out[i], 0) / LEDaccumulators.length;
     }
 
     // redraw LEDs for machine cycles
     for (let key in ModuleCPU.CPU.M_CYCLE_NAMES) {
-        document.getElementById(UI_TEXT_FP_LED_M_ID_PREFIX + ModuleCPU.CPU.M_CYCLE_NAMES[key])
-            .style.opacity = LEDaccumulators.m_cycle[ModuleCPU.CPU.M_CYCLE_NAMES[key]];
+        document.getElementById(UI_TEXT_FP_LED_M_ID_PREFIX + ModuleCPU.CPU.M_CYCLE_NAMES[key]).style.opacity =
+            LEDaccumulators.reduce((a, cur) => a + cur.m_cycle[ModuleCPU.CPU.M_CYCLE_NAMES[key]], 0) / LEDaccumulators.length;
     }
 
     // redraw LEDs for CPU flags and status
-    UI_FP_LED_FLAG_CARRY.style.opacity = LEDaccumulators.flags.carry;
-    UI_FP_LED_FLAG_ZERO.style.opacity = LEDaccumulators.flags.zero;
-    UI_FP_LED_STATUS_RUNNING.style.opacity = LEDaccumulators.status.running;
-    UI_FP_LED_STATUS_HALTED.style.opacity = LEDaccumulators.status.halted;
+    UI_FP_LED_FLAG_CARRY.style.opacity =
+        LEDaccumulators.reduce((a, cur) => a + cur.flags.carry, 0) / LEDaccumulators.length;
+    UI_FP_LED_FLAG_ZERO.style.opacity =
+        LEDaccumulators.reduce((a, cur) => a + cur.flags.zero, 0) / LEDaccumulators.length;
+    UI_FP_LED_STATUS_RUNNING.style.opacity =
+        LEDaccumulators.reduce((a, cur) => a + cur.status.running, 0) / LEDaccumulators.length;
+    UI_FP_LED_STATUS_HALTED.style.opacity =
+        LEDaccumulators.reduce((a, cur) => a + cur.status.halted, 0) / LEDaccumulators.length;
 }
 
 // clear LEDs
@@ -486,14 +530,11 @@ function clearLEDs() {
     for (let elem of Array.from(document.getElementsByClassName(UI_TEXT_FP_LED_CLASS))) {
         elem.style.opacity = 0.0;
     }
-
-    // clear all LED accumulators
-    LEDaccumulators = zeroedLEDaccumulators();
 }
 
 // return zeroed LED accumulators
 function zeroedLEDaccumulators() {
-    return {
+    return ({
         pc: Array(12).fill(0.0),
         mar: Array(12).fill(0.0),
         ir: Array(12).fill(0.0),
@@ -522,7 +563,7 @@ function zeroedLEDaccumulators() {
             running: 0.0,
             halted: 0.0
         },
-    };
+    });
 }
 
 

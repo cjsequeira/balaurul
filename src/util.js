@@ -109,3 +109,18 @@ export function boolListToNumber(bool_list) {
 
     return out;
 }
+
+// return the average of an array of objects that have a specific key with a numerical value
+export function keyAvg(obj_array, key) {
+    return (
+        obj_array.reduce((accum, cur) => accum + cur[key], 0) / obj_array.length
+    );
+}
+
+// return the average of an array of objects that have a specific key with a numerical array
+// use the given index into the numerical array
+export function keyAvgArr(obj_array, key, index) {
+    return (
+        obj_array.reduce((accum, cur) => accum + cur[key][index], 0) / obj_array.length
+    );
+}
