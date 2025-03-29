@@ -17,6 +17,9 @@ const FAST_TARGET = 1e6;
 // number of elements in LED brightness running average
 const NUM_LED_AVERAGE = 3;
 
+// document BODY tag
+const UI_BODY_TAG = document.getElementsByTagName("body")[0];
+
 // front panel UI elements
 const UI_TEXT_FP_LED_CLASS = "led";
 const UI_TEXT_FP_LED_M_ID_PREFIX = "app_12bit_led_m_";
@@ -139,7 +142,7 @@ var last_time = 0;
 var keys = {};
 
 // holders for LED brightnesses
-var LEDaccumulators = Array(NUM_LED_AVERAGE);
+var LEDaccumulators = Array(NUM_LED_AVERAGE).fill(ModuleUI.zeroedLEDaccumulators());
 var LEDindex = 0;
 
 // holder for front panel yellow input switch UI handles
@@ -173,7 +176,7 @@ window.addEventListener("load", sideEffect_setup());
 
 // **** FUNCTIONS
 function sideEffect_setup() {
-    // **** BUILD MEMORY BLOCK UI STRUCTURE IN HTML
+    // **** BUILD CIRCUIT SPY MEMORY BLOCK UI STRUCTURE IN HTML
     // table opener
     let memory_html = "<table class='" + UI_TEXT_MEM_CLASS + "'>";
 
@@ -215,7 +218,7 @@ function sideEffect_setup() {
     memory_html += "</table>";
 
 
-    // **** GENERATE HANDLES FOR INPUT SWITCHES
+    // **** GENERATE HANDLES FOR FRONT PANEL INPUT SWITCHES
     for (let i = 0; i < ModuleCPUconsts.BITS; i++) {
         // build each input switch UI object
         ui_input_switches.push(
@@ -252,8 +255,8 @@ function sideEffect_setup() {
     UI_MEM.innerHTML = memory_html;
 
     // establish mouse callbacks for controls
-    UI_CONTROL_ON_OFF.addEventListener("click", ctrlOnOff);
-    UI_CONTROL_RUN_STOP.addEventListener("click", ctrlRunStop);
+    UI_CONTROL_ON_OFF.addEventListener("click", sideEffect_ctrlOnOff);
+    UI_CONTROL_RUN_STOP.addEventListener("click", sideEffect_ctrlRunStop);
 
     UI_CONTROL_RESET.addEventListener("mousedown",
         () => UI_CONTROL_RESET.style.opacity = 1.0);
@@ -270,39 +273,39 @@ function sideEffect_setup() {
     UI_CONTROL_DEPOSIT_NEXT.addEventListener("mousedown",
         () => UI_CONTROL_DEPOSIT_NEXT.style.opacity = 1.0);
 
-    UI_CONTROL_RAM_IMPORT.addEventListener("click", ctrlRAMimport);
-    UI_CONTROL_RAM_EXPORT.addEventListener("click", ctrlRAMexport);
+    UI_CONTROL_RAM_IMPORT.addEventListener("click", sideEffect_ctrlRAMimport);
+    UI_CONTROL_RAM_EXPORT.addEventListener("click", sideEffect_ctrlRAMexport);
 
     UI_CONTROL_RESET.addEventListener("mouseup",
-        () => ctrlButtonUp(UI_CONTROL_RESET, "reset"));
+        () => sideEffect_ctrlButtonUp(UI_CONTROL_RESET, "reset"));
     UI_CONTROL_M_STEP.addEventListener("mouseup",
-        () => ctrlButtonUp(UI_CONTROL_M_STEP, "m_step"));
+        () => sideEffect_ctrlButtonUp(UI_CONTROL_M_STEP, "m_step"));
     UI_CONTROL_I_STEP.addEventListener("mouseup",
-        () => ctrlButtonUp(UI_CONTROL_I_STEP, "i_step"));
+        () => sideEffect_ctrlButtonUp(UI_CONTROL_I_STEP, "i_step"));
     UI_CONTROL_EXAMINE.addEventListener("mouseup",
-        () => ctrlButtonUp(UI_CONTROL_EXAMINE, "examine"));
+        () => sideEffect_ctrlButtonUp(UI_CONTROL_EXAMINE, "examine"));
     UI_CONTROL_EXAMINE_NEXT.addEventListener("mouseup",
-        () => ctrlButtonUp(UI_CONTROL_EXAMINE_NEXT, "examine_next"));
+        () => sideEffect_ctrlButtonUp(UI_CONTROL_EXAMINE_NEXT, "examine_next"));
     UI_CONTROL_DEPOSIT.addEventListener("mouseup",
-        () => ctrlButtonUp(UI_CONTROL_DEPOSIT, "deposit"));
+        () => sideEffect_ctrlButtonUp(UI_CONTROL_DEPOSIT, "deposit"));
     UI_CONTROL_DEPOSIT_NEXT.addEventListener("mouseup",
-        () => ctrlButtonUp(UI_CONTROL_DEPOSIT_NEXT, "deposit_next"));
+        () => sideEffect_ctrlButtonUp(UI_CONTROL_DEPOSIT_NEXT, "deposit_next"));
 
-    UI_CONTROL_SPEED.addEventListener("click", ctrlSpeed)
-    UI_CONTROL_CIRCUIT_SPY.addEventListener("click", ctrlCircuitSpy)
+    UI_CONTROL_SPEED.addEventListener("click", sideEffect_ctrlSpeed)
+    UI_CONTROL_CIRCUIT_SPY.addEventListener("click", sideEffect_ctrlCircuitSpy)
 
     // establish keypress callbacks for controls
     keys = {
         ...keys,
-        "q": ctrlOnOff,
-        "w": ctrlRunStop,
-        "e": () => ctrlButtonUp(UI_CONTROL_RESET, "reset"),
-        "r": () => ctrlButtonUp(UI_CONTROL_M_STEP, "m_step"),
-        "t": () => ctrlButtonUp(UI_CONTROL_I_STEP, "i_step"),
-        "y": () => ctrlButtonUp(UI_CONTROL_EXAMINE, "examine"),
-        "u": () => ctrlButtonUp(UI_CONTROL_EXAMINE_NEXT, "examine_next"),
-        "i": () => ctrlButtonUp(UI_CONTROL_DEPOSIT, "deposit"),
-        "o": () => ctrlButtonUp(UI_CONTROL_DEPOSIT_NEXT, "deposit_next"),
+        "q": sideEffect_ctrlOnOff,
+        "w": sideEffect_ctrlRunStop,
+        "e": () => sideEffect_ctrlButtonUp(UI_CONTROL_RESET, "reset"),
+        "r": () => sideEffect_ctrlButtonUp(UI_CONTROL_M_STEP, "m_step"),
+        "t": () => sideEffect_ctrlButtonUp(UI_CONTROL_I_STEP, "i_step"),
+        "y": () => sideEffect_ctrlButtonUp(UI_CONTROL_EXAMINE, "examine"),
+        "u": () => sideEffect_ctrlButtonUp(UI_CONTROL_EXAMINE_NEXT, "examine_next"),
+        "i": () => sideEffect_ctrlButtonUp(UI_CONTROL_DEPOSIT, "deposit"),
+        "o": () => sideEffect_ctrlButtonUp(UI_CONTROL_DEPOSIT_NEXT, "deposit_next"),
     };
 
     document.addEventListener("keyup", (event) => handleKeys(event));
@@ -481,39 +484,41 @@ function sideEffect_resetUI() {
 
 // redraw all LEDs based on accumulated brightness, using a rolling average
 function sideEffect_redrawLEDs() {
+    let accum_len = LEDaccumulators.length;
+
     // redraw LEDs for registers
     for (let i = 0; i < ModuleCPUconsts.BITS; i++) {
         document.getElementById(UI_TEXT_FP_LED_PC_ID_PREFIX + i.toString(10)).style.opacity =
-            LEDaccumulators.reduce((a, cur) => a + cur.pc[i], 0) / LEDaccumulators.length;
+            LEDaccumulators.reduce((accum, cur) => accum + cur.registers[i].pc, 0) / accum_len;
         document.getElementById(UI_TEXT_FP_LED_IR_ID_PREFIX + i.toString(10)).style.opacity =
-            LEDaccumulators.reduce((a, cur) => a + cur.ir[i], 0) / LEDaccumulators.length;
+            LEDaccumulators.reduce((accum, cur) => accum + cur.registers[i].ir, 0) / accum_len;
         document.getElementById(UI_TEXT_FP_LED_MAR_ID_PREFIX + i.toString(10)).style.opacity =
-            LEDaccumulators.reduce((a, cur) => a + cur.mar[i], 0) / LEDaccumulators.length;
+            LEDaccumulators.reduce((accum, cur) => accum + cur.registers[i].mar, 0) / accum_len;
         document.getElementById(UI_TEXT_FP_LED_A_ID_PREFIX + i.toString(10)).style.opacity =
-            LEDaccumulators.reduce((a, cur) => a + cur.a[i], 0) / LEDaccumulators.length;
+            LEDaccumulators.reduce((accum, cur) => accum + cur.registers[i].a, 0) / accum_len;
         document.getElementById(UI_TEXT_FP_LED_B_ID_PREFIX + i.toString(10)).style.opacity =
-            LEDaccumulators.reduce((a, cur) => a + cur.b[i], 0) / LEDaccumulators.length;
+            LEDaccumulators.reduce((accum, cur) => accum + cur.registers[i].b, 0) / accum_len;
         document.getElementById(UI_TEXT_FP_LED_OUT_ID_PREFIX + i.toString(10)).style.opacity =
-            LEDaccumulators.reduce((a, cur) => a + cur.out[i], 0) / LEDaccumulators.length;
+            LEDaccumulators.reduce((accum, cur) => accum + cur.registers[i].out, 0) / accum_len;
     }
 
     // redraw LEDs for machine cycles
     for (let key in ModuleCPUconsts.M_CYCLE_NAMES) {
-        document.getElementById(UI_TEXT_FP_LED_M_ID_PREFIX + ModuleCPUconsts.M_CYCLE_NAMES[key])
-            .style.opacity =
-            LEDaccumulators.reduce((a, cur) => a + cur.m_cycle[ModuleCPUconsts.M_CYCLE_NAMES[key]], 0)
-            / LEDaccumulators.length;
+        document.getElementById(UI_TEXT_FP_LED_M_ID_PREFIX + ModuleCPUconsts.M_CYCLE_NAMES[key]).style.opacity =
+            LEDaccumulators.reduce(
+                (accum, cur) => accum + cur.m_cycle[ModuleCPUconsts.M_CYCLE_NAMES[key]]
+                , 0) / accum_len;
     }
 
     // redraw LEDs for CPU flags and status
     UI_FP_LED_FLAG_CARRY.style.opacity =
-        LEDaccumulators.reduce((a, cur) => a + cur.flags.carry, 0) / LEDaccumulators.length;
+        LEDaccumulators.reduce((accum, cur) => accum + cur.flags.carry, 0) / accum_len;
     UI_FP_LED_FLAG_ZERO.style.opacity =
-        LEDaccumulators.reduce((a, cur) => a + cur.flags.zero, 0) / LEDaccumulators.length;
+        LEDaccumulators.reduce((accum, cur) => accum + cur.flags.zero, 0) / accum_len;
     UI_FP_LED_STATUS_RUNNING.style.opacity =
-        LEDaccumulators.reduce((a, cur) => a + cur.status.running, 0) / LEDaccumulators.length;
+        LEDaccumulators.reduce((accum, cur) => accum + cur.status.running, 0) / accum_len;
     UI_FP_LED_STATUS_HALTED.style.opacity =
-        LEDaccumulators.reduce((a, cur) => a + cur.status.halted, 0) / LEDaccumulators.length;
+        LEDaccumulators.reduce((accum, cur) => accum + cur.status.halted, 0) / accum_len;
 }
 
 // clear LEDs
@@ -527,7 +532,7 @@ function sideEffect_clearLEDs() {
 
 // **** UI CONTROL CALLBACK FUNCTIONS
 function handleKeys(event) {
-    if (event.target == document.getElementsByTagName("body")[0]) {
+    if (event.target == UI_BODY_TAG) {
         // if recipient of key-up is the main body (e.g. not the circuit spy text editor), then ...
         let key = event.key.toLowerCase();
 
@@ -536,7 +541,7 @@ function handleKeys(event) {
     }
 }
 
-function ctrlOnOff() {
+function sideEffect_ctrlOnOff() {
     toggleSwitch(UI_CONTROL_ON_OFF, 0, UI_NUM_FP_SLIDER_Y);
 
     if (!fp_input.on) {
@@ -552,7 +557,7 @@ function ctrlOnOff() {
     old = ModuleUI.syncedUIvalues(cpu);
 }
 
-function ctrlRunStop() {
+function sideEffect_ctrlRunStop() {
     toggleSwitch(UI_CONTROL_RUN_STOP, 0, UI_NUM_FP_SLIDER_Y);
 
     if (!fp_input.run) {
@@ -564,7 +569,7 @@ function ctrlRunStop() {
     }
 }
 
-function ctrlSpeed() {
+function sideEffect_ctrlSpeed() {
     toggleSwitch(UI_CONTROL_SPEED, UI_NUM_FP_SLIDER_X, 0);
 
     fp_input.slow = !fp_input.slow;
@@ -572,7 +577,7 @@ function ctrlSpeed() {
     // this is a special control not attached to the CPU, so we do not tell CPU to scan inputs!
 }
 
-function ctrlCircuitSpy() {
+function sideEffect_ctrlCircuitSpy() {
     toggleSwitch(UI_CONTROL_CIRCUIT_SPY, UI_NUM_FP_SLIDER_X, 0);
 
     fp_input.circuit_spy = !fp_input.circuit_spy;
@@ -590,7 +595,7 @@ function ctrlCircuitSpy() {
     // this is a special control not attached to the CPU, so we do not tell CPU to scan inputs!
 }
 
-function ctrlButtonUp(ui_button, input_key) {
+function sideEffect_ctrlButtonUp(ui_button, input_key) {
     // sync UI
     old = ModuleUI.syncedUIvalues(cpu);
 
@@ -605,14 +610,14 @@ function ctrlButtonUp(ui_button, input_key) {
     cpu.scanInputs(fp_input);
 }
 
-function ctrlRAMimport() {
+function sideEffect_ctrlRAMimport() {
     // sync UI
     old = ModuleUI.syncedUIvalues(cpu);
 
     cpu.replaceRAM(UI_RAM_IMPORT_EXPORT.value);
 }
 
-function ctrlRAMexport() {
+function sideEffect_ctrlRAMexport() {
     UI_RAM_IMPORT_EXPORT.value = cpu.exportRAM();
 }
 
