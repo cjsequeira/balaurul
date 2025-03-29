@@ -125,7 +125,7 @@ export const OPCODES = [
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
 
-    // **** MEMORY-WITH-ACCUMULATOR INSTRUCTIONS
+    // **** 0o40 - 0o57: MEMORY-WITH-ACCUMULATOR INSTRUCTIONS
     // 0o40: LDA: Load accumulator from address; 1 operand
     {
         name: "LDA",
@@ -138,9 +138,9 @@ export const OPCODES = [
         ],
     },
 
-    // 0o41: ADD: Add value at address to accumulator using B as a temp register
+    // 0o41: ADA: Add value at address to accumulator using B as a temp register
     {
-        name: "ADD",
+        name: "ADA",
         funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInB, m_addBtoA, m_incPC],
         next_type: [
             M_CYCLE_NAMES.INC_PC,
@@ -154,9 +154,9 @@ export const OPCODES = [
     // 0o42: To be implemented (NOP)
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
-    // 0o43: SUB: Subtract value at address from accumulator using B as a temp register
+    // 0o43: SBA: Subtract value at address from accumulator using B as a temp register
     {
-        name: "SUB",
+        name: "SBA",
         funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInB, m_subBfromA, m_incPC],
         next_type: [
             M_CYCLE_NAMES.INC_PC,
