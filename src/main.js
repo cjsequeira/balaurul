@@ -612,14 +612,14 @@ function sideEffect_ctrlRunStop(fp_input, cpu) {
     cpu.scanInputs(fp_input);
 }
 
-function sideEffect_ctrlSpeed(fp_input, cpu) {
+function sideEffect_ctrlSpeed(fp_input) {
     ModuleUI.sideEffect_toggleSwitch(UI_CONTROL_SPEED, UI_NUM_FP_SLIDER_X, 0);
     fp_input.slow = !fp_input.slow;
 
     // this is a special control not attached to the CPU, so we do not tell CPU to scan inputs!
 }
 
-function sideEffect_ctrlCircuitSpy(fp_input, cpu) {
+function sideEffect_ctrlCircuitSpy(fp_input) {
     ModuleUI.sideEffect_toggleSwitch(UI_CONTROL_CIRCUIT_SPY, UI_NUM_FP_SLIDER_X, 0);
 
     fp_input.circuit_spy = !fp_input.circuit_spy;
