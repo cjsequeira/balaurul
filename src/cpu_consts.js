@@ -221,11 +221,19 @@ export const OPCODES = [
         next_type: [M_CYCLE_NAMES.INC_PC, M_CYCLE_NAMES.MEM_READ],
     },
 
-    // 63: [Jump to address if not carry]
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o63: JNC: Jump to address if carry flag not set; 1 operand
+    {
+        name: "JNC",
+        funcs: [m_incPC, m_ifNotCarryThenStorePCaddrInPC],
+        next_type: [M_CYCLE_NAMES.INC_PC, M_CYCLE_NAMES.MEM_READ],
+    },
 
-    // 64: [Jump to address if not zero]
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o64: JNZ: Jump to address if zero flag not set; 1 operand
+    {
+        name: "JNZ",
+        funcs: [m_incPC, m_ifNotZeroThenStorePCaddrInPC],
+        next_type: [M_CYCLE_NAMES.INC_PC, M_CYCLE_NAMES.MEM_READ],
+    },
 
     // 0o65: CALL: Call subroutine at address; 1 operand
     {
@@ -310,6 +318,26 @@ function m_halt(cpu) {
 // otherwise, just increment PC
 function m_ifCarryThenStorePCaddrInPC(cpu) {
     if (cpu.flags.carry) {
+        cpu.pc = cpu.getWordAt(cpu.pc);
+    } else {
+        cpu.incPC();
+    }
+}
+
+// if not carry, then store into PC: word at address in PC
+// otherwise, just increment PC
+function m_ifNotCarryThenStorePCaddrInPC(cpu) {
+    if (!cpu.flags.carry) {
+        cpu.pc = cpu.getWordAt(cpu.pc);
+    } else {
+        cpu.incPC();
+    }
+}
+
+// if not zero, then store into PC: word at address in PC
+// otherwise, just increment PC
+function m_ifNotZeroThenStorePCaddrInPC(cpu) {
+    if (!cpu.flags.zero) {
         cpu.pc = cpu.getWordAt(cpu.pc);
     } else {
         cpu.incPC();

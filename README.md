@@ -58,7 +58,8 @@ Live at https://cjsequeira.github.io/balaurul/
 | 0060 | JMP | Unconditionally jump to address | Address | 2 | 4 | 
 | 0061 | JC | Jump to address if carry flag set | Address | 2 | 4 | 
 | 0062 | JZ | Jump to address if zero flag set | Address | 2 | 4 | 
-| 0063 - 0064 | | (To be implemented) | | | |
+| 0063 | JNC | Jump to address if carry flag not set | Address | 2 | 4 | 
+| 0064 | JNZ | Jump to address if zero flag not set | Address | 2 | 4 | 
 | 0065 | CALL | Call subroutine at address | Address | 2 | 5 | 
 | 0066 | RET | Return from subroutine | | 1 | 4 | 
 | 0067 | | (To be implemented) | | | |
