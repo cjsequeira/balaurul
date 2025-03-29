@@ -14,6 +14,9 @@ import * as ModuleUI from "./module_ui.js"
 // target CPU speed for "fast" mode, in MACHINE CYCLES PER SECOND
 const FAST_TARGET = 1e6;
 
+// iteration limit, to handle when browser window loses focus
+const ITER_LIMIT = FAST_TARGET * 1/60;
+
 // number of elements in LED brightness running average
 const NUM_LED_AVERAGE = 3;
 
@@ -219,7 +222,9 @@ function sideEffect_appUpdate() {
         // fast mode? update to meet the speed target
 
         // calculate number of CPU updates to do
-        update_target = FAST_TARGET * elapsed_time / 1000;
+        // limit the number of cycles, to handle cases where the browser window loses focus and...
+        //  ...requestAnimationFrame() is not called for long periods of time
+        update_target = Math.min(FAST_TARGET * elapsed_time / 1000, ITER_LIMIT);
 
         // update CPU to meet the speed target
         for (let i = 0; i < update_target; i++) {
