@@ -474,24 +474,18 @@ function sideEffect_setup() {
     });
     UI_CONTROL_RUN_STOP.addEventListener("click", () => sideEffect_ctrlRunStop(fp_input, cpu));
 
-    UI_CONTROL_RESET.addEventListener("mousedown",
-        () => UI_CONTROL_RESET.style.opacity = 1.0);
-    UI_CONTROL_M_STEP.addEventListener("mousedown",
-        () => UI_CONTROL_M_STEP.style.opacity = 1.0);
-    UI_CONTROL_I_STEP.addEventListener("mousedown",
-        () => UI_CONTROL_I_STEP.style.opacity = 1.0);
-    UI_CONTROL_EXAMINE.addEventListener("mousedown",
-        () => UI_CONTROL_EXAMINE.style.opacity = 1.0);
-    UI_CONTROL_EXAMINE_NEXT.addEventListener("mousedown",
-        () => UI_CONTROL_EXAMINE_NEXT.style.opacity = 1.0);
-    UI_CONTROL_DEPOSIT.addEventListener("mousedown",
-        () => UI_CONTROL_DEPOSIT.style.opacity = 1.0);
-    UI_CONTROL_DEPOSIT_NEXT.addEventListener("mousedown",
-        () => UI_CONTROL_DEPOSIT_NEXT.style.opacity = 1.0);
-
-    UI_CONTROL_RAM_IMPORT.addEventListener("click", () => sideEffect_ctrlRAMimport(fp_input, cpu));
+    UI_CONTROL_RESET.addEventListener("mousedown", () => UI_CONTROL_RESET.style.opacity = 1.0);
+    UI_CONTROL_M_STEP.addEventListener("mousedown", () => UI_CONTROL_M_STEP.style.opacity = 1.0);
+    UI_CONTROL_I_STEP.addEventListener("mousedown", () => UI_CONTROL_I_STEP.style.opacity = 1.0);
+    UI_CONTROL_EXAMINE.addEventListener("mousedown", () => UI_CONTROL_EXAMINE.style.opacity = 1.0);
+    UI_CONTROL_EXAMINE_NEXT.addEventListener("mousedown", () => UI_CONTROL_EXAMINE_NEXT.style.opacity = 1.0);
+    UI_CONTROL_DEPOSIT.addEventListener("mousedown", () => UI_CONTROL_DEPOSIT.style.opacity = 1.0);
+    UI_CONTROL_DEPOSIT_NEXT.addEventListener("mousedown", () => UI_CONTROL_DEPOSIT_NEXT.style.opacity = 1.0);
+    UI_CONTROL_RAM_IMPORT.addEventListener("click", () => {
+        old = ModuleUI.syncedUIvalues(cpu);
+        sideEffect_ctrlRAMimport(fp_input, cpu);
+    });
     UI_CONTROL_RAM_EXPORT.addEventListener("click", () => sideEffect_ctrlRAMexport(fp_input, cpu));
-
     UI_CONTROL_RESET.addEventListener("mouseup",
         () => {
             old = ModuleUI.syncedUIvalues(cpu);
@@ -638,26 +632,25 @@ function sideEffect_ctrlCircuitSpy(fp_input) {
 }
 
 // handle front panel button releases
-function sideEffect_ctrlButtonUp(fp_input, cpu, ui_button, input_key) {
+function sideEffect_ctrlButtonUp(fp_signals, cpu, ui_button, input_key) {
     // clear UI "depressed button" element
     ui_button.style.opacity = 0.0;
 
     // set line indicated by input_key to high and scan
-    fp_input[input_key] = true;
-    cpu.scanInputs(fp_input);
+    fp_signals[input_key] = true;
+    cpu.scanInputs(fp_signals);
 
     // set line indicated by input_key back to low and scan
-    fp_input[input_key] = false;
-    cpu.scanInputs(fp_input);
+    fp_signals[input_key] = false;
+    cpu.scanInputs(fp_signals);
 }
 
 // handle click of "IMPORT RAM"
-function sideEffect_ctrlRAMimport(fp_input, cpu) {
-    old = ModuleUI.syncedUIvalues(cpu);
+function sideEffect_ctrlRAMimport(_, cpu) {
     cpu.replaceRAM(UI_RAM_IMPORT_EXPORT.value);
 }
 
 // handle click of "EXPORT RAM"
-function sideEffect_ctrlRAMexport(fp_input, cpu) {
+function sideEffect_ctrlRAMexport(_, cpu) {
     UI_RAM_IMPORT_EXPORT.value = cpu.exportRAM();
 }
