@@ -346,7 +346,7 @@ function sideEffect_appUpdate() {
     if (fp_input.slow) {
         // slow mode? update CPU just once
         cpu.update();
-        LEDaccumulators[LEDindex] = accumulateLEDs(cpu, LEDaccumulators[LEDindex], 1.0);
+        LEDaccumulators[LEDindex] = ModuleUI.accumulateLEDs(cpu, LEDaccumulators[LEDindex], 1.0);
     } else {
         // fast mode? update to meet the speed target
 
@@ -356,7 +356,7 @@ function sideEffect_appUpdate() {
         // update CPU to meet the speed target
         for (let i = 0; i < update_target; i++) {
             cpu.update();
-            LEDaccumulators[LEDindex] = accumulateLEDs(cpu, LEDaccumulators[LEDindex], update_target);
+            LEDaccumulators[LEDindex] = ModuleUI.accumulateLEDs(cpu, LEDaccumulators[LEDindex], update_target);
         }
     }
 
@@ -478,52 +478,6 @@ function sideEffect_resetUI() {
     LEDaccumulators = Array(NUM_LED_AVERAGE).fill(ModuleUI.zeroedLEDaccumulators());
 }
 
-
-
-// accumulate LED brightnesses
-function accumulateLEDs(cpu, accum, scale) {
-    return {
-        pc: accum.pc.map(
-            (val, i) => (cpu.pc & Math.pow(2, i)) ? val + 1.0 / scale : val
-        ),
-
-        ir: accum.ir.map(
-            (val, i) => (cpu.ir & Math.pow(2, i)) ? val + 1.0 / scale : val
-        ),
-
-        mar: accum.mar.map(
-            (val, i) => (cpu.mar & Math.pow(2, i)) ? val + 1.0 / scale : val
-        ),
-
-        a: accum.a.map(
-            (val, i) => (cpu.a & Math.pow(2, i)) ? val + 1.0 / scale : val
-        ),
-
-        b: accum.b.map(
-            (val, i) => (cpu.pc & Math.pow(2, i)) ? val + 1.0 / scale : val
-        ),
-
-        out: accum.out.map(
-            (val, i) => (cpu.out & Math.pow(2, i)) ? val + 1.0 / scale : val
-        ),
-
-        m_cycle: {
-            ...accum.m_cycle,
-            [cpu.m_next_type]: accum.m_cycle[cpu.m_next_type] += 1.0 / scale,
-        },
-
-        flags: {
-            carry: accum.flags.carry + (cpu.flags.carry * 1.0) / scale,
-            zero: accum.flags.zero + (cpu.flags.zero * 1.0) / scale,
-        },
-
-        status: {
-            running: accum.status.running + (cpu.status.running * 1.0) / scale,
-            halted: accum.status.halted + (cpu.status.halted * 1.0) / scale,
-        }
-    }
-}
-
 // redraw all LEDs based on accumulated brightness, using a rolling average
 function sideEffect_redrawLEDs() {
     // redraw LEDs for registers
@@ -568,8 +522,6 @@ function sideEffect_clearLEDs() {
         elem.style.opacity = 0.0;
     }
 }
-
-
 
 
 // **** UI CONTROL CALLBACK FUNCTIONS

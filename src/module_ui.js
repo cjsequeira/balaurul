@@ -5,6 +5,49 @@
 // **** MODULES
 import * as ModuleCPUconsts from "./cpu_consts.js";
 
+
+// return LED brightnesses with accumulation
+export const accumulateLEDs = (cpu, accum, scale) => ({
+    pc: accum.pc.map(
+        (val, i) => (cpu.pc & Math.pow(2, i)) ? val + 1.0 / scale : val
+    ),
+
+    ir: accum.ir.map(
+        (val, i) => (cpu.ir & Math.pow(2, i)) ? val + 1.0 / scale : val
+    ),
+
+    mar: accum.mar.map(
+        (val, i) => (cpu.mar & Math.pow(2, i)) ? val + 1.0 / scale : val
+    ),
+
+    a: accum.a.map(
+        (val, i) => (cpu.a & Math.pow(2, i)) ? val + 1.0 / scale : val
+    ),
+
+    b: accum.b.map(
+        (val, i) => (cpu.pc & Math.pow(2, i)) ? val + 1.0 / scale : val
+    ),
+
+    out: accum.out.map(
+        (val, i) => (cpu.out & Math.pow(2, i)) ? val + 1.0 / scale : val
+    ),
+
+    m_cycle: {
+        ...accum.m_cycle,
+        [cpu.m_next_type]: accum.m_cycle[cpu.m_next_type] += 1.0 / scale,
+    },
+
+    flags: {
+        carry: accum.flags.carry + (cpu.flags.carry * 1.0) / scale,
+        zero: accum.flags.zero + (cpu.flags.zero * 1.0) / scale,
+    },
+
+    status: {
+        running: accum.status.running + (cpu.status.running * 1.0) / scale,
+        halted: accum.status.halted + (cpu.status.halted * 1.0) / scale,
+    },
+})
+
 // return sync of current CPU values
 export const syncedUIvalues = (cpu) => ({
     pc: cpu.pc,
