@@ -263,7 +263,7 @@ export const OPCODES = [
 ];
 
 
-// **** MACHINE CYCLE OPERATIONS FOR OPCODES
+// **** MACHINE CYCLE OPERATIONS FOR OPCODES - PRIVATE TO MODULE
 // add B to accumulator
 function m_addBtoA(cpu) {
     // add B to accumulator
