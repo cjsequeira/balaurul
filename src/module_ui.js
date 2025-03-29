@@ -6,31 +6,36 @@
 import * as ModuleCPUconsts from "./cpu_consts.js";
 
 
-// **** FUNCTIONS
+// **** CONSTANTS
+// document BODY tag
+const UI_BODY_TAG = document.getElementsByTagName("body")[0];
+
+
+// **** ARROW FUNCTIONS
 // return LED brightnesses with accumulation
-export const accumulateLEDs = (cpu, LEDaccum, scale) => ({
+export const accumulateLEDs = (cpu, LEDaccum, divisor) => ({
      registers: LEDaccum.registers.map((val, i) => ({
-        pc: (cpu.pc & Math.pow(2, i)) ? val.pc + 1.0 / scale : val.pc,
-        ir: (cpu.ir & Math.pow(2, i)) ? val.ir + 1.0 / scale : val.ir,
-        mar: (cpu.mar & Math.pow(2, i)) ? val.mar + 1.0 / scale : val.mar,
-        a: (cpu.a & Math.pow(2, i)) ? val.a + 1.0 / scale : val.a,
-        b: (cpu.pc & Math.pow(2, i)) ? val.b + 1.0 / scale : val.b,
-        out: (cpu.out & Math.pow(2, i)) ? val.out + 1.0 / scale : val.out,
+        pc: (cpu.pc & Math.pow(2, i)) ? val.pc + 1.0 / divisor : val.pc,
+        ir: (cpu.ir & Math.pow(2, i)) ? val.ir + 1.0 / divisor : val.ir,
+        mar: (cpu.mar & Math.pow(2, i)) ? val.mar + 1.0 / divisor : val.mar,
+        a: (cpu.a & Math.pow(2, i)) ? val.a + 1.0 / divisor : val.a,
+        b: (cpu.pc & Math.pow(2, i)) ? val.b + 1.0 / divisor : val.b,
+        out: (cpu.out & Math.pow(2, i)) ? val.out + 1.0 / divisor : val.out,
     })),
 
     m_cycle: {
         ...LEDaccum.m_cycle,
-        [cpu.m_next_type]: LEDaccum.m_cycle[cpu.m_next_type] += 1.0 / scale,
+        [cpu.m_next_type]: LEDaccum.m_cycle[cpu.m_next_type] += 1.0 / divisor,
     },
 
     flags: {
-        carry: LEDaccum.flags.carry + (cpu.flags.carry * 1.0) / scale,
-        zero: LEDaccum.flags.zero + (cpu.flags.zero * 1.0) / scale,
+        carry: LEDaccum.flags.carry + (cpu.flags.carry * 1.0) / divisor,
+        zero: LEDaccum.flags.zero + (cpu.flags.zero * 1.0) / divisor,
     },
 
     status: {
-        running: LEDaccum.status.running + (cpu.status.running * 1.0) / scale,
-        halted: LEDaccum.status.halted + (cpu.status.halted * 1.0) / scale,
+        running: LEDaccum.status.running + (cpu.status.running * 1.0) / divisor,
+        halted: LEDaccum.status.halted + (cpu.status.halted * 1.0) / divisor,
     },
 });
 
@@ -78,6 +83,19 @@ export const zeroedLEDaccumulators = () => ({
         halted: 0.0
     },
 });
+
+
+// **** TRADITIONAL FUNCTIONS
+// callback: handle keyboard keypresses
+export function handleKeys(event, keys) {
+    if (event.target == UI_BODY_TAG) {
+        // if recipient of key-up is the main body (e.g. not the circuit spy text editor), then ...
+        let key = event.key.toLowerCase();
+
+        // execute associated callback for keypress
+        if (key in keys) keys[key]();
+    }
+}
 
 // UI switch visual toggle function
 export function sideEffect_toggleSwitch(ui_switch, transform_x, transform_y) {
