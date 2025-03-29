@@ -19,7 +19,7 @@ export class CPU {
         this.ir = 0;
         this.mar = 0;
         this.a = 0;
-        this.b = 0;s
+        this.b = 0;
 
         this.out = 0;
 
