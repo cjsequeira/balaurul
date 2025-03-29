@@ -16,21 +16,54 @@ Live at https://cjsequeira.github.io/balaurul/
 * New instruction set! (Hooray for breaking changes!)
 * SOUND? (Probably not)
 
-## Instructions
-| Opcode (Octal) | Description | Mnemonic | Operand (If Applicable) | Total Width (Words) | Num. of Machine Cycles
-| --- | --- | --- | --- | --- | --- |
-| 0000 | NOP | No operation | | 1 | 3
-| 0001 | LDA | Load accumulator from address | Address (1 word) | 2 | 6
-| 0002 | ADD | Add word in address to accumulator | Address (1 word) | 2 | 7
-| 0003 | SUB | Subtract word in address from accumulator | Address (1 word) | 2 | 7
-| 0004 | STA | Store accumulator at address | Address (1 word) | 2 | 6
-| 0005 | LDI | Load immediate value to accumulator | Immediate value (1 word) | 2 | 5
-| 0006 | JMP | Unconditionally jump to address | Address (1 word) | 2 | 4
-| 0007 | JC | Jump to address if carry flag is set | Address (1 word) | 2 | 4
-| 0010 | JZ | Jump to address if zero flag is set | Address (1 word) | 2 | 4
-| 0011 | OUT | Write accumulator to output | | 1 | 4
-| 0012 | HLT | Increment program counter and halt | | 1 | 4
-| 0013 to 0077 | NOP | No operation | | 1 | 3
+## Instructions (octal)
+### 0000 - 0007: Special instructions
+| Opcode | Mnemonic | Description | Operand (If Any) | Width (Words) | Num. of Machine Cycles
+|---|---|---|---|---|---|
+| 0000 | NOP | No operation | | 1 | 3 |
+| 0001 | HLT | Increment PC and halt CPU | | 1 | 4 |
+| 0002 | OUT | Write accumulator to OUT | | 1 | 4 |
+| 0003 | IN | Read input switches to accumulator | | 1 | 4 |
+| 0004 - 0007 | | (Reserved) | | | |
+
+### 0010 - 0017: No-operand instructions
+| Opcode | Mnemonic | Description | Operand (If Any) | Width (Words) | Num. of Machine Cycles
+|---|---|---|---|---|---|
+| 0010 | INC | Increment accumulator | | 1 | 4 | 
+| 0011 | DEC | Decrement accumulator | | 1 | 4 | 
+| 0012 - 0015 | | (To be implemented) | | | |
+| 0016 - 0017 | | (Reserved) | | | |
+
+### 0020 - 0037: Immediate-with-accumulator instructions
+| Opcode | Mnemonic | Description | Operand (If Any) | Width (Words) | Num. of Machine Cycles
+|---|---|---|---|---|---|
+| 0020 | LDI | Load accumulator from immediate | Immediate value | 2 | 5 | 
+| 0021 - 0030 | | (To be implemented) | | | |
+| 0031 - 0037 | | (Reserved) | | | |
+
+### 0040 - 0057: Memory-with-accumulator instructions
+| Opcode | Mnemonic | Description | Operand (If Any) | Width (Words) | Num. of Machine Cycles
+|---|---|---|---|---|---|
+| 0040 | LDA | Load accumulator from address | Address | 2 | 6 | 
+| 0041 | ADA | Add value at address to accumulator | Address | 2 | 7 | 
+| 0042 | | (To be implemented) |  |  |  | 
+| 0043 | SBA | Subtract value at address from accumulator | Address | 2 | 7 | 
+| 0044 - 0050 | | (To be implemented) | | | |
+| 0051 | STA | Store accumulator to address | Address | 2 | 6 | 
+| 0052 - 0057 | | (Reserved) | | | |
+
+### 0060 - 0077: Jump instructions
+| Opcode | Mnemonic | Description | Operand (If Any) | Width (Words) | Num. of Machine Cycles
+|---|---|---|---|---|---|
+| 0060 | JMP | Unconditionally jump to address | Address | 2 | 4 | 
+| 0061 | JC | Jump to address if carry flag set | Address | 2 | 4 | 
+| 0062 | JZ | Jump to address if zero flag set | Address | 2 | 4 | 
+| 0063 - 0064 | | (To be implemented) | | | |
+| 0065 | CALL | Call subroutine at address | Address | 2 | 5 | 
+| 0066 | RET | Return from subroutine | | 1 | 4 | 
+| 0067 | | (To be implemented) | | | |
+| 0070 - 0077 | | (Reserved) | | | |
+
 
 ## Version history
 

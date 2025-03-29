@@ -9,22 +9,9 @@ import { boolListToNumber } from "./util.js";
 
 // **** CPU CLASS
 export class CPU {
-    // **** STATIC CPU PARAMETERS
-    static RAM_WORDS = ModuleCPUconsts.RAM_WORDS;
-    static BITS = ModuleCPUconsts.BITS;
-
-    // machine cycle names
-    static M_CYCLE_NAMES = ModuleCPUconsts.M_CYCLE_NAMES;
-
-    // instructions and their implementation
-    static OPCODES = ModuleCPUconsts.OPCODES;
-
-
-    // **** NON-STATIC CLASS METHODS
     // constructor
     // note that the constructor DOES NOT power on OR reset the CPU!
     constructor() {
-        // **** DEFINE CPU
         // define memory, registers, output, and flags
         this.mem = [];
 
@@ -41,7 +28,7 @@ export class CPU {
             zero: false,
         };
 
-        // define and set CPU statuses
+        // define CPU statuses
         this.status = {
             ready: false,
             doing_m_step: false,
@@ -50,12 +37,15 @@ export class CPU {
             halted: false,
         }
 
-        // define and set machine cycle info
+        // define numerical holder for input switches
+        this.input_switch_value = 0;
+
+        // define machine cycle info
         this.m_cycle = 0;
         this.m_opcode = 0;
-        this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
+        this.m_next_type = ModuleCPUconsts.M_CYCLE_NAMES.FETCH;
 
-        // define and set machine cycle and instruction cycle counters
+        // define machine cycle and instruction cycle counters
         this.elapsed_m = 0;
         this.elapsed_i = 0;
     }
@@ -65,9 +55,9 @@ export class CPU {
         let ram_string = "";
 
         if (this.status.on) {
-            // get number of octal digits in a CPU word, based on CPU.BITS
+            // get number of octal digits in a CPU word, based on ModuleCPUconsts.BITS
             // an octal digit is three bits in size
-            let num_digits = Math.round(CPU.BITS / 3);
+            let num_digits = Math.round(ModuleCPUconsts.BITS / 3);
 
             // iterate through all words in memory, adding a line break every 8 words
             this.mem.forEach((value, i) => {
@@ -81,36 +71,28 @@ export class CPU {
     }
 
     // get word value at given address
+    // assumes that address is a positive number!
     getWordAt(address) {
         // wrap around in memory if given address is higher than size of RAM
-        let mod_address = address % CPU.RAM_WORDS;
+        let mod_address = address % ModuleCPUconsts.RAM_WORDS;
 
-        // initialize return value to null
-        let value = null;
-
-        if (mod_address >= 0) {
-            // if address greater than zero, return value pointed to by address
-            value = this.mem[mod_address];
-        }
-
-        // return value (note: null if given address was negative!)
-        return value;
+        // return value at wrapped-around memory address
+        return this.mem[mod_address];
     }
 
     // get opcode stored in IR
     getOpCodeFrom(value) {
         // use mod operator so there is never an invalid opcode!
-        return (value % CPU.OPCODES.length);
+        return (value % ModuleCPUconsts.OPCODES.length);
     }
 
     // disassemble value to a mnemonic
     disassemble(value) {
-        return CPU.OPCODES[this.getOpCodeFrom(value)].name;
+        return ModuleCPUconsts.OPCODES[this.getOpCodeFrom(value)].name;
     }
 
     // increment PC
     incPC() {
-        // increment PC, wrapping around to zero if needed
         this.setPC(this.pc + 1);
     }
 
@@ -135,7 +117,7 @@ export class CPU {
         // set startup values for machine cycle info
         this.m_cycle = 0;
         this.m_opcode = 0;
-        this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
+        this.m_next_type = ModuleCPUconsts.M_CYCLE_NAMES.FETCH;
 
         // reset machine cycle and instruction cycle counters
         this.elapsed_m = 0;
@@ -143,17 +125,17 @@ export class CPU {
 
         // set RAM to random contents
         this.mem = [];
-        for (let i = 0; i < CPU.RAM_WORDS; i++) {
-            this.mem.push(Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1)));
+        for (let i = 0; i < ModuleCPUconsts.RAM_WORDS; i++) {
+            this.mem.push(Math.round(Math.random() * (Math.pow(2, ModuleCPUconsts.BITS) - 1)));
         }
 
         // set PC, IR, MAR, A, B, and OUT to random contents
-        this.pc = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
-        this.ir = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
-        this.mar = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
-        this.a = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
-        this.b = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
-        this.out = Math.round(Math.random() * (Math.pow(2, CPU.BITS) - 1));
+        this.pc = Math.round(Math.random() * (Math.pow(2, ModuleCPUconsts.BITS) - 1));
+        this.ir = Math.round(Math.random() * (Math.pow(2, ModuleCPUconsts.BITS) - 1));
+        this.mar = Math.round(Math.random() * (Math.pow(2, ModuleCPUconsts.BITS) - 1));
+        this.a = Math.round(Math.random() * (Math.pow(2, ModuleCPUconsts.BITS) - 1));
+        this.b = Math.round(Math.random() * (Math.pow(2, ModuleCPUconsts.BITS) - 1));
+        this.out = Math.round(Math.random() * (Math.pow(2, ModuleCPUconsts.BITS) - 1));
 
         // set CPU "ready" and "on" statuses to true
         this.status.ready = true;
@@ -162,13 +144,13 @@ export class CPU {
 
     // put word value into given address
     // this function assumes that value AND address are greater than or equal to zero!
-    // only the lowest CPU.BITS number of bits will be stored!
+    // only the lowest ModuleCPUconsts.BITS number of bits will be stored!
     putWordAt(address, value) {
         // wrap around in memory if given address is higher than size of RAM
-        let mod_address = address % CPU.RAM_WORDS;
+        let mod_address = address % ModuleCPUconsts.RAM_WORDS;
 
-        // keep only the lowest CPU.BITS number of bits in the value
-        let mod_value = value % Math.pow(2, CPU.BITS);
+        // keep only the lowest ModuleCPUconsts.BITS number of bits in the value
+        let mod_value = value % Math.pow(2, ModuleCPUconsts.BITS);
 
         // store value at address
         this.mem[mod_address] = mod_value;
@@ -197,7 +179,7 @@ export class CPU {
         // reset machine cycle info
         this.m_cycle = 0;
         this.m_opcode = 0;
-        this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
+        this.m_next_type = ModuleCPUconsts.M_CYCLE_NAMES.FETCH;
 
         // reset machine cycle and instruction cycle counters
         this.elapsed_m = 0;
@@ -212,21 +194,21 @@ export class CPU {
     // replace RAM with contents of a text string IF CPU is on AND "run" input is false
     // all digits are treated as octal digits
     // all characters not 0 through 7 are ignored (skipped)
-    // if there are fewer words than CPU.RAM_WORDS, zeros are added to the end
-    // if there are more words than CPU.RAM_WORDS, just the first CPU.RAM_WORDS are stored
+    // if there are fewer words than ModuleCPUconsts.RAM_WORDS, zeros are added to the end
+    // if there are more words than ModuleCPUconsts.RAM_WORDS, just the first ModuleCPUconsts.RAM_WORDS are stored
     replaceRAM(in_string) {
         if ((this.status.on) && (!this.status.running)) {
             // if CPU is on AND CPU is not running, then...
 
-            // string containing octal digits
+            // string containing valid octal digits
             let octal = "01234567";
 
             // pointer to current CPU RAM word being populated
             let pointer = 0;
 
-            // get number of octal digits in a CPU word, based on CPU.BITS
+            // get number of octal digits in a CPU word, based on ModuleCPUconsts.BITS
             // an octal digit is three bits in size
-            let num_digits = Math.round(CPU.BITS / 3);
+            let num_digits = Math.round(ModuleCPUconsts.BITS / 3);
             let word_string = "";
 
             // convert RAM input string to array for iteration
@@ -256,13 +238,16 @@ export class CPU {
     // scan input lines and adjust CPU status accordingly
     scanInputs(input) {
         if (input.on) {
-            // if input line is "on" then...
+            // if "on" input line is true, then...
 
             // ensure CPU status is "on"
             this.status.on = true;
 
             // power on the CPU if CPU not in "ready" status
             if (!this.status.ready) this.powerOn();
+
+            // store the current status of the input switches as a number
+            this.input_switch_value = boolListToNumber(input.input_switches)
 
             if (input.run) {
                 // if "run" input is true, then...
@@ -280,31 +265,31 @@ export class CPU {
                 if ((input.reset) && (this.status.on)) this.reset();
 
                 if (input.m_step) {
-                    // if m-step input is true, then...
+                    // if "m-step" input is true, then...
 
                     // set CPU status to "doing m step"
                     this.status.doing_m_step = true;
                 }
 
                 if (input.i_step) {
-                    // if i-step input is true, then...
+                    // if "i-step" input is true, then...
 
                     // set CPU status to "doing i step"
                     this.status.doing_i_step = true;
                 }
 
                 if (input.examine) {
-                    // if examine input is true, then ...
+                    // if "examine" input is true, then ...
 
                     // set the PC to the input word
-                    this.setPC(boolListToNumber(input.input_switches));
+                    this.setPC(this.input_switch_value);
 
                     // set "out" to show the value at the memory address pointed to by the PC
                     this.out = this.getWordAt(this.pc);
                 }
 
                 if (input.examine_next) {
-                    // if examine_next input is true, then ...
+                    // if "examine_next" input is true, then ...
 
                     // increment the PC
                     this.incPC();
@@ -314,23 +299,23 @@ export class CPU {
                 }
 
                 if (input.deposit) {
-                    // if deposit input is true, then ...
+                    // if "deposit" input is true, then ...
 
                     // write input word into address pointed to by PC
-                    this.putWordAt(this.pc, boolListToNumber(input.input_switches));
+                    this.putWordAt(this.pc, this.input_switch_value);
 
                     // set "out" to show the value at the memory address pointed to by the PC
                     this.out = this.getWordAt(this.pc);
                 }
 
                 if (input.deposit_next) {
-                    // if deposit_next input is true, then ...
+                    // if "deposit_next" input is true, then ...
 
                     // FIRST increment the PC
                     this.incPC();
 
                     // write input word into address pointed to by PC
-                    this.putWordAt(this.pc, boolListToNumber(input.input_switches));
+                    this.putWordAt(this.pc, this.input_switch_value);
 
                     // set "out" to show the value at the memory address pointed to by the PC
                     this.out = this.getWordAt(this.pc);
@@ -349,13 +334,13 @@ export class CPU {
 
     // set PC to the given value, wrapping around if needed based on CPU bit size
     setPC(value) {
-        this.pc = value % Math.pow(2, CPU.BITS);
+        this.pc = value % Math.pow(2, ModuleCPUconsts.BITS);
     }
 
     // update
     update() {
         if (this.status.running || this.status.doing_m_step || this.status.doing_i_step) {
-            // if CPU is running OR doing m step OR doing i step, then ...
+            // if CPU is running OR doing machine step OR doing instruction step, then ...
 
             // use machine cycle indicator to determine what to do
             switch (this.m_cycle) {
@@ -364,8 +349,8 @@ export class CPU {
                     // Populate IR with word pointed to by PC
                     this.ir = this.getWordAt(this.pc);
 
-                    // Next machine cycle must be a DECODE
-                    this.m_next_type = CPU.M_CYCLE_NAMES.DECODE;
+                    // Next machine cycle MUST be a DECODE
+                    this.m_next_type = ModuleCPUconsts.M_CYCLE_NAMES.DECODE;
 
                     break;
 
@@ -378,14 +363,14 @@ export class CPU {
                 // INSTRUCTION-SPECIFIC (machine cycles 2 and beyond)
                 default:
                     // call the opcode-specific function for the current machine cycle
-                    CPU.OPCODES[this.m_opcode].funcs[this.m_cycle - 2](this);
+                    ModuleCPUconsts.OPCODES[this.m_opcode].funcs[this.m_cycle - 2](this);
                     break;
             }
 
             // increment machine cycle indicator
             this.m_cycle++;
 
-            // increment machine cycle counter
+            // increment total number of elapsed machine cycles
             this.elapsed_m++;
 
             // indicate that CPU has finished a machine step
@@ -394,24 +379,24 @@ export class CPU {
             if (this.m_cycle > 1) {
                 // if we have now passed FETCH and DECODE, then...
 
-                if ((this.m_cycle - 2) >= CPU.OPCODES[this.m_opcode].funcs.length) {
+                if ((this.m_cycle - 2) >= ModuleCPUconsts.OPCODES[this.m_opcode].funcs.length) {
                     // if instruction cycle is finished, then...
 
                     // reset machine cycle indicator and "next" indicator
                     // next machine cycle will be 0, which is always a "FETCH"
                     this.m_cycle = 0;
-                    this.m_next_type = CPU.M_CYCLE_NAMES.FETCH;
+                    this.m_next_type = ModuleCPUconsts.M_CYCLE_NAMES.FETCH;
 
                     // indicate that the CPU has finished an instruction step
                     this.status.doing_i_step = false;
 
-                    // increment instruction cycle counter
+                    // increment total number of elapsed instruction cycles
                     this.elapsed_i++;
                 } else {
                     // if instruction cycle is not yet finished, then...
 
                     // next machine cycle type is opcode-specific
-                    this.m_next_type = CPU.OPCODES[this.m_opcode].next_type[this.m_cycle - 2];
+                    this.m_next_type = ModuleCPUconsts.OPCODES[this.m_opcode].next_type[this.m_cycle - 2];
                 }
             }
         }
