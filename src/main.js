@@ -4,6 +4,7 @@
 
 // **** MODULES
 import * as ModuleCPU from "./cpu.js";
+import * as ModuleCPUconsts from "./cpu_consts.js"
 import * as ModuleUtil from "./util.js";
 import * as ModuleUI from "./module_ui.js"
 
@@ -215,7 +216,7 @@ function sideEffect_setup() {
 
 
     // **** GENERATE HANDLES FOR INPUT SWITCHES
-    for (let i = 0; i < ModuleCPU.CPU.BITS; i++) {
+    for (let i = 0; i < ModuleCPUconsts.BITS; i++) {
         // build each input switch UI object
         ui_input_switches.push(
             document.getElementById(UI_TEXT_FP_CONTROL_INPUT_ID_PREFIX + i.toString(10))
@@ -408,12 +409,12 @@ function sideEffect_appUpdate() {
 
         // box current MAR memory element
         document.getElementById(
-            UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.mar % ModuleCPU.CPU.RAM_WORDS).toString(10)
+            UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.mar % ModuleCPUconsts.RAM_WORDS).toString(10)
         ).classList.add(UI_TEXT_MEM_MAR_CLASS);
 
         // box current PC memory element
         document.getElementById(
-            UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.pc % ModuleCPU.CPU.RAM_WORDS).toString(10)
+            UI_TEXT_MEM_CELL_ID_PREFIX + (cpu.pc % ModuleCPUconsts.RAM_WORDS).toString(10)
         ).classList.add(UI_TEXT_MEM_PC_CLASS);
 
         // update all HTML numerical elements
@@ -435,19 +436,19 @@ function sideEffect_appUpdate() {
         ModuleUtil.updateHTMLwithDiff(
             cpu.a, old.a,
             UI_A_BINARY, UI_A_OCTAL, UI_A_HEX, UI_A_DEC, UI_A_SIGNED_DEC,
-            ModuleCPU.CPU.BITS
+            ModuleCPUconsts.BITS
         );
 
         ModuleUtil.updateHTMLwithDiff(
             cpu.b, old.b,
             UI_B_BINARY, UI_B_OCTAL, UI_B_HEX, UI_B_DEC, UI_B_SIGNED_DEC,
-            ModuleCPU.CPU.BITS
+            ModuleCPUconsts.BITS
         );
 
         ModuleUtil.updateHTMLwithDiff(
             cpu.out, old.out,
             UI_OUT_BINARY, UI_OUT_OCTAL, UI_OUT_HEX, UI_OUT_DEC, UI_OUT_SIGNED_DEC,
-            ModuleCPU.CPU.BITS
+            ModuleCPUconsts.BITS
         );
 
         // if CPU is running, sync old UI values
@@ -481,7 +482,7 @@ function sideEffect_resetUI() {
 // redraw all LEDs based on accumulated brightness, using a rolling average
 function sideEffect_redrawLEDs() {
     // redraw LEDs for registers
-    for (let i = 0; i < ModuleCPU.CPU.BITS; i++) {
+    for (let i = 0; i < ModuleCPUconsts.BITS; i++) {
         document.getElementById(UI_TEXT_FP_LED_PC_ID_PREFIX + i.toString(10)).style.opacity =
             LEDaccumulators.reduce((a, cur) => a + cur.pc[i], 0) / LEDaccumulators.length;
         document.getElementById(UI_TEXT_FP_LED_IR_ID_PREFIX + i.toString(10)).style.opacity =
@@ -497,10 +498,10 @@ function sideEffect_redrawLEDs() {
     }
 
     // redraw LEDs for machine cycles
-    for (let key in ModuleCPU.CPU.M_CYCLE_NAMES) {
-        document.getElementById(UI_TEXT_FP_LED_M_ID_PREFIX + ModuleCPU.CPU.M_CYCLE_NAMES[key])
+    for (let key in ModuleCPUconsts.M_CYCLE_NAMES) {
+        document.getElementById(UI_TEXT_FP_LED_M_ID_PREFIX + ModuleCPUconsts.M_CYCLE_NAMES[key])
             .style.opacity =
-            LEDaccumulators.reduce((a, cur) => a + cur.m_cycle[ModuleCPU.CPU.M_CYCLE_NAMES[key]], 0)
+            LEDaccumulators.reduce((a, cur) => a + cur.m_cycle[ModuleCPUconsts.M_CYCLE_NAMES[key]], 0)
             / LEDaccumulators.length;
     }
 

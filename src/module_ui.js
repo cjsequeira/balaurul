@@ -6,6 +6,7 @@
 import * as ModuleCPUconsts from "./cpu_consts.js";
 
 
+// **** FUNCTIONS
 // return LED brightnesses with accumulation
 export const accumulateLEDs = (cpu, accum, scale) => ({
     pc: accum.pc.map(
