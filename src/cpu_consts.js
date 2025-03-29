@@ -1,7 +1,7 @@
 "use strict"
 
-
 // **** CPU CONSTANTS
+
 // number of words in RAM
 export const RAM_WORDS = 64;
 
@@ -263,7 +263,7 @@ export const OPCODES = [
 ];
 
 
-// **** STATIC MACHINE CYCLE OPERATIONS FOR EACH OPCODE
+// **** MACHINE CYCLE OPERATIONS FOR OPCODES
 // add B to accumulator
 function m_addBtoA(cpu) {
     // add B to accumulator
