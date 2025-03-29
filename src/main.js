@@ -178,12 +178,11 @@ var fp_input = {
 
 
 // **** MAIN CODE
+// (that's all, folks!)
 window.addEventListener("load", sideEffect_setup());
 
 
 // **** FUNCTIONS
-
-
 // app update callback for requestAnimationFrame()
 function sideEffect_appUpdate() {
     // define holders for time management
@@ -600,8 +599,6 @@ function sideEffect_setup() {
 
 
 // **** UI CONTROL CALLBACK FUNCTIONS
-
-
 function sideEffect_ctrlOnOff(fp_input, cpu) {
     ModuleUI.sideEffect_toggleSwitch(UI_CONTROL_ON_OFF, 0, UI_NUM_FP_SLIDER_Y);
     fp_input.on = !fp_input.on;
