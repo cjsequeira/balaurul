@@ -54,6 +54,15 @@ const UI_CONTROL_DEPOSIT_NEXT = document.getElementById("app_12bit_control_depos
 const UI_CONTROL_SPEED = document.getElementById("app_12bit_control_speed");
 const UI_CONTROL_CIRCUIT_SPY = document.getElementById("app_12bit_control_circuit_spy");
 
+const UI_KEY_CONTROL_ON_OFF = "q";
+const UI_KEY_CONTROL_RUN_STOP = "w";
+const UI_KEY_CONTROL_RESET = "e";
+const UI_KEY_CONTROL_M_STEP = "r";
+const UI_KEY_CONTROL_I_STEP = "t";
+const UI_KEY_CONTROL_EXAMINE = "y";
+const UI_KEY_CONTROL_EXAMINE_NEXT = "u";
+const UI_KEY_CONTROL_DEPOSIT = "i";
+const UI_KEY_CONTROL_DEPOSIT_NEXT = "o";
 
 // circuit spy UI elements
 const UI_CIRCUIT_SPY_PANEL = document.getElementById("app_12bit_circuit_spy");
@@ -136,6 +145,7 @@ var old = {
     mem: Array(UI_MEM_COLS * UI_MEM_ROWS),
 };
 
+// holder for prior computer timestamp
 var last_time = 0;
 
 // holder for keyboard shortcuts
@@ -230,7 +240,7 @@ function sideEffect_setup() {
             "click",
             () => {
                 // toggle this UI switch
-                toggleSwitch(ui_input_switches[i], 0, UI_NUM_FP_SLIDER_Y);
+                ModuleUI.sideEffect_toggleSwitch(ui_input_switches[i], 0, UI_NUM_FP_SLIDER_Y);
 
                 // invert the value of this UI switch
                 fp_input.input_switches[i] = !fp_input.input_switches[i];
@@ -243,7 +253,7 @@ function sideEffect_setup() {
         keys = {
             ...keys,
             [UI_TEXT_FP_CONTROL_INPUT_KEYS[i]]: () => {
-                toggleSwitch(ui_input_switches[i], 0, UI_NUM_FP_SLIDER_Y);
+                ModuleUI.sideEffect_toggleSwitch(ui_input_switches[i], 0, UI_NUM_FP_SLIDER_Y);
                 fp_input.input_switches[i] = !fp_input.input_switches[i];
             }
         };
@@ -297,15 +307,15 @@ function sideEffect_setup() {
     // establish keypress callbacks for controls
     keys = {
         ...keys,
-        "q": sideEffect_ctrlOnOff,
-        "w": sideEffect_ctrlRunStop,
-        "e": () => sideEffect_ctrlButtonUp(UI_CONTROL_RESET, "reset"),
-        "r": () => sideEffect_ctrlButtonUp(UI_CONTROL_M_STEP, "m_step"),
-        "t": () => sideEffect_ctrlButtonUp(UI_CONTROL_I_STEP, "i_step"),
-        "y": () => sideEffect_ctrlButtonUp(UI_CONTROL_EXAMINE, "examine"),
-        "u": () => sideEffect_ctrlButtonUp(UI_CONTROL_EXAMINE_NEXT, "examine_next"),
-        "i": () => sideEffect_ctrlButtonUp(UI_CONTROL_DEPOSIT, "deposit"),
-        "o": () => sideEffect_ctrlButtonUp(UI_CONTROL_DEPOSIT_NEXT, "deposit_next"),
+        [UI_KEY_CONTROL_ON_OFF]: sideEffect_ctrlOnOff,
+        [UI_KEY_CONTROL_RUN_STOP]: sideEffect_ctrlRunStop,
+        [UI_KEY_CONTROL_RESET]: () => sideEffect_ctrlButtonUp(UI_CONTROL_RESET, "reset"),
+        [UI_KEY_CONTROL_M_STEP]: () => sideEffect_ctrlButtonUp(UI_CONTROL_M_STEP, "m_step"),
+        [UI_KEY_CONTROL_I_STEP]: () => sideEffect_ctrlButtonUp(UI_CONTROL_I_STEP, "i_step"),
+        [UI_KEY_CONTROL_EXAMINE]: () => sideEffect_ctrlButtonUp(UI_CONTROL_EXAMINE, "examine"),
+        [UI_KEY_CONTROL_EXAMINE_NEXT]: () => sideEffect_ctrlButtonUp(UI_CONTROL_EXAMINE_NEXT, "examine_next"),
+        [UI_KEY_CONTROL_DEPOSIT]: () => sideEffect_ctrlButtonUp(UI_CONTROL_DEPOSIT, "deposit"),
+        [UI_KEY_CONTROL_DEPOSIT_NEXT]: () => sideEffect_ctrlButtonUp(UI_CONTROL_DEPOSIT_NEXT, "deposit_next"),
     };
 
     document.addEventListener("keyup", (event) => handleKeys(event));
@@ -321,6 +331,7 @@ function sideEffect_setup() {
     // initialize "last time" to current time
     last_time = performance.now();
 
+    
     // **** ESTABLISH APP UPDATE CALLBACK
     requestAnimationFrame(sideEffect_appUpdate);
 }
@@ -542,43 +553,28 @@ function handleKeys(event) {
 }
 
 function sideEffect_ctrlOnOff() {
-    toggleSwitch(UI_CONTROL_ON_OFF, 0, UI_NUM_FP_SLIDER_Y);
-
-    if (!fp_input.on) {
-        fp_input.on = true;
-        cpu.scanInputs(fp_input);
-    } else {
-        fp_input.on = false;
-        cpu.scanInputs(fp_input);
-
-    }
-
+    ModuleUI.sideEffect_toggleSwitch(UI_CONTROL_ON_OFF, 0, UI_NUM_FP_SLIDER_Y);
+    fp_input.on = !fp_input.on;
+    cpu.scanInputs(fp_input);
     sideEffect_resetUI();
     old = ModuleUI.syncedUIvalues(cpu);
 }
 
 function sideEffect_ctrlRunStop() {
-    toggleSwitch(UI_CONTROL_RUN_STOP, 0, UI_NUM_FP_SLIDER_Y);
-
-    if (!fp_input.run) {
-        fp_input.run = true;
-        cpu.scanInputs(fp_input);
-    } else {
-        fp_input.run = false;
-        cpu.scanInputs(fp_input);
-    }
+    ModuleUI.sideEffect_toggleSwitch(UI_CONTROL_RUN_STOP, 0, UI_NUM_FP_SLIDER_Y);
+    fp_input.run = !fp_input.run;
+    cpu.scanInputs(fp_input);
 }
 
 function sideEffect_ctrlSpeed() {
-    toggleSwitch(UI_CONTROL_SPEED, UI_NUM_FP_SLIDER_X, 0);
-
+    ModuleUI.sideEffect_toggleSwitch(UI_CONTROL_SPEED, UI_NUM_FP_SLIDER_X, 0);
     fp_input.slow = !fp_input.slow;
 
     // this is a special control not attached to the CPU, so we do not tell CPU to scan inputs!
 }
 
 function sideEffect_ctrlCircuitSpy() {
-    toggleSwitch(UI_CONTROL_CIRCUIT_SPY, UI_NUM_FP_SLIDER_X, 0);
+    ModuleUI.sideEffect_toggleSwitch(UI_CONTROL_CIRCUIT_SPY, UI_NUM_FP_SLIDER_X, 0);
 
     fp_input.circuit_spy = !fp_input.circuit_spy;
 
@@ -611,27 +607,10 @@ function sideEffect_ctrlButtonUp(ui_button, input_key) {
 }
 
 function sideEffect_ctrlRAMimport() {
-    // sync UI
     old = ModuleUI.syncedUIvalues(cpu);
-
     cpu.replaceRAM(UI_RAM_IMPORT_EXPORT.value);
 }
 
 function sideEffect_ctrlRAMexport() {
     UI_RAM_IMPORT_EXPORT.value = cpu.exportRAM();
-}
-
-
-// **** UI SWITCH VISUAL TOGGLE FUNCTION
-function toggleSwitch(ui_switch, transform_x, transform_y) {
-    ui_switch.style.transform = "none";
-
-    if (ui_switch.style.translate == "") {
-        ui_switch.style.translate = transform_x.toString(10)
-            + "px "
-            + transform_y.toString(10)
-            + "px"
-    } else {
-        ui_switch.style.translate = "";
-    }
 }

@@ -78,3 +78,17 @@ export const zeroedLEDaccumulators = () => ({
         halted: 0.0
     },
 });
+
+// UI switch visual toggle function
+export function sideEffect_toggleSwitch(ui_switch, transform_x, transform_y) {
+    ui_switch.style.transform = "none";
+
+    if (ui_switch.style.translate == "") {
+        ui_switch.style.translate = transform_x.toString(10)
+            + "px "
+            + transform_y.toString(10)
+            + "px"
+    } else {
+        ui_switch.style.translate = "";
+    }
+}
