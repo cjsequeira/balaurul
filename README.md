@@ -38,7 +38,8 @@ Live at https://cjsequeira.github.io/balaurul/
 | Opcode | Mnemonic | Description | Operand (If Any) | Width (Words) | Num. of Machine Cycles
 |---|---|---|---|---|---|
 | 0020 | LDI | Load accumulator from immediate | Immediate value | 2 | 5 | 
-| 0021 - 0030 | | (To be implemented) | | | |
+| 0021 - 0029 | | (To be implemented) | | | |
+| 0020 | CMI | Compare accumulator with immediate | Immediate value | 2 | 6 | 
 | 0031 - 0037 | | (Reserved) | | | |
 
 ### 0040 - 0057: Memory-with-accumulator instructions
@@ -50,7 +51,8 @@ Live at https://cjsequeira.github.io/balaurul/
 | 0043 | SBA | Subtract value at address from accumulator | Address | 2 | 7 | 
 | 0044 - 0050 | | (To be implemented) | | | |
 | 0051 | STA | Store accumulator to address | Address | 2 | 6 | 
-| 0052 - 0057 | | (Reserved) | | | |
+| 0052 | LDP | Load accumulator from address in pointer | Pointer address | 2 | 8 | 
+| 0053 - 0057 | | (Reserved) | | | |
 
 ### 0060 - 0077: Jump instructions
 | Opcode | Mnemonic | Description | Operand (If Any) | Width (Words) | Num. of Machine Cycles

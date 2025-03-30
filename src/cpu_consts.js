@@ -113,7 +113,18 @@ export const OPCODES = [
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+
+    // 0o30: CMI: Compare accumulator with immediate; 1 operand
+    {
+        name: "CMI",
+        funcs: [m_incPC, m_storePCaddrInB, m_cmpBwithA, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.INC_PC
+        ],
+    },
 
     // 0o31 - 0o37: Reserved (NOP)
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
@@ -190,8 +201,21 @@ export const OPCODES = [
         ],
     },
 
-    // 0o52 - 0o57: Reserved (NOP)
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o52: LDP: Load accumulator from address in pointer; 1 operand
+    {
+        name: "LDP",
+        funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInB, m_storeBinMAR, m_storeMARaddrInA, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.INC_PC
+        ],
+    },
+
+    // 0o53 - 0o57: Reserved (NOP)
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
@@ -285,6 +309,25 @@ function m_addBtoA(cpu) {
 
     // set zero flag appropriately
     cpu.flags.zero = (cpu.a == 0);
+}
+
+// compare B with accumulator
+function m_cmpBwithA(cpu) {
+    // define temp for comparison (we do not write to accumulator!)
+    let temp = cpu.a;
+
+    // do subtraction: add the two's-complement of B to temp
+    temp += Math.pow(2, BITS) - cpu.b;
+
+    // set carry flag appropriately
+    // carry calc is inspired by the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
+    cpu.flags.carry = (temp >= Math.pow(2, BITS));
+
+    // restrict temp to only BITS in size
+    temp %= Math.pow(2, BITS);
+
+    // set zero flag appropriately
+    cpu.flags.zero = (temp == 0);
 }
 
 // decrement accumulator
@@ -390,6 +433,11 @@ function m_storeAatMARaddr(cpu) {
     cpu.putWordAt(cpu.mar, cpu.a);
 }
 
+// store into MAR: value in B
+function m_storeBinMAR(cpu) {
+    cpu.mar = cpu.b;
+}
+
 // store into accumulator: word at address in MAR
 function m_storeMARaddrInA(cpu) {
     cpu.a = cpu.getWordAt(cpu.mar);
@@ -400,14 +448,19 @@ function m_storeMARaddrInB(cpu) {
     cpu.b = cpu.getWordAt(cpu.mar);
 }
 
-// store PC into call storage address
-function m_storePCinCallAddr(cpu) {
-    cpu.putWordAt(CALL_ADDR, cpu.pc);
-}
-
 // store into accumulator: word at address in PC
 function m_storePCaddrInA(cpu) {
     cpu.a = cpu.getWordAt(cpu.pc);
+}
+
+// store into B: word at address in PC
+function m_storePCaddrInB(cpu) {
+    cpu.b = cpu.getWordAt(cpu.pc);
+}
+
+// store PC into call storage address
+function m_storePCinCallAddr(cpu) {
+    cpu.putWordAt(CALL_ADDR, cpu.pc);
 }
 
 // store into MAR: word at address in PC
