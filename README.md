@@ -13,7 +13,6 @@ Live at https://cjsequeira.github.io/balaurul/
 * The [PDP-11](https://en.wikipedia.org/wiki/PDP-11) and [PDP-12](https://en.wikipedia.org/wiki/PDP-12) minicomputers
 
 ## Coming next?
-* New instruction set! (Hooray for breaking changes!)
 * SOUND? (Probably not)
 
 ## Instructions (octal)
