@@ -19,7 +19,7 @@ export const accumulateLEDs = (cpu, LEDaccum, divisor) => ({
         ir: (cpu.ir & Math.pow(2, i)) ? val.ir + 1.0 / divisor : val.ir,
         mar: (cpu.mar & Math.pow(2, i)) ? val.mar + 1.0 / divisor : val.mar,
         a: (cpu.a & Math.pow(2, i)) ? val.a + 1.0 / divisor : val.a,
-        b: (cpu.pc & Math.pow(2, i)) ? val.b + 1.0 / divisor : val.b,
+        b: (cpu.b & Math.pow(2, i)) ? val.b + 1.0 / divisor : val.b,
         out: (cpu.out & Math.pow(2, i)) ? val.out + 1.0 / divisor : val.out,
     })),
 
