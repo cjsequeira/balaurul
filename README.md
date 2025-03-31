@@ -38,7 +38,7 @@ Live at https://cjsequeira.github.io/balaurul/
 |---|---|---|---|---|---|
 | 0020 | LDI | Load accumulator from immediate | Immediate value | 2 | 5 | 
 | 0021 - 0029 | | (To be implemented) | | | |
-| 0020 | CMI | Compare accumulator with immediate | Immediate value | 2 | 6 | 
+| 0030 | CMI | Compare accumulator with immediate | Immediate value | 2 | 6 | 
 | 0031 - 0037 | | (Reserved) | | | |
 
 ### 0040 - 0057: Memory-with-accumulator instructions
