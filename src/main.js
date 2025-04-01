@@ -15,7 +15,7 @@ import * as ModuleUI from "./module_ui.js"
 const FAST_TARGET = 1e6;
 
 // iteration limit, to handle when browser window loses focus
-const ITER_LIMIT = FAST_TARGET * 1/60;
+const ITER_LIMIT = FAST_TARGET * 1 / 60;
 
 // number of elements in LED brightness running average
 const NUM_LED_AVERAGE = 3;
@@ -54,6 +54,7 @@ const UI_CONTROL_DEPOSIT_NEXT = document.getElementById("app_12bit_control_depos
 const UI_CONTROL_SPEED = document.getElementById("app_12bit_control_speed");
 const UI_CONTROL_CIRCUIT_SPY = document.getElementById("app_12bit_control_circuit_spy");
 
+const UI_KEY_CONTROL_CLEAR_INPUTS = "`";
 const UI_KEY_CONTROL_ON_OFF = "q";
 const UI_KEY_CONTROL_RUN_STOP = "w";
 const UI_KEY_CONTROL_RESET = "e";
@@ -536,6 +537,15 @@ function sideEffect_setup() {
     app.keys = {
         ...app.keys,
 
+        [UI_KEY_CONTROL_CLEAR_INPUTS]: () => {
+            app.ui_input_switches.forEach((s, i) => {
+                s.style.transform = "none";
+                s.style.translate = "";
+                
+                app.fp_input.input_switches[i] = false;
+            });
+        },
+
         [UI_KEY_CONTROL_ON_OFF]: () => {
             sideEffect_ctrlOnOff(app.fp_input, app.cpu);
             app.old = ModuleUI.syncedUIvalues(app.cpu);
@@ -589,7 +599,7 @@ function sideEffect_setup() {
 
     // zero out LED accumulators
     app.LEDaccumulators = Array(NUM_LED_AVERAGE).fill(ModuleUI.zeroedLEDaccumulators());
-    
+
     // change the visibility property for circuit spy 
     // note that it is intentionally underneath the front panel on startup!
     UI_CIRCUIT_SPY_PANEL.style.visibility = "visible";
