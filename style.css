@@ -167,7 +167,8 @@ td.circuit_spy {
 }
 
 td.highlight_changed {
-    background-color: #41ead4
+    background-color: #1f1ccf;
+    color: white;
 }
 
 td.mem_pc {
