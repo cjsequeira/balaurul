@@ -51,7 +51,9 @@ Live at https://cjsequeira.github.io/balaurul/
 | 0041 | ADA | Add value at address to accumulator | Address | 2 | 7 | 
 | 0042 | | (To be implemented) |  |  |  | 
 | 0043 | SBA | Subtract value at address from accumulator | Address | 2 | 7 | 
-| 0044 - 0050 | | (To be implemented) | | | |
+| 0044 - 0046 | | (To be implemented) | | | |
+| 0047 | XOA | XOR value at address with accumulator | Address | 2 | 7 | 
+| 0050 | | (To be implemented) | | | |
 | 0051 | STA | Store accumulator to address | Address | 2 | 6 | 
 | 0052 | LDP | Load accumulator from address in pointer | Pointer address | 2 | 8 | 
 | 0053 - 0057 | | (Reserved) | | | |

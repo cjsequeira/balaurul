@@ -189,14 +189,29 @@ export const OPCODES = [
     },
 
     // 44: [Subtract value in address from accumulator with borrow]
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+
     // 45: [AND value in address with accumulator]
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+
     // 46: [OR value in address with accumulator]
-    // 47: [XOR value in address with accumulator]
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+
+    // 0o47: XOA: XOR value in address with accumulator
+    {
+        name: "XOA",
+        funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInB, m_xor, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.INC_PC
+        ]
+    },
+
     // 50: [Compare value in address with accumulator]    
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
     // 0o51: STA: Store accumulator in address; 1 operand
@@ -523,4 +538,17 @@ function m_subBfromA(cpu) {
 
     // set zero flag appropriately
     cpu.flags.zero = (cpu.a == 0);
+}
+
+// XOR B with A
+// implementation is inspired by the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
+function m_xor(cpu) {
+    // set carry bit to zero
+    cpu.flags.carry = false;
+
+    // do the bitwise XOR of B with A
+    cpu.a = (cpu.a ^ cpu.b);
+
+    // restrict accumulator to only BITS in size
+    cpu.a %= Math.pow(2, BITS);
 }
