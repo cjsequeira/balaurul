@@ -66,17 +66,16 @@ const UI_KEY_CONTROL_DEPOSIT = "i";
 const UI_KEY_CONTROL_DEPOSIT_NEXT = "o";
 
 // circuit spy UI elements
-const UI_CIRCUIT_SPY_PANEL = document.getElementById("app_12bit_circuit_spy");
+const UI_CIRCUIT_SPY_REGS_PANEL = document.getElementById("app_12bit_circuit_spy_regs");
+const UI_CIRCUIT_SPY_MEMORY_PANEL = document.getElementById("app_12bit_circuit_spy_memory");
 
 const UI_MEM_ROWS = 8;
 const UI_MEM_COLS = 8;
 
 const UI_TEXT_CIRCUIT_SPY_OPEN_LEFT = "51rem";
-const UI_TEXT_CIRCUIT_SPY_OPEN_HEIGHT = "46rem";
 const UI_TEXT_CIRCUIT_SPY_CLOSED_LEFT = "23rem";
-const UI_TEXT_CIRCUIT_SPY_CLOSED_HEIGHT = "23rem";
-const UI_TEXT_CIRCUIT_SPY_OPEN_TRANSITION_DELAY = "0s, 0.3s";
-const UI_TEXT_CIRCUIT_SPY_CLOSED_TRANSITION_DELAY = "0.3s, 0s";
+const UI_TEXT_CIRCUIT_SPY_OPEN_TOP = "25rem";
+const UI_TEXT_CIRCUIT_SPY_CLOSED_TOP = "0rem";
 
 const UI_TEXT_MEM_CELL_ID_PREFIX = "app_12bit_memcell_";
 const UI_TEXT_MEM_CLASS = "memory";
@@ -101,6 +100,7 @@ const UI_IR_HEX = document.getElementById("app_12bit_ir_hex");
 const UI_IR_DEC = document.getElementById("app_12bit_ir_dec");
 
 const UI_VAL_AT_PC = document.getElementById("app_12bit_val_at_pc");
+const UI_VAL_AT_MAR = document.getElementById("app_12bit_val_at_mar");
 const UI_IR_MNEMONIC = document.getElementById("app_12bit_ir_mnemonic");
 const UI_PC_MNEMONIC = document.getElementById("app_12bit_pc_mnemonic");
 const UI_ELAPSED_M = document.getElementById("app_12bit_elapsed_m");
@@ -247,6 +247,10 @@ function sideEffect_appUpdate() {
 
             // show value at PC
             UI_VAL_AT_PC.innerHTML = app.cpu.getWordAt(app.cpu.pc).toString(8).padStart(4, "0");
+
+            // show value at MAR
+            UI_VAL_AT_MAR.innerHTML = app.cpu.getWordAt(app.cpu.mar).toString(8).padStart(4, "0");
+
 
             // show disassembly of IR and disassembly of word at PC
             UI_IR_MNEMONIC.innerHTML = app.cpu.disassemble(app.cpu.ir);
@@ -541,7 +545,7 @@ function sideEffect_setup() {
             app.ui_input_switches.forEach((s, i) => {
                 s.style.transform = "none";
                 s.style.translate = "";
-                
+
                 app.fp_input.input_switches[i] = false;
             });
         },
@@ -602,7 +606,8 @@ function sideEffect_setup() {
 
     // change the visibility property for circuit spy 
     // note that it is intentionally underneath the front panel on startup!
-    UI_CIRCUIT_SPY_PANEL.style.visibility = "visible";
+    UI_CIRCUIT_SPY_REGS_PANEL.style.visibility = "visible";
+    UI_CIRCUIT_SPY_MEMORY_PANEL.style.visibility = "visible";
 
     // initialize "last time" to current time
     app.last_time = performance.now();
@@ -645,13 +650,11 @@ function sideEffect_ctrlCircuitSpy(fp_signals) {
     fp_signals.circuit_spy = !fp_signals.circuit_spy;
 
     if (fp_signals.circuit_spy) {
-        UI_CIRCUIT_SPY_PANEL.style.transitionDelay = UI_TEXT_CIRCUIT_SPY_OPEN_TRANSITION_DELAY;
-        UI_CIRCUIT_SPY_PANEL.style.left = UI_TEXT_CIRCUIT_SPY_OPEN_LEFT;
-        UI_CIRCUIT_SPY_PANEL.style.height = UI_TEXT_CIRCUIT_SPY_OPEN_HEIGHT;
+        UI_CIRCUIT_SPY_MEMORY_PANEL.style.left = UI_TEXT_CIRCUIT_SPY_OPEN_LEFT;
+        UI_CIRCUIT_SPY_REGS_PANEL.style.top = UI_TEXT_CIRCUIT_SPY_OPEN_TOP;
     } else {
-        UI_CIRCUIT_SPY_PANEL.style.transitionDelay = UI_TEXT_CIRCUIT_SPY_CLOSED_TRANSITION_DELAY;
-        UI_CIRCUIT_SPY_PANEL.style.left = UI_TEXT_CIRCUIT_SPY_CLOSED_LEFT;
-        UI_CIRCUIT_SPY_PANEL.style.height = UI_TEXT_CIRCUIT_SPY_CLOSED_HEIGHT;
+        UI_CIRCUIT_SPY_MEMORY_PANEL.style.left = UI_TEXT_CIRCUIT_SPY_CLOSED_LEFT;
+        UI_CIRCUIT_SPY_REGS_PANEL.style.top = UI_TEXT_CIRCUIT_SPY_CLOSED_TOP;
     }
 
     // this is a special control not attached to the CPU, so we do not tell CPU to scan inputs!

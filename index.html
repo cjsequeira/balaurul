@@ -791,89 +791,103 @@
 
 
 
-        <!-- Circuit spy panel -->
-        <div id="app_12bit_circuit_spy">
-            
-            <!-- Registers: PC, IR, and MAR -->
-                
+        <!-- Circuit spy panel: registers and elapsed counters -->
+        <div id="app_12bit_circuit_spy_regs">
             <table>
                 <tr>
-                    <th>Register</th>
-                    <th>Binary&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-                    <th>Octal</th>
-                    <th>Hex</th>
-                    <th>Dec&nbsp;&nbsp;</th>
-                </tr>
-                <tr>
-                    <th class="registers, mem_pc">PC</th>
-                    <td class="cpu" id="app_12bit_pc_binary">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_pc_octal">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_pc_hex">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_pc_dec">&nbsp;</td>
-                </tr>
-                <tr>
-                    <th>IR</th>
-                    <td class="cpu" id="app_12bit_ir_binary">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_ir_octal">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_ir_hex">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_ir_dec">&nbsp;</td>
-                </tr>
-                <tr>
-                    <th class="registers, mem_mar">MAR</th>
-                    <td class="cpu" id="app_12bit_mar_binary">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_mar_octal">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_mar_hex">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_mar_dec">&nbsp;</td>
+                    <td class="circuit_spy">
+                        <!-- Registers: PC, IR, and MAR -->    
+                        <table>
+                            <tr>
+                                <th>Register</th>
+                                <th>Binary&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+                                <th>Octal</th>
+                                <th>Hex</th>
+                                <th>Dec&nbsp;</th>
+                            </tr>
+                            <tr>
+                                <th class="registers, mem_pc">PC</th>
+                                <td class="cpu" id="app_12bit_pc_binary">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_pc_octal">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_pc_hex">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_pc_dec">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <th>IR</th>
+                                <td class="cpu" id="app_12bit_ir_binary">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_ir_octal">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_ir_hex">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_ir_dec">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <th class="registers, mem_mar">MAR</th>
+                                <td class="cpu" id="app_12bit_mar_binary">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_mar_octal">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_mar_hex">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_mar_dec">&nbsp;</td>
+                            </tr>
+                        </table>
+
+                        <!-- Value at PC; IR disassembly; next machine cycle -->
+                        <div class="pc_ir_m_cycle">
+                            <div>Value at PC (octal): <span class="mono, cpu" id="app_12bit_val_at_pc">&nbsp;</span></div>
+                            <div>PC disassembly: <span class="mono, cpu" id="app_12bit_pc_mnemonic">&nbsp;</span></div>
+                            <div>IR disassembly: <span class="mono, cpu" id="app_12bit_ir_mnemonic">&nbsp;</span></div>
+                        </div>
+                    </td>
+
+                    <!-- Registers A and B; OUT -->
+                    <td class="circuit_spy">
+                        <table>
+                            <tr>
+                                <th>Register</th>
+                                <th>Binary&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+                                <th>Octal</th>
+                                <th>Hex</th>
+                                <th>Dec&nbsp;</th>
+                                <th>Signed Dec</th>
+                            </tr>
+                            <tr>
+                                <th>A</th>
+                                <td class="cpu" id="app_12bit_a_binary">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_a_octal">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_a_hex">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_a_dec">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_a_signed_dec">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <th>B</th>
+                                <td class="cpu" id="app_12bit_b_binary">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_b_octal">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_b_hex">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_b_dec">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_b_signed_dec">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <th>OUT</th>
+                                <td class="cpu" id="app_12bit_out_binary">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_out_octal">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_out_hex">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_out_dec">&nbsp;</td>
+                                <td class="cpu" id="app_12bit_out_signed_dec">&nbsp;</td>
+                            </tr>
+                        </table>
+
+                        <!-- Value at PC; IR disassembly; next machine cycle -->
+                        <div class="pc_ir_m_cycle">
+                            <div>Value at MAR (octal): <span class="mono, cpu" id="app_12bit_val_at_mar">&nbsp;</span></div>
+                            <div>Machine cycles elapsed: <span class="mono, cpu" id="app_12bit_elapsed_m">&nbsp;</span></div>
+                            <div>Instruction cycles elapsed: <span class="mono, cpu" id="app_12bit_elapsed_i">&nbsp;</span></div>
+                        </div>
+                    </td>
                 </tr>
             </table>
 
-            <!-- Value at PC; IR disassembly; next machine cycle -->
-            <div class="pc_ir_m_cycle">
-                <div>Value at PC (octal): <span class="mono, cpu" id="app_12bit_val_at_pc">&nbsp;</span></div>
-                <div>IR disassembly: <span class="mono, cpu" id="app_12bit_ir_mnemonic">&nbsp;</span></div>
-                <div>PC disassembly: <span class="mono, cpu" id="app_12bit_pc_mnemonic">&nbsp;</span></div>
-                <div>Machine cycles elapsed: <span class="mono, cpu" id="app_12bit_elapsed_m">&nbsp;</span></div>
-                <div>Instruction cycles elapsed: <span class="mono, cpu" id="app_12bit_elapsed_i">&nbsp;</span></div>
-            </div>
+            <!-- End circuit spy registers / elapsed counters panel -->
+        </div>
 
-            <!-- Registers A and B; OUT -->
-            <table>
-                <tr>
-                    <th>Register</th>
-                    <th>Binary&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-                    <th>Octal</th>
-                    <th>Hex</th>
-                    <th>Dec&nbsp;&nbsp;</th>
-                    <th>Signed Dec</th>
-                </tr>
-                <tr>
-                    <th>A</th>
-                    <td class="cpu" id="app_12bit_a_binary">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_a_octal">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_a_hex">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_a_dec">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_a_signed_dec">&nbsp;</td>
-                </tr>
-                <tr>
-                    <th>B</th>
-                    <td class="cpu" id="app_12bit_b_binary">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_b_octal">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_b_hex">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_b_dec">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_b_signed_dec">&nbsp;</td>
-                </tr>
-                <tr>
-                    <th>OUT</th>
-                    <td class="cpu" id="app_12bit_out_binary">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_out_octal">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_out_hex">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_out_dec">&nbsp;</td>
-                    <td class="cpu" id="app_12bit_out_signed_dec">&nbsp;</td>
-                </tr>
-            </table>
-
-
-            <!-- CPU RAM -->
+        <!-- Circuit spy: memory and import / export panel -->
+        <div id="app_12bit_circuit_spy_memory">
             <div id="app_12bit_memory" class="memory"></div>
 
             <!-- area for RAM import and export -->
@@ -885,7 +899,7 @@
                 </div>
             </div>
 
-            <!-- End circuit spy panel -->
+            <!-- End circuit spy memory panel -->
         </div>
     
     </body>

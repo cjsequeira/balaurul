@@ -94,7 +94,7 @@ td {
     text-align: right;
     vertical-align: middle;
 
-    border: 0.1rem solid #011627;
+    border: 0px;
 
     padding: 0.05rem;
     margin: 0rem;
@@ -111,12 +111,12 @@ th {
 
     background-color: #ffea65;
 
-    border: 0.1rem solid #011627;
+    border: 0px;
 
     padding: 0.3rem;
     margin: 0rem;
 
-    font-weight: normal;
+    font-weight: bold;
     font-size: 0.8rem;
 }
 
@@ -136,8 +136,10 @@ th {
     color: #ffea65;
 
     font-weight: bold;
+    font-size: 0.9rem;   
+    font-family: "Helvetica", "Arial", sans-serif;
 
-    margin: 0.9rem 0.3rem 0.9rem 0.3rem;
+    margin: 0.9rem 0.3rem 0rem 0.3rem;
 }
 
 .ram_import_export {
@@ -153,12 +155,23 @@ table.memory {
     margin: 1rem 0rem 0rem 0rem;
 }
 
+td.circuit_spy {
+    text-align: left;
+    vertical-align: top;
+
+    border: 0px;
+
+    padding: 0.1rem;
+
+    background-color: #005c84;
+}
+
 td.highlight_changed {
     background-color: #41ead4
 }
 
 td.mem_pc {
-    border: 0.2rem solid #0d00ff;
+    border: 0.2rem solid rgb(55, 210, 248);
 }
 
 td.mem_mar {
@@ -170,11 +183,11 @@ th.memory {
 }
 
 th.mem_pc {
-    border: 0.2rem solid #0d00ff;
+    background-color: rgb(55, 210, 248);
 }
 
 th.mem_mar {
-    border: 0.2rem solid #eb02fc;
+    background-color:  #eb02fc;
 }
 
 
@@ -205,6 +218,59 @@ th.mem_mar {
 
     overflow: hidden;
 }
+
+#app_12bit_circuit_spy_regs {
+    border-radius: 1rem;
+    border: 0.1rem solid #0a4473;
+
+    margin: 1rem;
+    padding: 0.4rem;
+
+    background-color: #005c84;
+    color: #011627;
+
+    width: fit-content;
+    height: fit-content;
+
+    position: absolute;
+    top: 0rem;
+    left: 0.6rem;
+
+    visibility: hidden;
+
+    transition: top 0.3s;
+
+    z-index: 5;
+
+    overflow: hidden;
+}
+
+#app_12bit_circuit_spy_memory {
+    border-radius: 1rem;
+    border: 0.1rem solid #0a4473;
+
+    margin: 1rem;
+    padding: 0.4rem;
+
+    background-color: #005c84;
+    color: #011627;
+
+    width: fit-content;
+    height: fit-content;
+
+    position: absolute;
+    top: 0rem;
+    left: 23rem;
+
+    visibility: hidden;
+
+    transition: left 0.3s;
+
+    z-index: 4;
+
+    overflow: hidden;
+}
+
 
 [id*="app_12bit_memcell_"] {
     border: 0.1rem solid rgba(0,0,0,0.0);
