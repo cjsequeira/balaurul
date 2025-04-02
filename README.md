@@ -30,7 +30,10 @@ Live at https://cjsequeira.github.io/balaurul/
 |---|---|---|---|---|---|
 | 0010 | INC | Increment accumulator | | 1 | 4 | 
 | 0011 | DEC | Decrement accumulator | | 1 | 4 | 
-| 0012 - 0015 | | (To be implemented) | | | |
+| 0012 | RLC | Rotate accumulator left | | 1 | 4 | 
+| 0013 | | (To be implemented) | | | |
+| 0014 | RRC | Rotate accumulator right | | 1 | 4 | 
+| 0015 | | (To be implemented) | | | |
 | 0016 - 0017 | | (Reserved) | | | |
 
 ### 0020 - 0037: Immediate-with-accumulator instructions
