@@ -58,27 +58,37 @@ export const OPCODES = [
 
 
     // **** 0o10 - 0o17: ZERO-OPERAND INSTRUCTIONS
-    // 0o10: Increment accumulator
+    // 0o10: INC: Increment accumulator
     {
         name: "INC",
         funcs: [m_incA, m_incPC],
         next_type: [M_CYCLE_NAMES.ALU, M_CYCLE_NAMES.INC_PC]
     },
 
-    // 0o11: Decrement accumulator
+    // 0o11: DEC: Decrement accumulator
     {
         name: "DEC",
         funcs: [m_decA, m_incPC],
         next_type: [M_CYCLE_NAMES.ALU, M_CYCLE_NAMES.INC_PC]
     },
 
-    // 12: [Rotate accumulator left]
+    // 0o12: RLC: Rotate accumulator left without going through carry
+    {
+        name: "RLC",
+        funcs: [m_rlc, m_incPC],
+        next_type: [M_CYCLE_NAMES.ALU, M_CYCLE_NAMES.INC_PC]
+    },
     // 13: [Rotate accumulator left through carry]
-    // 14: [Rotate accumulator right]
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+
+    // 0o14: RRC: Rotate accumulator right without going through carry
+    {
+        name: "RRC",
+        funcs: [m_rrc, m_incPC],
+        next_type: [M_CYCLE_NAMES.ALU, M_CYCLE_NAMES.INC_PC]
+    },
+
     // 15: [Rotate accumulator right through carry]
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
     // 0o16 - 0o17: Reserved (NOP)
@@ -426,6 +436,32 @@ function m_incPC(cpu) {
 // write accumulator to output
 function m_out(cpu) {
     cpu.out = cpu.a;
+}
+
+// rotate accumulator left without going through carry
+// implementation inspired by the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
+function m_rlc(cpu) {
+    // set carry bit equal to the high-order bit of the accumulator
+    cpu.flags.carry = (cpu.a >= Math.pow(2, BITS - 1));
+
+    // shift accumulator left
+    cpu.a = (cpu.a * 2) % Math.pow(2, BITS);
+
+    // if carry is set, set the low-order bit of accumulator
+    if (cpu.flags.carry) cpu.a += 1;
+}
+
+// rotate accumulator right without going through carry
+// implementation inspired by the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
+function m_rrc(cpu) {
+    // set carry bit equal to the low-order bit of the accumulator
+    cpu.flags.carry = (cpu.a % 2);
+
+    // shift accumulator right
+    cpu.a = Math.floor(cpu.a / 2);
+
+    // if carry is set, set the high-order bit of accumulator
+    if (cpu.flags.carry) cpu.a += Math.pow(2, BITS - 1);
 }
 
 // store into RAM at address in MAR: value in accumulator
