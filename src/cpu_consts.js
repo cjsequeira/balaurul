@@ -78,9 +78,13 @@ export const OPCODES = [
         funcs: [m_rol, m_incPC],
         next_type: [M_CYCLE_NAMES.ALU, M_CYCLE_NAMES.INC_PC]
     },
-    
-    // 13: [Rotate accumulator left through carry]
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+
+    // 0o13: RCL: Rotate accumulator left through carry
+    {
+        name: "RCL",
+        funcs: [m_rcl, m_incPC],
+        next_type: [M_CYCLE_NAMES.ALU, M_CYCLE_NAMES.INC_PC]
+    },
 
     // 0o14: ROR: Rotate accumulator right without going through carry
     {
@@ -89,8 +93,12 @@ export const OPCODES = [
         next_type: [M_CYCLE_NAMES.ALU, M_CYCLE_NAMES.INC_PC]
     },
 
-    // 15: [Rotate accumulator right through carry]
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o15: RCR: Rotate accumulator right through carry
+    {
+        name: "RCR",
+        funcs: [m_rcr, m_incPC],
+        next_type: [M_CYCLE_NAMES.ALU, M_CYCLE_NAMES.INC_PC]
+    },
 
     // 0o16 - 0o17: Reserved (NOP)
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
@@ -454,6 +462,22 @@ function m_out(cpu) {
     cpu.out = cpu.a;
 }
 
+// rotate accumulator left through carry
+// implementation inspired by RAL in the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
+function m_rcl(cpu) {
+    // save "BEFORE" status of carry
+    let before_carry = cpu.flags.carry;
+
+    // set carry bit equal to the high-order bit of the accumulator
+    cpu.flags.carry = (cpu.a >= Math.pow(2, BITS - 1));
+
+    // shift accumulator left
+    cpu.a = (cpu.a * 2) % Math.pow(2, BITS);
+
+    // if carry WAS set before entering this function, set the low-order bit of accumulator
+    if (before_carry) cpu.a += 1;
+}
+
 // rotate accumulator left without going through carry
 // implementation inspired by RLC in the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
 function m_rol(cpu) {
@@ -465,6 +489,22 @@ function m_rol(cpu) {
 
     // if carry is set, set the low-order bit of accumulator
     if (cpu.flags.carry) cpu.a += 1;
+}
+
+// rotate accumulator right through carry
+// implementation inspired by RAR in the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
+function m_rcr(cpu) {
+    // save "BEFORE" status of carry
+    let before_carry = cpu.flags.carry;
+
+    // set carry bit equal to the low-order bit of the accumulator
+    cpu.flags.carry = (cpu.a % 2);
+
+    // shift accumulator right
+    cpu.a = Math.floor(cpu.a / 2);
+
+    // if carry is set, set the high-order bit of accumulator
+    if (before_carry) cpu.a += Math.pow(2, BITS - 1);
 }
 
 // rotate accumulator right without going through carry
