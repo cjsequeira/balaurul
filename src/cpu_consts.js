@@ -72,19 +72,20 @@ export const OPCODES = [
         next_type: [M_CYCLE_NAMES.ALU, M_CYCLE_NAMES.INC_PC]
     },
 
-    // 0o12: RLC: Rotate accumulator left without going through carry
+    // 0o12: ROL: Rotate accumulator left without going through carry
     {
-        name: "RLC",
-        funcs: [m_rlc, m_incPC],
+        name: "ROL",
+        funcs: [m_rol, m_incPC],
         next_type: [M_CYCLE_NAMES.ALU, M_CYCLE_NAMES.INC_PC]
     },
+    
     // 13: [Rotate accumulator left through carry]
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
-    // 0o14: RRC: Rotate accumulator right without going through carry
+    // 0o14: ROR: Rotate accumulator right without going through carry
     {
-        name: "RRC",
-        funcs: [m_rrc, m_incPC],
+        name: "ROR",
+        funcs: [m_ror, m_incPC],
         next_type: [M_CYCLE_NAMES.ALU, M_CYCLE_NAMES.INC_PC]
     },
 
@@ -454,8 +455,8 @@ function m_out(cpu) {
 }
 
 // rotate accumulator left without going through carry
-// implementation inspired by the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
-function m_rlc(cpu) {
+// implementation inspired by RLC in the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
+function m_rol(cpu) {
     // set carry bit equal to the high-order bit of the accumulator
     cpu.flags.carry = (cpu.a >= Math.pow(2, BITS - 1));
 
@@ -467,8 +468,8 @@ function m_rlc(cpu) {
 }
 
 // rotate accumulator right without going through carry
-// implementation inspired by the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
-function m_rrc(cpu) {
+// implementation inspired by RRC in the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
+function m_ror(cpu) {
     // set carry bit equal to the low-order bit of the accumulator
     cpu.flags.carry = (cpu.a % 2);
 
