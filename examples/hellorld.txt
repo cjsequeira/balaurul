@@ -1,0 +1,50 @@
+; HELLORLD! program - in reference to "Hellorld!" by Usagi Electric on YouTube: 
+;   https://youtu.be/gQ6mwbTGXGQ?si=AHDbKgILyJ0DScS7
+; Displays "HELLORLD!" in OCTAL, character by character, at the OUT display
+; The program halts after each character is displayed
+; To continue after the halt, flip the "Run/Stop" switch to "Stop" and then to "Run"
+; (DO NOT HIT "RESET")
+; When the OUT register shows 0000 (null terminator), program is complete
+
+ORIGIN 0000
+
+.show_char:
+0000    LDP pointer        ; Load character at pointer
+0002    OUT                ; Display character at output
+0003    CMI 0000           ; Compare accumulator with null terminator
+0005    JZ .done           ; If accumulator is null terminator, go done
+0007    HLT                ; Halt; user to continue
+
+        ; **** Point to next character
+0010    LDA pointer        ; Load pointer value into accumulator
+0012    INC                ; Increment by one word
+0013    STA pointer        ; Store as incremented pointer
+
+        ; **** Loop around
+0015    JMP .show_char
+
+.done:
+0017    HLT                ; Halt
+
+pointer:
+0020    0021               ; Working pointer: init to hellorld_text
+
+hellorld_text:             ; "HELLORLD!" text (all ASCII values in octal)
+0021    0110               ; H
+0022    0105               ; E
+0023    0114               ; L
+0024    0114               ; L
+0025    0117               ; O
+0026    0122               ; R
+0027    0114               ; L
+0030    0104               ; D
+0031    0041               ; !
+0032    0000               ; [null terminator]
+    
+
+**** ASSEMBLED ****
+
+0052 0020 0002 0030 0000 0062 0017 0001
+0040 0020 0010 0051 0020 0060 0000 0001
+0021 0110 0105 0114 0114 0117 0122 0114
+0104 0041 0000

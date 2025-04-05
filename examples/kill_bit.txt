@@ -1,0 +1,65 @@
+; Kill the Bit
+; Original by Dean McDaniel for the Altair 8800, May 15, 1975
+; https://altairclone.com/downloads/killbits.pdf
+; https://archive.is/dQp9r
+;
+; Port to Balaurul Unu by Chris Musei-Sequeira, April 4, 2025
+;
+; ** Game instructions by Dean McDaniel **
+: "Kill the rotating bit. If you miss the lit bit, another
+; bit turns on leaving two bits to destroy. Quickly
+; toggle the switch, don't leave the switch in the up
+; position. Before starting, make sure all the switches
+; are in the down position."
+;
+; ** How to modify source code to change game speed **
+; To speed up the game, remove NOP instructions from the NOP
+; list below. To slow the game down, add NOP instructions.
+
+ORIGIN 0000
+
+0000    LDI 4000            ; Load accumulator with leftmost bit on
+
+.main_loop:
+0002    OUT                 ; Display accumulator at OUT register
+0003    STA temp            ; Store accumulator to temporary storage
+0005    LDI 7777            ; Load accumulator for time delay
+    
+.delay_loop:
+0007    DEC                 ; Decrement accumulator
+
+0010    NOP                 ; Add or remove NOPs to slow or speed up game
+0011    NOP
+0012    NOP
+0013    NOP
+0014    NOP
+0015    NOP
+0016    NOP
+0017    NOP
+
+0020    NOP
+0021    NOP
+0022    NOP
+0023    NOP
+0024    NOP
+0025    NOP
+0026    NOP
+0027    NOP
+
+0030    JNZ .delay_loop    ; If accumulator non-zero, loop for time delay    
+
+0032    IN                 ; Scan input switches into accumulator
+0033    XOA temp           ; XOR accumulator with value in temp storage
+0035    ROR                ; Rotate accumulator right
+0036    JMP .main_loop     ; Go back to start
+
+temp:
+0077    ORIGIN 0077
+
+
+****** ASSEMBLED ******
+
+0020 4000 0002 0051 0077 0020 7777 0011 
+0000 0000 0000 0000 0000 0000 0000 0000 
+0000 0000 0000 0000 0000 0000 0000 0000 
+0064 0007 0003 0047 0077 0014 0060 0002 

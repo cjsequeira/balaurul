@@ -1,5 +1,5 @@
-# Balaurul, version Unu
-A virtual, custom 12-bit CPU. Written by Chris Musei-Sequeira
+# Balaurul Unu
+A virtual 12-bit educational microcomputer. Written by Chris Musei-Sequeira
 
 Live at https://cjsequeira.github.io/balaurul/
 
@@ -70,7 +70,6 @@ Live at https://cjsequeira.github.io/balaurul/
 | 0066 | RET | Return from subroutine | | 1 | 4 | 
 | 0067 | | (To be implemented) | | | |
 | 0070 - 0077 | | (Reserved) | | | |
-
 
 ## Version history
 

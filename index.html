@@ -1,3 +1,4 @@
+<!-- eslint-disable @html-eslint/element-newline -->
 <!doctype html>
 <html lang="en">
 
@@ -8,6 +9,7 @@
     </head>
 
     <body>
+        <!-- ************** BALAURUL COMPUTER ************** -->
         <div class="front_panel" id="app_12bit_front_panel">
             <!-- LEDs: PC -->
             <img
@@ -789,8 +791,6 @@
             >  
         </div>
 
-
-
         <!-- Circuit spy panel: registers and elapsed counters -->
         <div id="app_12bit_circuit_spy_regs">
             <table>
@@ -902,5 +902,182 @@
             <!-- End circuit spy memory panel -->
         </div>
     
+
+
+
+        <!-- ************** REMAINDER OF WEBSITE ************** -->
+        <div class="main">
+            <h1>Balaurul Unu</h1>
+            <h2>12-bit educational microcomputer, by Chris Musei-Sequeira</h2>
+
+            <p>
+                Balaurul Unu harkens back to the blinkenlightsy minicomputers and microcomputers of 
+                the 1970s, like the 
+                
+                <a target="_blank" href="https://en.wikipedia.org/wiki/Altair_8800">Altair 8800</a>
+                
+                and <a target="_blank" href="https://en.wikipedia.org/wiki/PDP-11">PDP-11</a>. 
+                
+                It features a simple instruction set inspired by the 
+
+                <a target="_blank" href="https://en.wikipedia.org/wiki/Intel_8080">Intel 8080</a> 
+                
+                and the 
+
+                <a target="_blank" href="https://en.wikipedia.org/wiki/Simple-As-Possible_computer">Simple-As-Possible</a> 
+
+                CPUs.
+            </p>
+            <p>
+                <a target="_blank" href="https://github.com/cjsequeira/balaurul">
+                    SEE BALAURUL UNU ON GITHUB
+                </a>
+            </p>
+            <p>
+                <a target="_blank" href="https://github.com/cjsequeira/balaurul/blob/main/README.md">
+                    BALAURUL UNU INSTRUCTION SET
+                </a>
+            </p>
+                
+            <h3>Specifications</h3>
+            <ul>
+                <li>Fast execution speed: 1 million machine cycles per second</li>
+                <li>Slow execution speed: 30 to 60 machine cycles per second</li>
+                <li>Word size: 12 bits</li>
+                <li>One 12-bit user-accessible register (accumulator)</li>
+                <li>One 12-bit temporary register</li>
+                <li>One 12-bit output display register</li>
+                <li>64 words of random access memory</li>
+                <li>12 binary input switches</li>
+            </ul>
+
+            <h3>Quick start</h3>
+            <ol>
+                <li>Click the CIRCUIT SPY switch to "ON". A register monitor will appear below Balaurul's front panel, 
+                    while a memory monitor and import/export utility will appear to the right. Both monitors will be blank.
+                </li>
+                <li>Click the SPEED switch to "SLOW".</li>
+                <li>Click the ON/OFF switch to "ON" (or press "q") to turn on Balaurul. Balaurul will turn on with random values
+                    in its registers and memory, shown in the monitors. If keyboard shortcuts are not working, click the 
+                    mouse pointer on the blue faceplate of Balaurul and try again.
+                </li>
+                <li>Click the RUN/STOP switch to "RUN" (or press "w") to run Balaurul. Balaurul will perform actions based on
+                    the contents of its memory. If Balaurul halts, you can direct Balaurul to continue by moving the RUN/STOP
+                    switch to "STOP" and then back to "RUN".
+                </li>
+                <li>While leaving the RUN/STOP switch in the "RUN" position, toggle the ON/OFF switch to "OFF" and then
+                    to "ON" again. Balaurul will turn on with new random values in its registers and memory and 
+                    immediately begin performing actions.
+                </li>
+                <li>Perform Step 5 several more times while observing Balaurul's behavior on the front panel and the
+                    two circuit spy monitors.
+                </li>
+            </ol>
+
+            <a id="html_switches"></a>
+            <h3>Exploring the control and input switches</h3>
+            <ol>
+                <li>Turn on Balaurul and set the RUN/STOP switch to the "STOP" position.</li>
+                <li>On the front panel, click "STEP M" (or press "r") to step Balaurul by 
+                    individual machine cycles, or click "STEP I" (or press "t") to step Balaurul by individual instructions.
+                    Observe Balaurul's behavior on the front panel and the monitors.
+                </li>
+                <li>Click "RESET" (or press "e") to set Balaurul's program counter (PC) to zero, clear the 
+                    CARRY and ZERO flags, and set the next machine cycle to "FETCH". Note that all other values
+                    remain unchanged.
+                </li>
+                <li>Make sure that all yellow input switches are in the "down" position, representing the octal number 0000. 
+                    To instantly bring ALL yellow input switches to the "down" position, press "`" (backtick) on your keyboard.
+                </li>
+                <li>Click "EXAMINE" (or press "y"). The contents of memory address 0000 will be displayed on the OUT 
+                    register of Balaurul's front panel, in octal.
+                </li>
+                <li>Click "EXAMINE NEXT" (or press "u"). Balaurul's PC will increment by one word (to address 0001) and
+                    display the contents of that memory location on the OUT register.
+                </li>
+                <li>Set the yellow input switches to show octal 0040 (binary 000 000 100 000, where only 
+                    switch number 7 is in the "up" position).</li>
+                <li>Perform "EXAMINE". Balaurul's PC will move to address 0040 and display the contents.</li>
+                <li>Set the yellow input switches to show octal 7000 (binary 111 000 000 000). Click
+                    "DEPOSIT" (or press "i"). Balaurul will deposit the value 7000 at address 0040 and display
+                    the value on the OUT register.</li>
+                <li>Click "DEPOSIT NEXT" (or press "o"). Balaurul will increment the PC by one word (to 0041), 
+                    deposit the value 7000 at that memory location, and display the value on the OUT register.
+                </li>
+            </ol>
+
+            <h3>Entering your first program</h3>
+
+            <p>Your first program will add the numbers 3 and 4 together and display the result on the OUT register.
+                The assembly language source code is as follows, per the
+                <a target="_blank" href="https://github.com/cjsequeira/balaurul/blob/main/README.md">
+                    Balaurul Unu instruction set:
+                </a>
+            </p>
+
+            <pre>
+    ORIGIN 0000     ; User must load program starting at 0000
+    
+    LDI 0003        ; Load the value 3 into the accumulator
+    ADA add_val     ; Add value at add_val address to accumulator
+    OUT             ; Display accumulator on OUT register
+    HLT             ; Halt
+
+add_val:
+    ORIGIN 0006     ; User must store value to be added at 0006
+
+    0004            ; Value to be added</pre>
+
+            <p>The source code assembled into octal machine code is as follows:</p>
+
+            <pre>
+0020 0003   ; At 0000: Load the value 3 into the accumulator
+0041 0006   ; At 0002: Add value at address 0006 to accumulator
+0002        ; At 0004: Display accumulator on OUT register
+0001        ; At 0005: Halt
+0004        ; At 0006: Value to be added</pre>
+
+            <p>Or as a single block:</p>
+
+            <pre>0020 0003 0041 0006 0002 0001 0004</pre>
+
+            <p>To enter the program using the circuit spy, do the following:</p>
+
+            <ol>
+                <li>Make sure Balaurul is on and in the "STOP" setting.</li>
+                <li>Open the circuit spy.</li>
+                <li>Copy the single block of machine code (above) and paste it into the text box within
+                    the memory monitor panel. 
+                </li>
+                <li>Click the "IMPORT TO RAM" button. The memory monitor will show the imported values.</li>
+            </ol>
+
+            <p>Now reset Balaurul, then run Balaurul. Balaurul should display 0007 (in octal) on
+                the OUT register and halt. If this does not happen, verify the contents of the text box
+                within the memory monitor and re-import. Be sure to reset Balaurul before running.
+            </p>
+
+            <p>Now try entering the program using only the front panel switches. Turn Balaurul off, then
+                on again to set its registers and memory to random values. Then follow the guidance in
+                <a href="#html_switches">"Exploring the control and input switches"</a> to enter
+                the machine code. Then reset and run Balaurul.
+            </p>
+
+            <h3>Sample programs</h3>
+
+            <ul>
+                <li><a target="_blank" href="./examples/hellorld.txt">HELLORLD!</a> referencing
+                    <a target="_blank" href="https://youtu.be/gQ6mwbTGXGQ?si=AHDbKgILyJ0DScS7">Usagi Electric</a>
+                    on YouTube
+                </li>
+                <li><a target="_blank" href="./examples/kill_bit.txt">Kill the Bit</a> by 
+                    <a target="_blank" href="https://altairclone.com/downloads/killbits.pdf">Dean McDaniel</a>, 
+                    ported to Balaurul Unu by Chris Musei-Sequeira
+                </li>
+            </ul>
+
+            <!-- end REMAINDER OF WEBSITE -->
+        </div>
+
     </body>
 </html>
