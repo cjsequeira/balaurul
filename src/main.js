@@ -470,6 +470,8 @@ function sideEffect_setup() {
             [UI_TEXT_FP_CONTROL_INPUT_KEYS[i]]: () => {
                 ModuleUI.sideEffect_toggleSwitch(app.ui_input_switches[i], 0, UI_NUM_FP_SLIDER_Y);
                 app.fp_input.input_switches[i] = !app.fp_input.input_switches[i];
+                
+                app.cpu.scanInputs(app.fp_input);
             }
         };
     }
@@ -547,6 +549,8 @@ function sideEffect_setup() {
                 s.style.translate = "";
 
                 app.fp_input.input_switches[i] = false;
+
+                app.cpu.scanInputs(app.fp_input);
             });
         },
 
