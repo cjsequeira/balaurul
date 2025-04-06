@@ -117,7 +117,18 @@ export const OPCODES = [
         ],
     },
 
-    // 21: [Add immediate value to accumulator]
+    // 0o21: ADI: Load accumulator from immediate; 1 operand
+    {
+        name: "ADI",
+        funcs: [m_incPC, m_storePCaddrInB, m_addBtoA, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.INC_PC
+        ],
+    },
+
     // 22: [Add immediate value plus carry to accumulator]
     // 23: [Subtract immediate value from accumulator]
     // 24: [Subtract immediate value from accumulator with borrow]

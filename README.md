@@ -40,7 +40,9 @@ Live at https://cjsequeira.github.io/balaurul/
 | Opcode | Mnemonic | Description | Operand (If Any) | Width (Words) | Num. of Machine Cycles
 |---|---|---|---|---|---|
 | 0020 | LDI | Load accumulator from immediate | Immediate value | 2 | 5 | 
-| 0021 - 0029 | | (To be implemented) | | | |
+| 0021 | ADI | Add immediate to accumulator | Immediate value | 2 | 6 | 
+
+| 0022 - 0029 | | (To be implemented) | | | |
 | 0030 | CMI | Compare accumulator with immediate | Immediate value | 2 | 6 | 
 | 0031 - 0037 | | (Reserved) | | | |
 
