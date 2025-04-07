@@ -117,7 +117,7 @@ export const OPCODES = [
         ],
     },
 
-    // 0o21: ADI: Load accumulator from immediate; 1 operand
+    // 0o21: ADI: Add immediate to accumulator; 1 operand
     {
         name: "ADI",
         funcs: [m_incPC, m_storePCaddrInB, m_addBtoA, m_incPC],
@@ -129,17 +129,31 @@ export const OPCODES = [
         ],
     },
 
-    // 22: [Add immediate value plus carry to accumulator]
+        // 0o22: ACI: Add immediate plus carry to accumulator; 1 operand
+        {
+            name: "ACI",
+            funcs: [m_incPC, m_storePCaddrInB, m_addBplusCarrytoA, m_incPC],
+            next_type: [
+                M_CYCLE_NAMES.INC_PC,
+                M_CYCLE_NAMES.MEM_READ,
+                M_CYCLE_NAMES.ALU,
+                M_CYCLE_NAMES.INC_PC
+            ],
+        },
+
     // 23: [Subtract immediate value from accumulator]
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+
     // 24: [Subtract immediate value from accumulator with borrow]
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+
     // 25: [AND immediate value with accumulator]
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+
     // 26: [OR immediate value with accumulator]
+    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+
     // 27: [XOR immediate value with accumulator]
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
     // 0o30: CMI: Compare accumulator with immediate; 1 operand
@@ -345,6 +359,24 @@ export const OPCODES = [
 function m_addBtoA(cpu) {
     // add B to accumulator
     cpu.a += cpu.b;
+
+    // set carry flag appropriately
+    cpu.flags.carry = (cpu.a >= Math.pow(2, BITS));
+
+    // restrict accumulator to only BITS in size
+    cpu.a %= Math.pow(2, BITS);
+
+    // set zero flag appropriately
+    cpu.flags.zero = (cpu.a == 0);
+}
+
+// add B plus carry to accumulator
+function m_addBplusCarrytoA(cpu) {
+    // add B to accumulator
+    cpu.a += cpu.b;
+
+    // add carry to accumulator
+    if (cpu.flags.carry) cpu.a++;
 
     // set carry flag appropriately
     cpu.flags.carry = (cpu.a >= Math.pow(2, BITS));
