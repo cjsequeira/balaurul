@@ -135,8 +135,6 @@ export const OPCODES = [
     // 25: [AND immediate value with accumulator]
     // 26: [OR immediate value with accumulator]
     // 27: [XOR immediate value with accumulator]
-    // 30: [Compare immediate with accumulator]    
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
@@ -307,19 +305,21 @@ export const OPCODES = [
     // 0o65: CALL: Call subroutine at address; 1 operand
     {
         name: "CALL",
-        funcs: [m_incPC, m_storePCinCallAddr, m_storePCaddrInPC],
+        funcs: [m_incPC, m_storeCallAddrInMAR, m_storePCatMARaddr, m_storePCaddrInPC],
         next_type: [
             M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
             M_CYCLE_NAMES.MEM_WRITE,
-            M_CYCLE_NAMES.MEM_READ
+            M_CYCLE_NAMES.MEM_READ,
         ],
     },
 
-    // 66: RET: Return from subroutine
+    // 0o66: RET: Return from subroutine
     {
         name: "RET",
-        funcs: [m_getPCfromCallAddr, m_incPC],
+        funcs: [m_storeCallAddrInMAR, m_storeMARaddrInPC, m_incPC],
         next_type: [
+            M_CYCLE_NAMES.MEM_READ,
             M_CYCLE_NAMES.MEM_READ,
             M_CYCLE_NAMES.INC_PC,
         ],
@@ -389,11 +389,6 @@ function m_decA(cpu) {
 
     // set zero flag appropriately
     cpu.flags.zero = (cpu.a == 0);
-}
-
-// get PC from call storage address
-function m_getPCfromCallAddr(cpu) {
-    cpu.pc = cpu.getWordAt(CALL_ADDR);
 }
 
 // halt CPU
@@ -536,9 +531,19 @@ function m_storeAatMARaddr(cpu) {
     cpu.putWordAt(cpu.mar, cpu.a);
 }
 
+// store into RAM at address in MAR: value in PC
+function m_storePCatMARaddr(cpu) {
+    cpu.putWordAt(cpu.mar, cpu.pc);
+}
+
 // store into MAR: value in B
 function m_storeBinMAR(cpu) {
     cpu.mar = cpu.b;
+}
+
+// store call address in MAR
+function m_storeCallAddrInMAR(cpu) {
+    cpu.mar = CALL_ADDR;
 }
 
 // store into accumulator: word at address in MAR
@@ -551,6 +556,11 @@ function m_storeMARaddrInB(cpu) {
     cpu.b = cpu.getWordAt(cpu.mar);
 }
 
+// store into PC: word at address in MAR
+function m_storeMARaddrInPC(cpu) {
+    cpu.pc = cpu.getWordAt(cpu.mar);
+}
+
 // store into accumulator: word at address in PC
 function m_storePCaddrInA(cpu) {
     cpu.a = cpu.getWordAt(cpu.pc);
@@ -559,11 +569,6 @@ function m_storePCaddrInA(cpu) {
 // store into B: word at address in PC
 function m_storePCaddrInB(cpu) {
     cpu.b = cpu.getWordAt(cpu.pc);
-}
-
-// store PC into call storage address
-function m_storePCinCallAddr(cpu) {
-    cpu.putWordAt(CALL_ADDR, cpu.pc);
 }
 
 // store into MAR: word at address in PC
