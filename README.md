@@ -42,7 +42,6 @@ Live at https://cjsequeira.github.io/balaurul/
 | 0020 | LDI | Load accumulator from immediate | Immediate value | 2 | 5 | 
 | 0021 | ADI | Add immediate to accumulator | Immediate value | 2 | 6 | 
 | 0022 | ACI | Add immediate plus carry to accumulator | Immediate value | 2 | 6 | 
-
 | 0023 - 0029 | | (To be implemented) | | | |
 | 0030 | CMI | Compare accumulator with immediate | Immediate value | 2 | 6 | 
 | 0031 - 0037 | | (Reserved) | | | |
