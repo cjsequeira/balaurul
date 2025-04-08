@@ -31,7 +31,7 @@ Live at https://cjsequeira.github.io/balaurul/
 | 0010 | INC | Increment accumulator | | 1 | 4 | 
 | 0011 | DEC | Decrement accumulator | | 1 | 4 | 
 | 0012 | ROL | Rotate accumulator left | | 1 | 4 | 
-| 0013 | ROL | Rotate accumulator left through carry | | 1 | 4 | 
+| 0013 | RCL | Rotate accumulator left through carry | | 1 | 4 | 
 | 0014 | ROR | Rotate accumulator right | | 1 | 4 | 
 | 0015 | RCR | Rotate accumulator right through carry | | 1 | 4 | 
 | 0016 - 0017 | | (Reserved) | | | |
