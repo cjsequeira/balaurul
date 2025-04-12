@@ -43,7 +43,8 @@ Live at https://cjsequeira.github.io/balaurul/
 | 0021 | ADI | Add immediate to accumulator | Immediate value | 2 | 6 | 
 | 0022 | ACI | Add immediate plus carry to accumulator | Immediate value | 2 | 6 | 
 | 0023 | SUI | Subtract immediate from accumulator | Immediate value | 2 | 6 | 
-| 0024 - 0029 | | (To be implemented) | | | |
+| 0024 | SBI | Subtract immediate from accumulator with borrow | Immediate value | 2 | 6 | 
+| 0025 - 0029 | | (To be implemented) | | | |
 | 0030 | CMI | Compare accumulator with immediate | Immediate value | 2 | 6 | 
 | 0031 - 0037 | | (Reserved) | | | |
 
@@ -52,9 +53,10 @@ Live at https://cjsequeira.github.io/balaurul/
 |---|---|---|---|---|---|
 | 0040 | LDA | Load accumulator from address | Address | 2 | 6 | 
 | 0041 | ADA | Add value at address to accumulator | Address | 2 | 7 | 
-| 0042 | | (To be implemented) |  |  |  | 
+| 0042 | ACA | Add value at address, plus carry, to accumulator | Address | 2 | 7 | 
 | 0043 | SUA | Subtract value at address from accumulator | Address | 2 | 7 | 
-| 0044 - 0046 | | (To be implemented) | | | |
+| 0044 | SBA | Subtract value at address from accumulator with borrow | Address | 2 | 7 | 
+| 0045 - 0046 | | (To be implemented) | | | |
 | 0047 | XOA | XOR value at address with accumulator | Address | 2 | 7 | 
 | 0050 | | (To be implemented) | | | |
 | 0051 | STA | Store accumulator to address | Address | 2 | 6 | 

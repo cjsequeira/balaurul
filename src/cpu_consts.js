@@ -222,8 +222,18 @@ export const OPCODES = [
         ]
     },
 
-    // 0o42: To be implemented (NOP)
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o42: ACA: Add value at address to accumulator, plus carry, using B as a temp register
+    {
+        name: "ACA",
+        funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInB, m_addBplusCarrytoA, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.INC_PC
+        ]
+    },
 
     // 0o43: SUA: Subtract value at address from accumulator using B as a temp register
     {
@@ -238,8 +248,18 @@ export const OPCODES = [
         ]
     },
 
-    // 44: [Subtract value in address from accumulator with borrow]
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o44: SBA: Subtract value at address from accumulator, with borrow, using B as a temp register
+    {
+        name: "SBA",
+        funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInB, m_subBwithBorrowFromA, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.INC_PC
+        ]
+    },
 
     // 45: [AND value in address with accumulator]
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
