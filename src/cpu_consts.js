@@ -129,20 +129,29 @@ export const OPCODES = [
         ],
     },
 
-        // 0o22: ACI: Add immediate plus carry to accumulator; 1 operand
-        {
-            name: "ACI",
-            funcs: [m_incPC, m_storePCaddrInB, m_addBplusCarrytoA, m_incPC],
-            next_type: [
-                M_CYCLE_NAMES.INC_PC,
-                M_CYCLE_NAMES.MEM_READ,
-                M_CYCLE_NAMES.ALU,
-                M_CYCLE_NAMES.INC_PC
-            ],
-        },
+    // 0o22: ACI: Add immediate plus carry to accumulator; 1 operand
+    {
+        name: "ACI",
+        funcs: [m_incPC, m_storePCaddrInB, m_addBplusCarrytoA, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.INC_PC
+        ],
+    },
 
-    // 23: [Subtract immediate value from accumulator]
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o23: SBI: Subtract immediate from accumulator; 1 operand
+    {
+        name: "SBI",
+        funcs: [m_incPC, m_storePCaddrInB, m_subBfromA, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.INC_PC
+        ],
+    },
 
     // 24: [Subtract immediate value from accumulator with borrow]
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
@@ -620,7 +629,7 @@ function m_subBfromA(cpu) {
 
     // set carry flag appropriately
     // carry calc is inspired by the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
-    cpu.flags.carry = (cpu.a >= Math.pow(2, BITS));
+    cpu.flags.carry = (cpu.a < Math.pow(2, BITS));
 
     // restrict accumulator to only BITS in size
     cpu.a %= Math.pow(2, BITS);
