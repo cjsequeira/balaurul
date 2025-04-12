@@ -141,9 +141,9 @@ export const OPCODES = [
         ],
     },
 
-    // 0o23: SBI: Subtract immediate from accumulator; 1 operand
+    // 0o23: SUI: Subtract immediate from accumulator; 1 operand
     {
-        name: "SBI",
+        name: "SUI",
         funcs: [m_incPC, m_storePCaddrInB, m_subBfromA, m_incPC],
         next_type: [
             M_CYCLE_NAMES.INC_PC,
@@ -153,8 +153,17 @@ export const OPCODES = [
         ],
     },
 
-    // 24: [Subtract immediate value from accumulator with borrow]
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o24: SBI: Subtract immediate from accumulator with borrow; 1 operand
+    {
+        name: "SBI",
+        funcs: [m_incPC, m_storePCaddrInB, m_subBwithBorrowFromA, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.INC_PC
+        ],
+    },
 
     // 25: [AND immediate value with accumulator]
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
@@ -216,9 +225,9 @@ export const OPCODES = [
     // 0o42: To be implemented (NOP)
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
 
-    // 0o43: SBA: Subtract value at address from accumulator using B as a temp register
+    // 0o43: SUA: Subtract value at address from accumulator using B as a temp register
     {
-        name: "SBA",
+        name: "SUA",
         funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInB, m_subBfromA, m_incPC],
         next_type: [
             M_CYCLE_NAMES.INC_PC,
@@ -381,11 +390,11 @@ function m_addBtoA(cpu) {
 
 // add B plus carry to accumulator
 function m_addBplusCarrytoA(cpu) {
-    // add B to accumulator
-    cpu.a += cpu.b;
-
     // add carry to accumulator
     if (cpu.flags.carry) cpu.a++;
+
+    // add B to accumulator
+    cpu.a += cpu.b;
 
     // set carry flag appropriately
     cpu.flags.carry = (cpu.a >= Math.pow(2, BITS));
@@ -624,6 +633,25 @@ function m_storePCaddrInPC(cpu) {
 
 // subtract B from accumulator
 function m_subBfromA(cpu) {
+    // to subtract, add the two's-complement of B to accumulator
+    cpu.a += Math.pow(2, BITS) - cpu.b;
+
+    // set carry flag appropriately
+    // carry calc is inspired by the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
+    cpu.flags.carry = (cpu.a < Math.pow(2, BITS));
+
+    // restrict accumulator to only BITS in size
+    cpu.a %= Math.pow(2, BITS);
+
+    // set zero flag appropriately
+    cpu.flags.zero = (cpu.a == 0);
+}
+
+// subtract B with borrow from accumulator
+function m_subBwithBorrowFromA(cpu) {
+    // subtract carry from accumulator
+    if (cpu.flags.carry) cpu.a--;
+
     // to subtract, add the two's-complement of B to accumulator
     cpu.a += Math.pow(2, BITS) - cpu.b;
 
