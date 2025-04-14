@@ -231,11 +231,8 @@ function sideEffect_appUpdate() {
         // update CPU just once
         app.cpu.update();
 
-        // update display string and scroll display if OUT register has been updated
-        if (app.cpu.out_stamp != last_out) {
-            display_string += String.fromCodePoint(app.cpu.out);
-            UI_DISPLAY.scrollTop = UI_DISPLAY.scrollHeight;
-        }
+        // update display string if OUT register has been updated
+        if (app.cpu.out_stamp != last_out) display_string += String.fromCharCode(app.cpu.out);
 
         // accumulate LED brightness
         app.LEDaccumulators[0] = ModuleUI.accumulateLEDs(app.cpu, app.LEDaccumulators[0], 1.0);
@@ -251,16 +248,13 @@ function sideEffect_appUpdate() {
             // update CPU
             app.cpu.update();
 
-            // update display string and scroll display if OUT register has been updated
-            if (app.cpu.out_stamp != last_out) {
-                display_string += String.fromCodePoint(app.cpu.out);
-                UI_DISPLAY.scrollTop = UI_DISPLAY.scrollHeight;
-            }
+            // update display string if OUT register has been updated
+            if (app.cpu.out_stamp != last_out) display_string += String.fromCharCode(app.cpu.out);
 
             // accumulate LED brightness
             app.LEDaccumulators[0] = ModuleUI.accumulateLEDs(app.cpu, app.LEDaccumulators[0], update_target);
 
-            // save CPU OUT stamp
+            // save CPU OUT stamp in prep for next CPU update
             last_out = app.cpu.out_stamp;
         }
     }
@@ -366,8 +360,11 @@ function sideEffect_appUpdate() {
             );
         }
 
-        // update display screen
-        UI_DISPLAY.innerText = display_string;
+        // update display screen if update is needed!
+        if (UI_DISPLAY.innerText != display_string) {
+            UI_DISPLAY.innerText = display_string;
+            UI_DISPLAY.scrollTop = UI_DISPLAY.scrollHeight;
+        }
 
         // if CPU is running, sync old UI values
         if (app.cpu.status.running) app.old = ModuleUI.syncedUIvalues(app.cpu);

@@ -315,7 +315,7 @@ th.mem_mar {
     border: 0rem;
     border-radius: 0rem;
 
-    position: absolute;
+    position: relative;
 
     font-family: monospace;
     font-size: 15px;
@@ -325,16 +325,15 @@ th.mem_mar {
     top: 351px;
 
     color: rgb(31, 0, 0);
-    /* background-color: rgba(0, 0, 0, 0); */
-    background-color: rgba(252, 215, 215, 0.914);
+    background-color: rgba(0, 0, 0, 0);
 
     word-wrap: break-word;
     overflow-y: scroll;
     overflow-x: hidden;
 
-    visibility: visible;
+    /* user-select: text; */
 
-    z-index: 10;
+    visibility: visible;
 }
 
 #app_12bit_ram_import_export {
