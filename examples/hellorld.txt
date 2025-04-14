@@ -1,10 +1,9 @@
 ; HELLORLD! program - in reference to "Hellorld!" by Usagi Electric on YouTube: 
 ;   https://youtu.be/gQ6mwbTGXGQ?si=AHDbKgILyJ0DScS7
-; Displays "HELLORLD!" in OCTAL, character by character, at the OUT display
-; The program halts after each character is displayed
-; To continue after the halt, flip the "Run/Stop" switch to "Stop" and then to "Run"
-; (DO NOT HIT "RESET")
-; When the OUT register shows 0000 (null terminator), program is complete
+; Displays "HELLORLD!" in OCTAL, character by character, on the display screen
+; When Balaurul halts, the program is complete
+;
+; VERSION 2, 14 April 2025: Removed HLT in main loop to reflect new display screen
 
 ORIGIN 0000
 
@@ -13,38 +12,37 @@ ORIGIN 0000
 0002    OUT                ; Display character at output
 0003    CMI 0000           ; Compare accumulator with null terminator
 0005    JZ .done           ; If accumulator is null terminator, go done
-0007    HLT                ; Halt; user to continue
 
         ; **** Point to next character
-0010    LDA pointer        ; Load pointer value into accumulator
-0012    INC                ; Increment by one word
-0013    STA pointer        ; Store as incremented pointer
+0007    LDA pointer        ; Load pointer value into accumulator
+0011    INC                ; Increment by one word
+0012    STA pointer        ; Store as incremented pointer
 
         ; **** Loop around
-0015    JMP .show_char
+0014    JMP .show_char
 
 .done:
-0017    HLT                ; Halt
+0016    HLT                ; Halt
 
 pointer:
-0020    0021               ; Working pointer: init to hellorld_text
+0017    0020               ; Working pointer: init to hellorld_text
 
 hellorld_text:             ; "HELLORLD!" text (all ASCII values in octal)
-0021    0110               ; H
-0022    0105               ; E
+0020    0110               ; H
+0021    0105               ; E
+0022    0114               ; L
 0023    0114               ; L
-0024    0114               ; L
-0025    0117               ; O
-0026    0122               ; R
-0027    0114               ; L
-0030    0104               ; D
-0031    0041               ; !
-0032    0000               ; [null terminator]
+0024    0117               ; O
+0025    0122               ; R
+0026    0114               ; L
+0027    0104               ; D
+0030    0041               ; !
+0031    0000               ; [null terminator]
     
 
 **** ASSEMBLED ****
 
-0052 0020 0002 0030 0000 0062 0017 0001
-0040 0020 0010 0051 0020 0060 0000 0001
-0021 0110 0105 0114 0114 0117 0122 0114
-0104 0041 0000
+0052 0017 0002 0030 0000 0062 0016 0040
+0017 0010 0051 0017 0060 0000 0001 0020
+0110 0105 0114 0114 0117 0122 0114 0104
+0041 0000

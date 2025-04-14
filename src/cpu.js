@@ -22,6 +22,7 @@ export class CPU {
         this.b = 0;
 
         this.out = 0;
+        this.out_stamp = 0;
 
         this.flags = {
             carry: false,

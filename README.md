@@ -21,7 +21,7 @@ Live at https://cjsequeira.github.io/balaurul/
 |---|---|---|---|---|---|
 | 0000 | NOP | No operation | | 1 | 3 |
 | 0001 | HLT | Increment PC and halt CPU | | 1 | 4 |
-| 0002 | OUT | Write accumulator to OUT | | 1 | 4 |
+| 0002 | OUT | Write accumulator to OUT and draw the associated UTF-16 character on screen | | 1 | 4 |
 | 0003 | IN | Read input switches to accumulator | | 1 | 4 |
 | 0004 - 0007 | | (Reserved) | | | |
 
