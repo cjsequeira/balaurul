@@ -1,12 +1,9 @@
 ; HELLORLD! program - in reference to "Hellorld!" by Usagi Electric on YouTube: 
 ;   https://youtu.be/gQ6mwbTGXGQ?si=AHDbKgILyJ0DScS7
-; Displays "HELLORLD!" in OCTAL, character by character, at the OUT display
-; The program halts after each character is displayed
-; To continue after the halt, flip the "Run/Stop" switch to "Stop" and then to "Run"
-; (DO NOT HIT "RESET")
-; When the OUT register shows 0000 (null terminator), program is complete
+; Displays "HELLORLD!" in OCTAL, character by character, on the display screen
+; When Balaurul halts, the program is complete
 ;
-; VERSION 2, 14 April 2025: Removed HLT in main loop to reflect new display UI
+; VERSION 2, 14 April 2025: Removed HLT in main loop to reflect new display screen
 
 ORIGIN 0000
 
