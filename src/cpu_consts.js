@@ -448,7 +448,7 @@ export const OPCODES = [
 
     // 0o67: LPC: Set PC to value in accumulator; no operands
     {
-        name: "JMP",
+        name: "LPC",
         funcs: [m_storeAinPC],
         next_type: [M_CYCLE_NAMES.MEM_READ],
     },
