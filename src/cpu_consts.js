@@ -638,9 +638,18 @@ function m_or(cpu) {
     cpu.flags.zero = (cpu.a == 0);
 }
 
-// write accumulator to output
+// write accumulator to output and update stamp
 function m_out(cpu) {
+    // get current OUT stamp
+    let old_stamp = cpu.out_stamp;
+
+    // update the OUT register to the value of the accumulator
     cpu.out = cpu.a;
+
+    // get a new stamp, ensuring it's different from the old
+    do {
+        cpu.out_stamp = Math.random();
+    } while (cpu.out_stamp == old_stamp)
 }
 
 // rotate accumulator left through carry

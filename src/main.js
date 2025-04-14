@@ -21,6 +21,9 @@ const ITER_LIMIT = FAST_TARGET * 1 / 60;
 const NUM_LED_AVERAGE = 3;
 
 // front panel UI elements
+const UI_TEXT_DISPLAY_BG_COLOR_OFF = "rgba(0, 0, 0, 0)";
+const UI_TEXT_DISPLAY_BG_COLOR_ON = "rgba(252, 215, 215, 0.914)";
+
 const UI_TEXT_FP_LED_CLASS = "led";
 const UI_TEXT_FP_LED_M_ID_PREFIX = "app_12bit_led_m_";
 const UI_TEXT_FP_LED_PC_ID_PREFIX = "app_12bit_led_pc_";
@@ -36,6 +39,9 @@ const UI_TEXT_FP_CONTROL_INPUT_KEYS = Array.from("=-0987654321");
 const UI_NUM_FP_SLIDER_X = -20;
 const UI_NUM_FP_SLIDER_Y = -17;
 const UI_NUM_INPUT_SWITCHES = 12;
+
+const UI_DISPLAY = document.getElementById("app_12bit_out_display");
+const UI_NUM_DISPLAY_MAX_CHARS = 4096;
 
 const UI_FP_LED_FLAG_CARRY = document.getElementById("app_12bit_led_flag_carry");
 const UI_FP_LED_FLAG_ZERO = document.getElementById("app_12bit_led_flag_zero");
@@ -74,7 +80,7 @@ const UI_MEM_COLS = 8;
 
 const UI_TEXT_CIRCUIT_SPY_OPEN_LEFT = "51rem";
 const UI_TEXT_CIRCUIT_SPY_CLOSED_LEFT = "23rem";
-const UI_TEXT_CIRCUIT_SPY_OPEN_TOP = "25rem";
+const UI_TEXT_CIRCUIT_SPY_OPEN_TOP = "28.9rem";
 const UI_TEXT_CIRCUIT_SPY_CLOSED_TOP = "0rem";
 
 const UI_TEXT_MEM_CELL_ID_PREFIX = "app_12bit_memcell_";
@@ -196,6 +202,10 @@ function sideEffect_appUpdate() {
     let elapsed_time = 0;
     let update_target = 0;
 
+    // initialize display screen string
+    let display_string = UI_DISPLAY.innerText;
+    let last_out = app.cpu.out_stamp;
+
 
     // **** UPDATE CPU
     // get milliseconds elapsed since last app update call
@@ -216,8 +226,18 @@ function sideEffect_appUpdate() {
 
     // update CPU once or multiple times based on "speed" UI switch
     if (app.fp_input.slow) {
-        // slow mode? update CPU just once
+        // slow mode?
+
+        // update CPU just once
         app.cpu.update();
+
+        // update display string and scroll display if OUT register has been updated
+        if (app.cpu.out_stamp != last_out) {
+            display_string += String.fromCodePoint(app.cpu.out);
+            UI_DISPLAY.scrollTop = UI_DISPLAY.scrollHeight;
+        }
+
+        // accumulate LED brightness
         app.LEDaccumulators[0] = ModuleUI.accumulateLEDs(app.cpu, app.LEDaccumulators[0], 1.0);
     } else {
         // fast mode? update to meet the speed target
@@ -227,10 +247,21 @@ function sideEffect_appUpdate() {
         //  ...requestAnimationFrame() is not called for long periods of time
         update_target = Math.min(FAST_TARGET * elapsed_time / 1000, ITER_LIMIT);
 
-        // update CPU to meet the speed target
         for (let i = 0; i < update_target; i++) {
+            // update CPU
             app.cpu.update();
+
+            // update display string and scroll display if OUT register has been updated
+            if (app.cpu.out_stamp != last_out) {
+                display_string += String.fromCodePoint(app.cpu.out);
+                UI_DISPLAY.scrollTop = UI_DISPLAY.scrollHeight;
+            }
+
+            // accumulate LED brightness
             app.LEDaccumulators[0] = ModuleUI.accumulateLEDs(app.cpu, app.LEDaccumulators[0], update_target);
+
+            // save CPU OUT stamp
+            last_out = app.cpu.out_stamp;
         }
     }
 
@@ -238,9 +269,6 @@ function sideEffect_appUpdate() {
     // **** DRAW CPU INFO 
     if (app.cpu.status.on) {
         // if CPU status is "on" then ...
-
-        // redraw front panel LEDs
-        sideEffect_redrawLEDs(app);
 
         if (app.fp_input.circuit_spy) {
             // if circuit spy is active, then...
@@ -250,7 +278,6 @@ function sideEffect_appUpdate() {
 
             // show value at MAR
             UI_VAL_AT_MAR.innerHTML = app.cpu.getWordAt(app.cpu.mar).toString(8).padStart(4, "0");
-
 
             // show disassembly of IR and disassembly of word at PC
             UI_IR_MNEMONIC.innerHTML = app.cpu.disassemble(app.cpu.ir);
@@ -328,6 +355,20 @@ function sideEffect_appUpdate() {
             );
         }
 
+        // redraw front panel LEDs
+        sideEffect_redrawLEDs(app);
+
+        // truncate display string in prep for display in UI
+        if (display_string.length > UI_NUM_DISPLAY_MAX_CHARS) {
+            display_string = display_string.substring(
+                display_string.length - 1 - UI_NUM_DISPLAY_MAX_CHARS,
+                display_string.length - 1
+            );
+        }
+
+        // update display screen
+        UI_DISPLAY.innerText = display_string;
+
         // if CPU is running, sync old UI values
         if (app.cpu.status.running) app.old = ModuleUI.syncedUIvalues(app.cpu);
     }
@@ -397,6 +438,10 @@ function sideEffect_resetUI() {
 
     // clear all LEDs
     sideEffect_clearLEDs();
+
+    // reset output display
+    UI_DISPLAY.style.backgroundColor = UI_TEXT_DISPLAY_BG_COLOR_OFF;
+    UI_DISPLAY.innerText = "";
 }
 
 // set up the UI
@@ -470,7 +515,7 @@ function sideEffect_setup() {
             [UI_TEXT_FP_CONTROL_INPUT_KEYS[i]]: () => {
                 ModuleUI.sideEffect_toggleSwitch(app.ui_input_switches[i], 0, UI_NUM_FP_SLIDER_Y);
                 app.fp_input.input_switches[i] = !app.fp_input.input_switches[i];
-                
+
                 app.cpu.scanInputs(app.fp_input);
             }
         };
@@ -506,6 +551,7 @@ function sideEffect_setup() {
     UI_CONTROL_RESET.addEventListener("mouseup",
         () => {
             app.old = ModuleUI.syncedUIvalues(app.cpu);
+            UI_DISPLAY.innerText = "";
             sideEffect_ctrlButtonUp(app.fp_input, app.cpu, UI_CONTROL_RESET, "reset");
         });
     UI_CONTROL_M_STEP.addEventListener("mouseup",
@@ -563,6 +609,7 @@ function sideEffect_setup() {
 
         [UI_KEY_CONTROL_RESET]: () => {
             app.old = ModuleUI.syncedUIvalues(app.cpu);
+            UI_DISPLAY.innerText = "";
             sideEffect_ctrlButtonUp(app.fp_input, app.cpu, UI_CONTROL_RESET, "reset");
         },
 
@@ -633,6 +680,11 @@ function sideEffect_ctrlOnOff(fp_signals, in_cpu) {
 
     // zero out LED accumulators
     app.LEDaccumulators = Array(NUM_LED_AVERAGE).fill(ModuleUI.zeroedLEDaccumulators());
+
+    // turn on display if CPU is now on
+    if (fp_signals.on) {
+        UI_DISPLAY.style.backgroundColor = UI_TEXT_DISPLAY_BG_COLOR_ON;
+    }
 }
 
 function sideEffect_ctrlRunStop(fp_signals, in_cpu) {
