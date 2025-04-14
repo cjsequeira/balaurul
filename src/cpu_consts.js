@@ -165,14 +165,41 @@ export const OPCODES = [
         ],
     },
 
-    // 25: [AND immediate value with accumulator]
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o25: ANI: AND immediate value with accumulator; 1 operand
+    {
+        name: "ANI",
+        funcs: [m_incPC, m_storePCaddrInB, m_and, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.INC_PC
+        ],
+    },
 
-    // 26: [OR immediate value with accumulator]
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o26: ORI: OR immediate value with accumulator; 1 operand
+    {
+        name: "ORI",
+        funcs: [m_incPC, m_storePCaddrInB, m_or, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.INC_PC
+        ],
+    },
 
-    // 27: [XOR immediate value with accumulator]
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o27: XOI: XOR immediate value with accumulator; 1 operand
+    {
+        name: "XOI",
+        funcs: [m_incPC, m_storePCaddrInB, m_xor, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.INC_PC
+        ],
+    },
 
     // 0o30: CMI: Compare accumulator with immediate; 1 operand
     {
@@ -261,11 +288,31 @@ export const OPCODES = [
         ]
     },
 
-    // 45: [AND value in address with accumulator]
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o45: ANA: AND value at address with accumulator
+    {
+        name: "ANA",
+        funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInB, m_and, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.INC_PC
+        ]
+    },
 
-    // 46: [OR value in address with accumulator]
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o46: ORA: OR value at address with accumulator
+    {
+        name: "ORA",
+        funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInB, m_or, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.INC_PC
+        ]
+    },
 
     // 0o47: XOA: XOR value in address with accumulator
     {
@@ -280,9 +327,18 @@ export const OPCODES = [
         ]
     },
 
-    // 50: [Compare value in address with accumulator]    
-
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o50: CMA: Compare value in address with accumulator
+    {
+        name: "CMA",
+        funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInB, m_cmpBwithA, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.INC_PC
+        ]
+    },
 
     // 0o51: STA: Store accumulator in address; 1 operand
     {
@@ -310,8 +366,21 @@ export const OPCODES = [
         ],
     },
 
-    // 0o53 - 0o57: Reserved (NOP)
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o53: STP: Store accumulator to address in pointer; 1 operand
+    {
+        name: "STP",
+        funcs: [m_incPC, m_storePCaddrInMAR, m_storeMARaddrInB, m_storeBinMAR, m_storeAatMARaddr, m_incPC],
+        next_type: [
+            M_CYCLE_NAMES.INC_PC,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.MEM_READ,
+            M_CYCLE_NAMES.ALU,
+            M_CYCLE_NAMES.MEM_WRITE,
+            M_CYCLE_NAMES.INC_PC
+        ],
+    },
+
+    // 0o54 - 0o57: Reserved (NOP)
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
@@ -366,7 +435,7 @@ export const OPCODES = [
         ],
     },
 
-    // 0o66: RET: Return from subroutine
+    // 0o66: RET: Return from subroutine; no operands
     {
         name: "RET",
         funcs: [m_storeCallAddrInMAR, m_storeMARaddrInPC, m_incPC],
@@ -377,8 +446,12 @@ export const OPCODES = [
         ],
     },
 
-    // 67: [Load program counter from accumulator]    
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o67: LPC: Set PC to value in accumulator; no operands
+    {
+        name: "JMP",
+        funcs: [m_storeAinPC],
+        next_type: [M_CYCLE_NAMES.MEM_READ],
+    },
 
     // 0o70 - 0o77: Reserved (NOP)
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
@@ -418,6 +491,22 @@ function m_addBplusCarrytoA(cpu) {
 
     // set carry flag appropriately
     cpu.flags.carry = (cpu.a >= Math.pow(2, BITS));
+
+    // restrict accumulator to only BITS in size
+    cpu.a %= Math.pow(2, BITS);
+
+    // set zero flag appropriately
+    cpu.flags.zero = (cpu.a == 0);
+}
+
+// AND B with A
+// implementation is inspired by the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
+function m_and(cpu) {
+    // set carry bit to zero
+    cpu.flags.carry = false;
+
+    // do the bitwise AND of B with A
+    cpu.a = (cpu.a & cpu.b);
 
     // restrict accumulator to only BITS in size
     cpu.a %= Math.pow(2, BITS);
@@ -533,6 +622,22 @@ function m_incPC(cpu) {
     cpu.incPC();
 }
 
+// OR B with A
+// implementation is inspired by the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
+function m_or(cpu) {
+    // set carry bit to zero
+    cpu.flags.carry = false;
+
+    // do the bitwise OR of B with A
+    cpu.a = (cpu.a | cpu.b);
+
+    // restrict accumulator to only BITS in size
+    cpu.a %= Math.pow(2, BITS);
+
+    // set zero flag appropriately
+    cpu.flags.zero = (cpu.a == 0);
+}
+
 // write accumulator to output
 function m_out(cpu) {
     cpu.out = cpu.a;
@@ -599,6 +704,11 @@ function m_ror(cpu) {
 // store into RAM at address in MAR: value in accumulator
 function m_storeAatMARaddr(cpu) {
     cpu.putWordAt(cpu.mar, cpu.a);
+}
+
+// store into PC: value in A
+function m_storeAinPC(cpu) {
+    cpu.pc = cpu.a;
 }
 
 // store into RAM at address in MAR: value in PC
@@ -697,4 +807,7 @@ function m_xor(cpu) {
 
     // restrict accumulator to only BITS in size
     cpu.a %= Math.pow(2, BITS);
+
+    // set zero flag appropriately
+    cpu.flags.zero = (cpu.a == 0);
 }

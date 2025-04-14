@@ -44,7 +44,9 @@ Live at https://cjsequeira.github.io/balaurul/
 | 0022 | ACI | Add immediate plus carry to accumulator | Immediate value | 2 | 6 | 
 | 0023 | SUI | Subtract immediate from accumulator | Immediate value | 2 | 6 | 
 | 0024 | SBI | Subtract immediate from accumulator with borrow | Immediate value | 2 | 6 | 
-| 0025 - 0029 | | (To be implemented) | | | |
+| 0025 | ANI | AND immediate value with accumulator | Immediate value | 2 | 6 | 
+| 0026 | ORI | OR immediate value with accumulator | Immediate value | 2 | 6 | 
+| 0027 | XOI | XOR immediate value with accumulator | Immediate value | 2 | 6 | 
 | 0030 | CMI | Compare accumulator with immediate | Immediate value | 2 | 6 | 
 | 0031 - 0037 | | (Reserved) | | | |
 
@@ -56,12 +58,14 @@ Live at https://cjsequeira.github.io/balaurul/
 | 0042 | ACA | Add value at address, plus carry, to accumulator | Address | 2 | 7 | 
 | 0043 | SUA | Subtract value at address from accumulator | Address | 2 | 7 | 
 | 0044 | SBA | Subtract value at address from accumulator with borrow | Address | 2 | 7 | 
-| 0045 - 0046 | | (To be implemented) | | | |
+| 0044 | ANA | AND value at address with accumulator | Address | 2 | 7 | 
+| 0045 | ORA | OR value at address with accumulator | Address | 2 | 7 | 
 | 0047 | XOA | XOR value at address with accumulator | Address | 2 | 7 | 
-| 0050 | | (To be implemented) | | | |
+| 0050 | CMA | Compare value at address with accumulator | Address | 2 | 7 | 
 | 0051 | STA | Store accumulator to address | Address | 2 | 6 | 
 | 0052 | LDP | Load accumulator from address in pointer | Pointer address | 2 | 8 | 
-| 0053 - 0057 | | (Reserved) | | | |
+| 0053 | STP | Store accumulator at address in pointer | Pointer address | 2 | 8 | 
+| 0054 - 0057 | | (Reserved) | | | |
 
 ### 0060 - 0077: Jump instructions
 | Opcode | Mnemonic | Description | Operand (If Any) | Width (Words) | Num. of Machine Cycles
@@ -73,7 +77,7 @@ Live at https://cjsequeira.github.io/balaurul/
 | 0064 | JNZ | Jump to address if zero flag not set | Address | 2 | 4 | 
 | 0065 | CALL | Call subroutine at address | Address | 2 | 6 | 
 | 0066 | RET | Return from subroutine | | 1 | 5 | 
-| 0067 | | (To be implemented) | | | |
+| 0067 | LPC | Load PC with value in accumulator | | 1 | 3 | 
 | 0070 - 0077 | | (Reserved) | | | |
 
 ## Version history
