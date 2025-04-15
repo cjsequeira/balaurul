@@ -22,7 +22,7 @@ const NUM_LED_AVERAGE = 3;
 
 // front panel UI elements
 const UI_TEXT_DISPLAY_BG_COLOR_OFF = "rgba(0, 0, 0, 0)";
-const UI_TEXT_DISPLAY_BG_COLOR_ON = "rgba(252, 215, 215, 0.914)";
+const UI_TEXT_DISPLAY_BG_COLOR_ON = "rgba(255, 71, 71, 0.71)";
 
 const UI_TEXT_FP_LED_CLASS = "led";
 const UI_TEXT_FP_LED_M_ID_PREFIX = "app_12bit_led_m_";
@@ -41,7 +41,7 @@ const UI_NUM_FP_SLIDER_Y = -17;
 const UI_NUM_INPUT_SWITCHES = 12;
 
 const UI_DISPLAY = document.getElementById("app_12bit_out_display");
-const UI_NUM_DISPLAY_MAX_CHARS = 8192;
+const UI_NUM_DISPLAY_MAX_CHARS = 80 * (2 *77);
 
 const UI_FP_LED_FLAG_CARRY = document.getElementById("app_12bit_led_flag_carry");
 const UI_FP_LED_FLAG_ZERO = document.getElementById("app_12bit_led_flag_zero");
