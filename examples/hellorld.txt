@@ -1,6 +1,6 @@
 ; HELLORLD! program - in reference to "Hellorld!" by Usagi Electric on YouTube: 
 ;   https://youtu.be/gQ6mwbTGXGQ?si=AHDbKgILyJ0DScS7
-; Displays "HELLORLD!" in OCTAL, character by character, on the display screen
+; Displays "HELLORLD!" on the display screen
 ; When Balaurul halts, the program is complete
 ;
 ; VERSION 2, 14 April 2025: Removed HLT in main loop to reflect new display screen
