@@ -1023,27 +1023,21 @@
     ORIGIN 0000     ; User must load program starting at 0000
     
     LDI 0003        ; Load the value 3 into the accumulator
-    ADA add_val     ; Add value at add_val address to accumulator
+    ADI 0004        ; Add immediate value 4 to accumulator
     OUT             ; Display accumulator on OUT register
-    HLT             ; Halt
-
-add_val:
-    ORIGIN 0006     ; User must store value to be added at 0006
-
-    0004            ; Value to be added</pre>
+    HLT             ; Halt</pre>
 
             <p>The source code assembled into octal machine code is as follows:</p>
 
             <pre>
 0020 0003   ; At 0000: Load the value 3 into the accumulator
-0041 0006   ; At 0002: Add value at address 0006 to accumulator
+0021 0004   ; At 0002: Add immediate value 4 to accumulator
 0002        ; At 0004: Display accumulator on OUT register
-0001        ; At 0005: Halt
-0004        ; At 0006: Value to be added</pre>
+0001        ; At 0005: Halt</pre>
 
             <p>Or as a single block:</p>
 
-            <pre>0020 0003 0041 0006 0002 0001 0004</pre>
+            <pre>0020 0003 0021 0004 0002 0001</pre>
 
             <p>To enter the program using the circuit spy, do the following:</p>
 
