@@ -203,7 +203,7 @@ function sideEffect_appUpdate() {
     let update_target = 0;
 
     // initialize display screen string
-    let display_string = UI_DISPLAY.innerText;
+    let display_string = UI_DISPLAY.textContent;
     let last_out = app.cpu.out_stamp;
 
 
@@ -361,8 +361,8 @@ function sideEffect_appUpdate() {
         }
 
         // update display screen if update is needed!
-        if (UI_DISPLAY.innerText != display_string) {
-            UI_DISPLAY.innerText = display_string;
+        if (UI_DISPLAY.textContent != display_string) {
+            UI_DISPLAY.textContent = display_string;
             UI_DISPLAY.scrollTop = UI_DISPLAY.scrollHeight;
         }
 
@@ -438,7 +438,7 @@ function sideEffect_resetUI() {
 
     // reset output display
     UI_DISPLAY.style.backgroundColor = UI_TEXT_DISPLAY_BG_COLOR_OFF;
-    UI_DISPLAY.innerText = "";
+    UI_DISPLAY.textContent = "";
 }
 
 // set up the UI
@@ -548,7 +548,7 @@ function sideEffect_setup() {
     UI_CONTROL_RESET.addEventListener("mouseup",
         () => {
             app.old = ModuleUI.syncedUIvalues(app.cpu);
-            UI_DISPLAY.innerText = "";
+            UI_DISPLAY.textContent = "";
             sideEffect_ctrlButtonUp(app.fp_input, app.cpu, UI_CONTROL_RESET, "reset");
         });
     UI_CONTROL_M_STEP.addEventListener("mouseup",
@@ -606,7 +606,7 @@ function sideEffect_setup() {
 
         [UI_KEY_CONTROL_RESET]: () => {
             app.old = ModuleUI.syncedUIvalues(app.cpu);
-            UI_DISPLAY.innerText = "";
+            UI_DISPLAY.textContent = "";
             sideEffect_ctrlButtonUp(app.fp_input, app.cpu, UI_CONTROL_RESET, "reset");
         },
 
