@@ -23,7 +23,8 @@ Live at https://cjsequeira.github.io/balaurul/
 | 0001 | HLT | Increment PC and halt CPU | | 1 | 4 |
 | 0002 | OUT | Write accumulator to OUT and draw the associated UTF-16 character on screen | | 1 | 4 |
 | 0003 | IN | Read input switches to accumulator | | 1 | 4 |
-| 0004 - 0007 | | (Reserved) | | | |
+| 0004 | KEY | Read keyboard to accumulator. Supported keys: Backspace, Tab, Enter/Return, Escape, and characters | | 1 | 4 |
+| 0005 - 0007 | | (Reserved) | | | |
 
 ### 0010 - 0017: No-operand instructions
 | Opcode | Mnemonic | Description | Operand (If Any) | Width (Words) | Num. of Machine Cycles

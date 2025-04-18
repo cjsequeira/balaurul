@@ -50,8 +50,14 @@ export const OPCODES = [
         next_type: [M_CYCLE_NAMES.IN, M_CYCLE_NAMES.INC_PC],
     },
 
-    // 0o04 - 0o07: Reserved (NOP)
-    { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
+    // 0o04: KEY: Store pressed key ASCII code into accumulator
+    {
+        name: "KEY",
+        funcs: [m_key, m_incPC],
+        next_type: [M_CYCLE_NAMES.IN, M_CYCLE_NAMES.INC_PC],
+    },
+
+    // 0o05 - 0o07: Reserved (NOP)
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
     { name: "NOP", funcs: [m_incPC], next_type: [M_CYCLE_NAMES.INC_PC] },
@@ -620,6 +626,15 @@ function m_incA(cpu) {
 // increment PC
 function m_incPC(cpu) {
     cpu.incPC();
+}
+
+// store ASCII code of pressed key in the accumulator
+// this assumes that the latest input switch statuses have already been scanned!
+function m_key(cpu) {
+    cpu.a = cpu.key_pressed;
+
+    // set keyboard buffer to 0
+    cpu.key_pressed = 0;
 }
 
 // OR B with A

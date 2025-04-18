@@ -24,6 +24,8 @@ export class CPU {
         this.out = 0;
         this.out_stamp = 0;
 
+        this.key_pressed = 0;
+
         this.flags = {
             carry: false,
             zero: false,
@@ -114,6 +116,9 @@ export class CPU {
             running: false,
             halted: false,
         }
+
+        // reset buffer for keyboard input
+        this.key_pressed = 0;
 
         // set startup values for machine cycle info
         this.m_cycle = 0;
@@ -250,6 +255,9 @@ export class CPU {
             // store the current status of the input switches as a number
             this.input_switch_value = boolListToNumber(input.input_switches)
 
+            // update buffer for keyboard data input if not null
+            if (input.key_pressed) this.key_pressed = input.key_pressed;
+
             if (input.run) {
                 // if "run" input is true, then...
 
@@ -323,13 +331,14 @@ export class CPU {
                 }
             }
         } else {
-            // if "on" input line is false, clear various statuses
+            // if "on" input line is false, clear various statuses and key buffer
             this.status.on = false;
             this.status.running = false;
             this.status.halted = false;
             this.status.doing_m_step = false;
             this.status.doing_i_step = false;
             this.status.ready = false;
+            this.key_pressed = 0;
         }
     }
 

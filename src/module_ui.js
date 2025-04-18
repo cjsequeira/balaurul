@@ -6,11 +6,6 @@
 import * as ModuleCPUconsts from "./cpu_consts.js";
 
 
-// **** CONSTANTS
-// document BODY tag
-const UI_BODY_TAG = document.getElementsByTagName("body")[0];
-
-
 // **** ARROW FUNCTIONS
 // return LED brightnesses with accumulation
 export const accumulateLEDs = (cpu, LEDaccum, divisor) => ({
@@ -86,17 +81,6 @@ export const zeroedLEDaccumulators = () => ({
 
 
 // **** TRADITIONAL FUNCTIONS
-// callback: handle keyboard keypresses
-export function handleKeys(event, keys) {
-    if (event.target == UI_BODY_TAG) {
-        // if recipient of key-up is the main body (e.g. not the circuit spy text editor), then ...
-        let key = event.key.toLowerCase();
-
-        // execute associated callback for keypress
-        if (key in keys) keys[key]();
-    }
-}
-
 // UI switch visual toggle function
 export function sideEffect_toggleSwitch(ui_switch, transform_x, transform_y) {
     ui_switch.style.transform = "none";

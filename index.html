@@ -953,6 +953,7 @@
                 <li>64 words of random access memory</li>
                 <li>A 2-row, 77-column UTF-16 display with roughly 80 rows of memory</li>
                 <li>12 binary input switches</li>
+                <li>Keyboard input with a one-character buffer</li>
             </ul>
 
             <h3>Quick start</h3>
@@ -982,13 +983,22 @@
             <h3>Exploring the control and input switches</h3>
             <ol>
                 <li>Turn on Balaurul and set the RUN/STOP switch to the "STOP" position.</li>
+                <li>Notice that the 2-line display in the lower "OUT" section is colored red. This indicates keyboard 
+                    shortcut mode, where pressing the keyboard character shown on the front panel for a control will
+                    activate that control.
+                </li>
+                <li>Click the mouse on the 2-line display in the lower "OUT" section. Notice that the color
+                    changes from red to light blue. This indicates keyboard input mode, where keyboard presses will
+                    allow keyboard characters to be read using Balaurul's "KEY" instruction.
+                </li>
+                <li>To switch between keyboard shortcut mode and keyboard input mode, click the display.</li>
                 <li>On the front panel, click "STEP M" (or press "r") to step Balaurul by 
                     individual machine cycles, or click "STEP I" (or press "t") to step Balaurul by individual instructions.
                     Observe Balaurul's behavior on the front panel and the monitors.
                 </li>
                 <li>Click "RESET" (or press "e") to set Balaurul's program counter (PC) to zero, clear the 
-                    CARRY and ZERO flags, and set the next machine cycle to "FETCH". Note that all other values
-                    remain unchanged.
+                    CARRY and ZERO flags, clear the two-line display, and set the next machine cycle to "FETCH". 
+                    Note that all other values remain unchanged.
                 </li>
                 <li>Make sure that all yellow input switches are in the "down" position, representing the octal number 0000. 
                     To instantly bring ALL yellow input switches to the "down" position, press "`" (backtick) on your keyboard.
@@ -1020,20 +1030,20 @@
             </p>
 
             <pre>
-    ORIGIN 0000     ; User must load program starting at 0000
+ORIGIN 0000     ; User must load program starting at 0000
     
-    LDI 0003        ; Load the value 3 into the accumulator
-    ADI 0004        ; Add immediate value 4 to accumulator
-    OUT             ; Display accumulator on OUT register
-    HLT             ; Halt</pre>
+LDI 0003        ; Load the value 3 into the accumulator
+ADI 0004        ; Add immediate value 4 to accumulator
+OUT             ; Display accumulator on OUT register
+HLT             ; Halt</pre>
 
             <p>The source code assembled into octal machine code is as follows:</p>
 
             <pre>
-0020 0003   ; At 0000: Load the value 3 into the accumulator
-0021 0004   ; At 0002: Add immediate value 4 to accumulator
-0002        ; At 0004: Display accumulator on OUT register
-0001        ; At 0005: Halt</pre>
+0020 0003       ; At 0000: Load the value 3 into the accumulator
+0021 0004       ; At 0002: Add immediate value 4 to accumulator
+0002            ; At 0004: Display accumulator on OUT register
+0001            ; At 0005: Halt</pre>
 
             <p>Or as a single block:</p>
 
@@ -1060,6 +1070,37 @@
                 <a href="#html_switches">"Exploring the control and input switches"</a> to enter
                 the machine code. Then reset and run Balaurul.
             </p>
+
+            <h3>A simple keyboard monitor</h3>
+
+            <p>The following program will echo pressed keyboard characters to the output display when
+                Balaurul is in keyboard input mode 
+                (see <a href="#html_switches">"Exploring the control and input switches"</a>). Pressing
+                the spacebar will place a space into the output, but pressing other supported special keys 
+                (such as the Return key) will not change the display. See the 
+                <a target="_blank" href="https://github.com/cjsequeira/balaurul/blob/main/README.md">
+                    "KEY" instruction in the Balaurul instruction set
+                </a>
+                for supported keys.
+            </p>
+
+            <pre>
+ORIGIN 0000     ; User must load program starting at 0000
+    
+KEY             ; Scan for pressed key; read into accumulator
+OUT             ; Display accumulator on OUT register
+JMP 0000        ; Jump to beginning</pre>
+
+            <p>The source code assembled into octal machine code is as follows:</p>
+
+            <pre>
+0004            ; At 0000: Scan for pressed key; read into accumulator
+0002            ; At 0001: Display accumulator on OUT register
+0060 0000       ; At 0002: Jump to 0000</pre>
+
+            <p>Or as a single block:</p>
+
+            <pre>0004 0002 0060 0000</pre>
 
             <h3>Sample programs</h3>
 

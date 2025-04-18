@@ -20,9 +20,13 @@ const ITER_LIMIT = FAST_TARGET * 1 / 60;
 // number of elements in LED brightness running average
 const NUM_LED_AVERAGE = 3;
 
+// document BODY tag
+const UI_BODY_TAG = document.getElementsByTagName("body")[0];
+
 // front panel UI elements
 const UI_TEXT_DISPLAY_BG_COLOR_OFF = "rgba(0, 0, 0, 0)";
 const UI_TEXT_DISPLAY_BG_COLOR_ON = "rgba(255, 71, 71, 0.71)";
+const UI_TEXT_DISPLAY_BG_COLOR_FOCUSED = "rgba(209, 237, 255, 0.71)";
 
 const UI_TEXT_FP_LED_CLASS = "led";
 const UI_TEXT_FP_LED_M_ID_PREFIX = "app_12bit_led_m_";
@@ -41,7 +45,7 @@ const UI_NUM_FP_SLIDER_Y = -17;
 const UI_NUM_INPUT_SWITCHES = 12;
 
 const UI_DISPLAY = document.getElementById("app_12bit_out_display");
-const UI_NUM_DISPLAY_MAX_CHARS = 80 * (2 *77);
+const UI_NUM_DISPLAY_MAX_CHARS = 80 * (2 * 77);
 
 const UI_FP_LED_FLAG_CARRY = document.getElementById("app_12bit_led_flag_carry");
 const UI_FP_LED_FLAG_ZERO = document.getElementById("app_12bit_led_flag_zero");
@@ -159,6 +163,9 @@ var app = {
     // holder for keyboard shortcuts
     keys: {},
 
+    // indicator for whether keypresses are keyboard shortcuts or data input
+    key_data: false,
+
     // holders for LED brightnesses
     LEDaccumulators: Array(NUM_LED_AVERAGE).fill(ModuleUI.zeroedLEDaccumulators()),
 
@@ -184,6 +191,9 @@ var app = {
         circuit_spy: false,
 
         input_switches: Array(UI_NUM_INPUT_SWITCHES).fill(false),
+
+        // holder for ASCII code of pressed key in data input mode
+        key_pressed: 0,
     },
 };
 
@@ -231,8 +241,8 @@ function sideEffect_appUpdate() {
         // update CPU just once
         app.cpu.update();
 
-        // update display string if OUT register has been updated
-        if (app.cpu.out_stamp != last_out) display_string += String.fromCharCode(app.cpu.out);
+        // update display string if OUT register has been updated and is NOT null
+        if (app.cpu.out_stamp != last_out && app.cpu.out) display_string += String.fromCharCode(app.cpu.out);
 
         // accumulate LED brightness
         app.LEDaccumulators[0] = ModuleUI.accumulateLEDs(app.cpu, app.LEDaccumulators[0], 1.0);
@@ -248,8 +258,8 @@ function sideEffect_appUpdate() {
             // update CPU
             app.cpu.update();
 
-            // update display string if OUT register has been updated
-            if (app.cpu.out_stamp != last_out) display_string += String.fromCharCode(app.cpu.out);
+            // update display string if OUT register has been updated and is NOT null
+            if (app.cpu.out_stamp != last_out && app.cpu.out) display_string += String.fromCharCode(app.cpu.out);
 
             // accumulate LED brightness
             app.LEDaccumulators[0] = ModuleUI.accumulateLEDs(app.cpu, app.LEDaccumulators[0], update_target);
@@ -642,7 +652,29 @@ function sideEffect_setup() {
 
     };
 
-    document.addEventListener("keyup", (event) => ModuleUI.handleKeys(event, app.keys));
+    // establish document listener for keyboard presses
+    document.addEventListener("keyup", (event) => sideEffect_keyUp(event, app.cpu));
+
+    // try to prevent browser from catching keypresses if keypress mode is data input
+    // from: https://stackoverflow.com/questions/22559830/html-prevent-space-bar-from-scrolling-page 
+    document.addEventListener('keydown', (event) => {
+        if (event.target == document.body && app.key_data) {
+            event.preventDefault();
+        }
+    });
+
+    // set up status change for UI display mouseclick toggle
+    UI_DISPLAY.addEventListener("click", () => {
+        if (app.fp_input.on) {
+            app.key_data = !app.key_data;
+
+            if (app.key_data) {
+                UI_DISPLAY.style.backgroundColor = UI_TEXT_DISPLAY_BG_COLOR_FOCUSED;
+            } else {
+                UI_DISPLAY.style.backgroundColor = UI_TEXT_DISPLAY_BG_COLOR_ON;
+            }
+        }
+    });
 
 
     // **** RESET UI
@@ -735,4 +767,58 @@ function sideEffect_ctrlRAMimport(_, in_cpu) {
 // handle click of "EXPORT RAM"
 function sideEffect_ctrlRAMexport(_, in_cpu) {
     UI_RAM_IMPORT_EXPORT.value = in_cpu.exportRAM();
+}
+
+// handle keypress releases
+function sideEffect_keyUp(event, in_cpu) {
+    if (event.target == UI_BODY_TAG) {
+        // if recipient of key-up is the main body (e.g. not the circuit spy text editor), then ...
+
+        if (!app.key_data) {
+            // if keypress mode is for keyboard shortcuts, then ...
+
+            // get the lowercase version of the pressed key
+            let key = event.key.toLowerCase();
+
+            // execute associated callback for keypress
+            if (key in app.keys) app.keys[key]();
+        } else {
+            // if keypress mode is data input, then ...
+
+            // store the ASCII code for the pressed key
+            switch(event.key) {
+                case "Backspace":
+                    app.fp_input.key_pressed = 8; 
+                    break;
+
+                case "Tab":
+                    app.fp_input.key_pressed = 9;
+                    break;
+
+                case "Enter":
+                    app.fp_input.key_pressed = 13;
+                    break;
+
+                case "Escape":
+                    app.fp_input.key_pressed = 27;
+                    break;
+
+                default: 
+                    // treat all other multi-character key names as 0; convert only ASCII keys
+                    if (event.key.length == 1) {
+                        app.fp_input.key_pressed = event.key.charCodeAt(0);
+                    } else {
+                        app.fp_input.key_pressed = 0;
+                    }
+
+                    break;
+            }
+
+            // rescan CPU inputs
+            in_cpu.scanInputs(app.fp_input);
+
+            // clear key
+            app.fp_input.key_pressed = 0;
+        }
+    }
 }
