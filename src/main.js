@@ -796,7 +796,7 @@ function sideEffect_keyUp(event, in_cpu) {
                     break;
 
                 case "Enter":
-                    app.fp_input.key_pressed = 13;
+                    app.fp_input.key_pressed = 10;
                     break;
 
                 case "Escape":
