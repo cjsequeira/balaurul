@@ -44,6 +44,10 @@ const UI_NUM_FP_SLIDER_X = -20;
 const UI_NUM_FP_SLIDER_Y = -17;
 const UI_NUM_INPUT_SWITCHES = 12;
 
+const UI_NUM_MEM_ROWS = 8;
+const UI_NUM_MEM_COLS = 8;
+const UI_NUM_RAM_PAGE_SIZE = UI_NUM_MEM_ROWS * UI_NUM_MEM_COLS;
+
 const UI_DISPLAY = document.getElementById("app_12bit_out_display");
 const UI_NUM_DISPLAY_MAX_CHARS = 80 * (2 * 77);
 
@@ -79,8 +83,6 @@ const UI_KEY_CONTROL_DEPOSIT_NEXT = "o";
 const UI_CIRCUIT_SPY_REGS_PANEL = document.getElementById("app_12bit_circuit_spy_regs");
 const UI_CIRCUIT_SPY_MEMORY_PANEL = document.getElementById("app_12bit_circuit_spy_memory");
 
-const UI_MEM_ROWS = 8;
-const UI_MEM_COLS = 8;
 
 const UI_TEXT_CIRCUIT_SPY_OPEN_LEFT = "51rem";
 const UI_TEXT_CIRCUIT_SPY_CLOSED_LEFT = "23rem";
@@ -95,11 +97,13 @@ const UI_TEXT_MEM_MAR_CLASS = "mem_mar";
 const UI_TEXT_CPU_CLASS = "cpu";
 const UI_TEXT_HIGHLIGHT_CHANGED_CLASS = "highlight_changed";
 
+const UI_PC_LABEL = document.getElementById("app_12bit_pc_label");
 const UI_PC_BINARY = document.getElementById("app_12bit_pc_binary");
 const UI_PC_OCTAL = document.getElementById("app_12bit_pc_octal");
 const UI_PC_HEX = document.getElementById("app_12bit_pc_hex");
 const UI_PC_DEC = document.getElementById("app_12bit_pc_dec");
 
+const UI_MAR_LABEL = document.getElementById("app_12bit_mar_label");
 const UI_MAR_BINARY = document.getElementById("app_12bit_mar_binary");
 const UI_MAR_OCTAL = document.getElementById("app_12bit_mar_octal");
 const UI_MAR_HEX = document.getElementById("app_12bit_mar_hex");
@@ -136,7 +140,7 @@ const UI_OUT_DEC = document.getElementById("app_12bit_out_dec");
 const UI_OUT_SIGNED_DEC = document.getElementById("app_12bit_out_signed_dec");
 
 const UI_MEM = document.getElementById("app_12bit_memory");
-
+const UI_MEM_PAGE_SELECT = document.getElementById("app_12bit_mem_page_select");
 const UI_RAM_IMPORT_EXPORT = document.getElementById("app_12bit_ram_import_export");
 const UI_CONTROL_RAM_IMPORT = document.getElementById("app_12bit_ram_import");
 const UI_CONTROL_RAM_EXPORT = document.getElementById("app_12bit_ram_export");
@@ -155,7 +159,7 @@ var app = {
         a: 0,
         b: 0,
         out: 0,
-        mem: Array(UI_MEM_COLS * UI_MEM_ROWS),
+        mem: Array(UI_NUM_MEM_COLS * UI_NUM_MEM_ROWS),
     },
 
     // holder for prior computer timestamp
@@ -172,6 +176,9 @@ var app = {
 
     // holder for front panel yellow input switch UI handles
     ui_input_switches: [],
+
+    // holder for currently-displayed RAM page
+    displayed_ram_page: 0,
 
     // input signal lines object
     fp_input: {
@@ -280,6 +287,10 @@ function sideEffect_appUpdate() {
         if (app.fp_input.circuit_spy) {
             // if circuit spy is active, then...
 
+            // calculate modulo values of PC and MAR for RAM display purposes
+            let mod_pc = app.cpu.pc % ModuleCPUconsts.RAM_WORDS;
+            let mod_mar = app.cpu.mar % ModuleCPUconsts.RAM_WORDS;
+
             // show value at PC
             UI_VAL_AT_PC.innerHTML = app.cpu.getWordAt(app.cpu.pc).toString(8).padStart(4, "0");
 
@@ -294,11 +305,22 @@ function sideEffect_appUpdate() {
             UI_ELAPSED_M.innerHTML = app.cpu.elapsed_m.toLocaleString();
             UI_ELAPSED_I.innerHTML = app.cpu.elapsed_i.toLocaleString();
 
-            // draw all RAM values; clear PC and MAR boxes
-            app.cpu.mem.forEach((elem, i) => {
+            // update the memory table row labels to reflect the current RAM page
+            for (let i = 0; i < 8; i++) {
+                document.getElementById(UI_TEXT_MEM_HEADER_ID_PREFIX + i.toString(8)).innerHTML =
+                    app.displayed_ram_page.toString(8).padStart(2, "0")
+                    + i.toString(8)
+                    + "0";
+            }
+
+            // draw all RAM values in the displayed page; clear PC and MAR boxes
+            for (let i = 0; i < UI_NUM_RAM_PAGE_SIZE; i++) {
+                // build offset into memory based on currently-display RAM page
+                let mem_offset = app.displayed_ram_page * UI_NUM_RAM_PAGE_SIZE;
+
                 // update the value in the cell, in octal
                 document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + i.toString(10))
-                    .innerHTML = app.cpu.mem[i].toString(8).padStart(4, "0");
+                    .innerHTML = app.cpu.mem[i + mem_offset].toString(8).padStart(4, "0");
 
                 // clear PC and MAR boxes
                 document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + i.toString(10))
@@ -306,7 +328,7 @@ function sideEffect_appUpdate() {
                     .remove(UI_TEXT_MEM_MAR_CLASS, UI_TEXT_MEM_PC_CLASS);
 
                 // update highlighting
-                if (app.old.mem[i] == elem) {
+                if (app.old.mem[i + mem_offset] == app.cpu.mem[i + mem_offset]) {
                     document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + i.toString(10))
                         .classList
                         .remove(UI_TEXT_HIGHLIGHT_CHANGED_CLASS);
@@ -315,17 +337,19 @@ function sideEffect_appUpdate() {
                         .classList
                         .add(UI_TEXT_HIGHLIGHT_CHANGED_CLASS);
                 }
-            });
+            };
 
-            // box current MAR memory element
-            document.getElementById(
-                UI_TEXT_MEM_CELL_ID_PREFIX + (app.cpu.mar % ModuleCPUconsts.RAM_WORDS).toString(10)
-            ).classList.add(UI_TEXT_MEM_MAR_CLASS);
+            // box current MAR memory element IF it's within the displayed memory page
+            if ((mod_mar >= (app.displayed_ram_page * UI_NUM_RAM_PAGE_SIZE))
+                && (mod_mar < ((app.displayed_ram_page + 1) * UI_NUM_RAM_PAGE_SIZE)))
+                document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (mod_mar % UI_NUM_RAM_PAGE_SIZE).toString(10))
+                    .classList.add(UI_TEXT_MEM_MAR_CLASS);
 
-            // box current PC memory element
-            document.getElementById(
-                UI_TEXT_MEM_CELL_ID_PREFIX + (app.cpu.pc % ModuleCPUconsts.RAM_WORDS).toString(10)
-            ).classList.add(UI_TEXT_MEM_PC_CLASS);
+            // box current PC memory element IF it's within the displayed memory page
+            if ((mod_pc >= (app.displayed_ram_page * UI_NUM_RAM_PAGE_SIZE))
+                && (mod_pc < ((app.displayed_ram_page + 1) * UI_NUM_RAM_PAGE_SIZE)))
+                document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (mod_pc % UI_NUM_RAM_PAGE_SIZE).toString(10))
+                    .classList.add(UI_TEXT_MEM_PC_CLASS);
 
             // update all HTML numerical elements
             ModuleUtil.updateHTMLwithDiff(
@@ -452,6 +476,11 @@ function sideEffect_resetUI() {
     // reset output display
     UI_DISPLAY.style.backgroundColor = UI_TEXT_DISPLAY_BG_COLOR_OFF;
     UI_DISPLAY.textContent = "";
+
+    // reset memory row labels
+    for (let i = 0; i < UI_NUM_MEM_ROWS; i++) {
+        document.getElementById(UI_TEXT_MEM_HEADER_ID_PREFIX + i.toString(8)).innerHTML = "____";
+    }
 }
 
 // set up the UI
@@ -464,13 +493,9 @@ function sideEffect_setup() {
     memory_html += "<tr><td id='" + UI_TEXT_MEM_CELL_ID_PREFIX + "'>&nbsp;</td>";
 
     // column labels
-    for (let j = 0; j < UI_MEM_COLS; j++) {
+    for (let j = 0; j < UI_NUM_MEM_COLS; j++) {
         memory_html += "<th class='"
             + UI_TEXT_MEM_CLASS
-            + "' id='"
-            + UI_TEXT_MEM_HEADER_ID_PREFIX
-            + "0"
-            + j.toString(8)
             + "'>&nbsp;xxx"
             + j
             + "&nbsp;</th>";
@@ -478,20 +503,17 @@ function sideEffect_setup() {
     memory_html += "</tr>";
 
     // each row of memory, with a row label to the left
-    for (let i = 0; i < UI_MEM_ROWS; i++) {
-        // row label
+    for (let i = 0; i < UI_NUM_MEM_ROWS; i++) {
+        // row label -- leave BLANK on startup
         memory_html += "<tr><th class='"
             + UI_TEXT_MEM_CLASS
             + "' id='"
             + UI_TEXT_MEM_HEADER_ID_PREFIX
-            + i
-            + "0"
-            + "'>"
-            + (i * 8).toString(8).padStart(4, '0')
-            + "</th>"
+            + i.toString(8)
+            + "'>____</th>";
 
         // memory value field
-        for (let j = 0; j < UI_MEM_COLS; j++) {
+        for (let j = 0; j < UI_NUM_MEM_COLS; j++) {
             memory_html += "<td class='"
                 + UI_TEXT_CPU_CLASS
                 + "' id='"
@@ -504,6 +526,17 @@ function sideEffect_setup() {
 
     // table closer
     memory_html += "</table>";
+
+
+    // **** BUILD MEMORY PAGE SELECT MENU
+    for (let i = 0; i < (ModuleCPUconsts.RAM_WORDS / UI_NUM_RAM_PAGE_SIZE); i++) {
+        let page = document.createElement("option");
+
+        page.value = i.toString(10);
+        page.text = "Page " + i.toString(8).padStart(2, "0");
+
+        UI_MEM_PAGE_SELECT.add(page);
+    }
 
 
     // **** GENERATE HANDLES FOR FRONT PANEL INPUT SWITCHES
@@ -688,6 +721,26 @@ function sideEffect_setup() {
             }
         }
     });
+
+    // set up callback for RAM page select
+    UI_MEM_PAGE_SELECT.addEventListener("change", (event) => {
+        app.displayed_ram_page = parseInt(event.target.value, 10);
+    })
+
+    // set up callbacks for PC and MAR label mouseclicks
+    UI_PC_LABEL.addEventListener("click", () => {
+        if (app.fp_input.on) {
+            app.displayed_ram_page = (app.cpu.pc >> 6);
+            UI_MEM_PAGE_SELECT.options[app.displayed_ram_page].selected = true;
+        }
+    })
+
+    UI_MAR_LABEL.addEventListener("click", () => {
+        if (app.fp_input.on) {
+            app.displayed_ram_page = (app.cpu.mar >> 6);
+            UI_MEM_PAGE_SELECT.options[app.displayed_ram_page].selected = true;
+        }
+    })
 
 
     // **** RESET UI

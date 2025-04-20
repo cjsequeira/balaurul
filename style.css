@@ -227,7 +227,7 @@ th.mem_mar {
     font-weight: bold;
 }
 
-.pc_ir_m_cycle {
+.circuit_spy_text {
     color: #ffea65;
 
     font-weight: bold;
@@ -345,6 +345,6 @@ th.mem_mar {
     font-family: "Lucida Console", "Courier New", monospace;
     font-size: 0.98rem;
     
-    margin: 0.1rem;
+    margin: 0.4rem 0.1rem 0.1rem 0.1rem;
     padding: 0.2rem;
 }
