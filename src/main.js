@@ -88,6 +88,7 @@ const UI_TEXT_CIRCUIT_SPY_OPEN_TOP = "28.9rem";
 const UI_TEXT_CIRCUIT_SPY_CLOSED_TOP = "0rem";
 
 const UI_TEXT_MEM_CELL_ID_PREFIX = "app_12bit_memcell_";
+const UI_TEXT_MEM_HEADER_ID_PREFIX = "app_12bit_memheader_";
 const UI_TEXT_MEM_CLASS = "memory";
 const UI_TEXT_MEM_PC_CLASS = "mem_pc";
 const UI_TEXT_MEM_MAR_CLASS = "mem_mar";
@@ -464,6 +465,10 @@ function sideEffect_setup() {
     for (let j = 0; j < UI_MEM_COLS; j++) {
         memory_html += "<th class='"
             + UI_TEXT_MEM_CLASS
+            + "' id='"
+            + UI_TEXT_MEM_HEADER_ID_PREFIX
+            + "0"
+            + j.toString(8)
             + "'>&nbsp;xxx"
             + j
             + "&nbsp;</th>";
@@ -475,6 +480,10 @@ function sideEffect_setup() {
         // row label
         memory_html += "<tr><th class='"
             + UI_TEXT_MEM_CLASS
+            + "' id='"
+            + UI_TEXT_MEM_HEADER_ID_PREFIX
+            + i
+            + "0"
             + "'>"
             + (i * 8).toString(8).padStart(4, '0')
             + "</th>"
