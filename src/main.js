@@ -243,16 +243,8 @@ function sideEffect_appUpdate() {
         app.cpu.update();
 
         // update display string if OUT register has been updated and is NOT null
-        if (app.cpu.out_stamp != last_out && app.cpu.out) {
-            // if OUT register is backspace (ASCII code 8), remove one char from tail
-            if (app.cpu.out == 8) {
-                display_string = display_string.substring(0, display_string.length - 1);
-
-            } else {
-                // otherwise, add character
-                display_string += String.fromCharCode(app.cpu.out);
-            }
-        }
+        if (app.cpu.out_stamp != last_out && app.cpu.out)
+            display_string = ModuleUI.updatedDisplayString(app.cpu.out, display_string);
 
         // accumulate LED brightness
         app.LEDaccumulators[0] = ModuleUI.accumulateLEDs(app.cpu, app.LEDaccumulators[0], 1.0);
@@ -269,17 +261,9 @@ function sideEffect_appUpdate() {
             app.cpu.update();
 
             // update display string if OUT register has been updated and is NOT null
-            if (app.cpu.out_stamp != last_out && app.cpu.out) {
-                // if OUT register is backspace (ASCII code 8), remove one char from tail
-                if (app.cpu.out == 8) {
-                    display_string = display_string.substring(0, display_string.length - 1);
+            if (app.cpu.out_stamp != last_out && app.cpu.out)
+                display_string = ModuleUI.updatedDisplayString(app.cpu.out, display_string);
 
-                } else {
-                    // otherwise, add character
-                    display_string += String.fromCharCode(app.cpu.out);
-                }
-            }
-            
             // accumulate LED brightness
             app.LEDaccumulators[0] = ModuleUI.accumulateLEDs(app.cpu, app.LEDaccumulators[0], update_target);
 

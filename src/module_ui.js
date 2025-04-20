@@ -9,7 +9,7 @@ import * as ModuleCPUconsts from "./cpu_consts.js";
 // **** ARROW FUNCTIONS
 // return LED brightnesses with accumulation
 export const accumulateLEDs = (cpu, LEDaccum, divisor) => ({
-     registers: LEDaccum.registers.map((val, i) => ({
+    registers: LEDaccum.registers.map((val, i) => ({
         pc: (cpu.pc & Math.pow(2, i)) ? val.pc + 1.0 / divisor : val.pc,
         ir: (cpu.ir & Math.pow(2, i)) ? val.ir + 1.0 / divisor : val.ir,
         mar: (cpu.mar & Math.pow(2, i)) ? val.mar + 1.0 / divisor : val.mar,
@@ -44,6 +44,15 @@ export const syncedUIvalues = (cpu) => ({
     out: cpu.out,
     mem: cpu.mem.map((elem) => elem),
 })
+
+// return updated display string
+export const updatedDisplayString = (char_code, string) =>
+    (char_code == 8)
+        // if OUT register is backspace (ASCII code 8), remove one char from tail
+        ? string.substring(0, string.length - 1)
+
+        // otherwise, add character
+        : string + String.fromCharCode(char_code)
 
 // return zeroed LED accumulators
 export const zeroedLEDaccumulators = () => ({
