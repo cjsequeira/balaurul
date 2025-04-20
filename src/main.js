@@ -243,7 +243,16 @@ function sideEffect_appUpdate() {
         app.cpu.update();
 
         // update display string if OUT register has been updated and is NOT null
-        if (app.cpu.out_stamp != last_out && app.cpu.out) display_string += String.fromCharCode(app.cpu.out);
+        if (app.cpu.out_stamp != last_out && app.cpu.out) {
+            // if OUT register is backspace (ASCII code 8), remove one char from tail
+            if (app.cpu.out == 8) {
+                display_string = display_string.substring(0, display_string.length - 1);
+
+            } else {
+                // otherwise, add character
+                display_string += String.fromCharCode(app.cpu.out);
+            }
+        }
 
         // accumulate LED brightness
         app.LEDaccumulators[0] = ModuleUI.accumulateLEDs(app.cpu, app.LEDaccumulators[0], 1.0);
@@ -260,8 +269,17 @@ function sideEffect_appUpdate() {
             app.cpu.update();
 
             // update display string if OUT register has been updated and is NOT null
-            if (app.cpu.out_stamp != last_out && app.cpu.out) display_string += String.fromCharCode(app.cpu.out);
+            if (app.cpu.out_stamp != last_out && app.cpu.out) {
+                // if OUT register is backspace (ASCII code 8), remove one char from tail
+                if (app.cpu.out == 8) {
+                    display_string = display_string.substring(0, display_string.length - 1);
 
+                } else {
+                    // otherwise, add character
+                    display_string += String.fromCharCode(app.cpu.out);
+                }
+            }
+            
             // accumulate LED brightness
             app.LEDaccumulators[0] = ModuleUI.accumulateLEDs(app.cpu, app.LEDaccumulators[0], update_target);
 
@@ -795,9 +813,9 @@ function sideEffect_keyUp(event, in_cpu) {
             // if keypress mode is data input, then ...
 
             // store the ASCII code for the pressed key
-            switch(event.key) {
+            switch (event.key) {
                 case "Backspace":
-                    app.fp_input.key_pressed = 8; 
+                    app.fp_input.key_pressed = 8;
                     break;
 
                 case "Tab":
@@ -812,7 +830,7 @@ function sideEffect_keyUp(event, in_cpu) {
                     app.fp_input.key_pressed = 27;
                     break;
 
-                default: 
+                default:
                     // treat all other multi-character key names as 0; convert only ASCII keys
                     if (event.key.length == 1) {
                         app.fp_input.key_pressed = event.key.charCodeAt(0);
