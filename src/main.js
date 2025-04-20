@@ -43,7 +43,10 @@ const UI_TEXT_FP_CONTROL_INPUT_KEYS = Array.from("=-0987654321");
 const UI_NUM_FP_SLIDER_X = -20;
 const UI_NUM_FP_SLIDER_Y = -17;
 const UI_NUM_INPUT_SWITCHES = 12;
-const UI_NUM_RAM_PAGE_SIZE = 64;
+
+const UI_NUM_MEM_ROWS = 8;
+const UI_NUM_MEM_COLS = 8;
+const UI_NUM_RAM_PAGE_SIZE = UI_NUM_MEM_ROWS * UI_NUM_MEM_COLS;
 
 const UI_DISPLAY = document.getElementById("app_12bit_out_display");
 const UI_NUM_DISPLAY_MAX_CHARS = 80 * (2 * 77);
@@ -80,8 +83,6 @@ const UI_KEY_CONTROL_DEPOSIT_NEXT = "o";
 const UI_CIRCUIT_SPY_REGS_PANEL = document.getElementById("app_12bit_circuit_spy_regs");
 const UI_CIRCUIT_SPY_MEMORY_PANEL = document.getElementById("app_12bit_circuit_spy_memory");
 
-const UI_MEM_ROWS = 8;
-const UI_MEM_COLS = 8;
 
 const UI_TEXT_CIRCUIT_SPY_OPEN_LEFT = "51rem";
 const UI_TEXT_CIRCUIT_SPY_CLOSED_LEFT = "23rem";
@@ -96,11 +97,13 @@ const UI_TEXT_MEM_MAR_CLASS = "mem_mar";
 const UI_TEXT_CPU_CLASS = "cpu";
 const UI_TEXT_HIGHLIGHT_CHANGED_CLASS = "highlight_changed";
 
+const UI_PC_LABEL = document.getElementById("app_12bit_pc_label");
 const UI_PC_BINARY = document.getElementById("app_12bit_pc_binary");
 const UI_PC_OCTAL = document.getElementById("app_12bit_pc_octal");
 const UI_PC_HEX = document.getElementById("app_12bit_pc_hex");
 const UI_PC_DEC = document.getElementById("app_12bit_pc_dec");
 
+const UI_MAR_LABEL = document.getElementById("app_12bit_mar_label");
 const UI_MAR_BINARY = document.getElementById("app_12bit_mar_binary");
 const UI_MAR_OCTAL = document.getElementById("app_12bit_mar_octal");
 const UI_MAR_HEX = document.getElementById("app_12bit_mar_hex");
@@ -137,7 +140,7 @@ const UI_OUT_DEC = document.getElementById("app_12bit_out_dec");
 const UI_OUT_SIGNED_DEC = document.getElementById("app_12bit_out_signed_dec");
 
 const UI_MEM = document.getElementById("app_12bit_memory");
-
+const UI_MEM_PAGE_SELECT = document.getElementById("app_12bit_mem_page_select");
 const UI_RAM_IMPORT_EXPORT = document.getElementById("app_12bit_ram_import_export");
 const UI_CONTROL_RAM_IMPORT = document.getElementById("app_12bit_ram_import");
 const UI_CONTROL_RAM_EXPORT = document.getElementById("app_12bit_ram_export");
@@ -156,7 +159,7 @@ var app = {
         a: 0,
         b: 0,
         out: 0,
-        mem: Array(UI_MEM_COLS * UI_MEM_ROWS),
+        mem: Array(UI_NUM_MEM_COLS * UI_NUM_MEM_ROWS),
     },
 
     // holder for prior computer timestamp
@@ -473,6 +476,11 @@ function sideEffect_resetUI() {
     // reset output display
     UI_DISPLAY.style.backgroundColor = UI_TEXT_DISPLAY_BG_COLOR_OFF;
     UI_DISPLAY.textContent = "";
+
+    // reset memory row labels
+    for (let i = 0; i < UI_NUM_MEM_ROWS; i++) {
+        document.getElementById(UI_TEXT_MEM_HEADER_ID_PREFIX + i.toString(8)).innerHTML = "____";
+    }
 }
 
 // set up the UI
@@ -485,7 +493,7 @@ function sideEffect_setup() {
     memory_html += "<tr><td id='" + UI_TEXT_MEM_CELL_ID_PREFIX + "'>&nbsp;</td>";
 
     // column labels
-    for (let j = 0; j < UI_MEM_COLS; j++) {
+    for (let j = 0; j < UI_NUM_MEM_COLS; j++) {
         memory_html += "<th class='"
             + UI_TEXT_MEM_CLASS
             + "'>&nbsp;xxx"
@@ -495,19 +503,17 @@ function sideEffect_setup() {
     memory_html += "</tr>";
 
     // each row of memory, with a row label to the left
-    for (let i = 0; i < UI_MEM_ROWS; i++) {
-        // row label
+    for (let i = 0; i < UI_NUM_MEM_ROWS; i++) {
+        // row label -- leave BLANK on startup
         memory_html += "<tr><th class='"
             + UI_TEXT_MEM_CLASS
             + "' id='"
             + UI_TEXT_MEM_HEADER_ID_PREFIX
             + i.toString(8)
-            + "'>"
-            + (i * 8).toString(8).padStart(4, '0')
-            + "</th>"
+            + "'>____</th>";
 
         // memory value field
-        for (let j = 0; j < UI_MEM_COLS; j++) {
+        for (let j = 0; j < UI_NUM_MEM_COLS; j++) {
             memory_html += "<td class='"
                 + UI_TEXT_CPU_CLASS
                 + "' id='"
@@ -520,6 +526,17 @@ function sideEffect_setup() {
 
     // table closer
     memory_html += "</table>";
+
+
+    // **** BUILD MEMORY PAGE SELECT MENU
+    for (let i = 0; i < (ModuleCPUconsts.RAM_WORDS / UI_NUM_RAM_PAGE_SIZE); i++) {
+        let page = document.createElement("option");
+
+        page.value = i.toString(10);
+        page.text = "Page " + i.toString(8).padStart(2, "0");
+
+        UI_MEM_PAGE_SELECT.add(page);
+    }
 
 
     // **** GENERATE HANDLES FOR FRONT PANEL INPUT SWITCHES
@@ -704,6 +721,26 @@ function sideEffect_setup() {
             }
         }
     });
+
+    // set up callback for RAM page select
+    UI_MEM_PAGE_SELECT.addEventListener("change", (event) => {
+        app.displayed_ram_page = parseInt(event.target.value, 10);
+    })
+
+    // set up callbacks for PC and MAR label mouseclicks
+    UI_PC_LABEL.addEventListener("click", () => {
+        if (app.fp_input.on) {
+            app.displayed_ram_page = (app.cpu.pc >> 6);
+            UI_MEM_PAGE_SELECT.options[app.displayed_ram_page].selected = true;
+        }
+    })
+
+    UI_MAR_LABEL.addEventListener("click", () => {
+        if (app.fp_input.on) {
+            app.displayed_ram_page = (app.cpu.mar >> 6);
+            UI_MEM_PAGE_SELECT.options[app.displayed_ram_page].selected = true;
+        }
+    })
 
 
     // **** RESET UI
