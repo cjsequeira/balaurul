@@ -174,6 +174,9 @@ var app = {
     // holder for front panel yellow input switch UI handles
     ui_input_switches: [],
 
+    // holder for currently-displayed RAM page
+    displayed_ram_page: 0,
+
     // input signal lines object
     fp_input: {
         on: false,
@@ -281,6 +284,10 @@ function sideEffect_appUpdate() {
         if (app.fp_input.circuit_spy) {
             // if circuit spy is active, then...
 
+            // calculate modulo values of PC and MAR for RAM display purposes
+            let mod_pc = app.cpu.pc % ModuleCPUconsts.RAM_WORDS;
+            let mod_mar = app.cpu.mar % ModuleCPUconsts.RAM_WORDS;
+
             // show value at PC
             UI_VAL_AT_PC.innerHTML = app.cpu.getWordAt(app.cpu.pc).toString(8).padStart(4, "0");
 
@@ -295,11 +302,22 @@ function sideEffect_appUpdate() {
             UI_ELAPSED_M.innerHTML = app.cpu.elapsed_m.toLocaleString();
             UI_ELAPSED_I.innerHTML = app.cpu.elapsed_i.toLocaleString();
 
+            // update the memory table row labels to reflect the current RAM page
+            for (let i = 0; i < 8; i++) {
+                document.getElementById(UI_TEXT_MEM_HEADER_ID_PREFIX + i.toString(8)).innerHTML =
+                    app.displayed_ram_page.toString(8).padStart(2, "0")
+                    + i.toString(8)
+                    + "0";
+            }
+
             // draw all RAM values in the displayed page; clear PC and MAR boxes
             for (let i = 0; i < UI_NUM_RAM_PAGE_SIZE; i++) {
+                // build offset into memory based on currently-display RAM page
+                let mem_offset = app.displayed_ram_page * UI_NUM_RAM_PAGE_SIZE;
+
                 // update the value in the cell, in octal
                 document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + i.toString(10))
-                    .innerHTML = app.cpu.mem[i].toString(8).padStart(4, "0");
+                    .innerHTML = app.cpu.mem[i + mem_offset].toString(8).padStart(4, "0");
 
                 // clear PC and MAR boxes
                 document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + i.toString(10))
@@ -307,7 +325,7 @@ function sideEffect_appUpdate() {
                     .remove(UI_TEXT_MEM_MAR_CLASS, UI_TEXT_MEM_PC_CLASS);
 
                 // update highlighting
-                if (app.old.mem[i] == app.cpu.mem[i]) {
+                if (app.old.mem[i + mem_offset] == app.cpu.mem[i + mem_offset]) {
                     document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + i.toString(10))
                         .classList
                         .remove(UI_TEXT_HIGHLIGHT_CHANGED_CLASS);
@@ -319,13 +337,15 @@ function sideEffect_appUpdate() {
             };
 
             // box current MAR memory element IF it's within the displayed memory page
-            if (app.cpu.mar < UI_NUM_RAM_PAGE_SIZE)
-                document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (app.cpu.mar).toString(10))
+            if ((mod_mar >= (app.displayed_ram_page * UI_NUM_RAM_PAGE_SIZE))
+                && (mod_mar < ((app.displayed_ram_page + 1) * UI_NUM_RAM_PAGE_SIZE)))
+                document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (mod_mar % UI_NUM_RAM_PAGE_SIZE).toString(10))
                     .classList.add(UI_TEXT_MEM_MAR_CLASS);
 
             // box current PC memory element IF it's within the displayed memory page
-            if (app.cpu.pc < UI_NUM_RAM_PAGE_SIZE)
-                document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (app.cpu.pc).toString(10))
+            if ((mod_pc >= (app.displayed_ram_page * UI_NUM_RAM_PAGE_SIZE))
+                && (mod_pc < ((app.displayed_ram_page + 1) * UI_NUM_RAM_PAGE_SIZE)))
+                document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (mod_pc % UI_NUM_RAM_PAGE_SIZE).toString(10))
                     .classList.add(UI_TEXT_MEM_PC_CLASS);
 
             // update all HTML numerical elements
@@ -468,10 +488,6 @@ function sideEffect_setup() {
     for (let j = 0; j < UI_MEM_COLS; j++) {
         memory_html += "<th class='"
             + UI_TEXT_MEM_CLASS
-            + "' id='"
-            + UI_TEXT_MEM_HEADER_ID_PREFIX
-            + "0"
-            + j.toString(8)
             + "'>&nbsp;xxx"
             + j
             + "&nbsp;</th>";
@@ -485,8 +501,7 @@ function sideEffect_setup() {
             + UI_TEXT_MEM_CLASS
             + "' id='"
             + UI_TEXT_MEM_HEADER_ID_PREFIX
-            + i
-            + "0"
+            + i.toString(8)
             + "'>"
             + (i * 8).toString(8).padStart(4, '0')
             + "</th>"
