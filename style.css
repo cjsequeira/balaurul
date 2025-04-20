@@ -345,6 +345,6 @@ th.mem_mar {
     font-family: "Lucida Console", "Courier New", monospace;
     font-size: 0.98rem;
     
-    margin: 0.1rem;
+    margin: 0.4rem 0.1rem 0.1rem 0.1rem;
     padding: 0.2rem;
 }

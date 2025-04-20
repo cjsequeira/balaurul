@@ -2,14 +2,14 @@
 
 // **** CPU CONSTANTS
 
-// number of words in RAM
-export const RAM_WORDS = 64;
-
 // bit size of CPU
 export const BITS = 12;
 
+// number of words in RAM
+export const RAM_WORDS = Math.pow(2, BITS);
+
 // storage location for program counter during CALL
-export const CALL_ADDR = 0o77;
+export const CALL_ADDR = RAM_WORDS - 1;
 
 // machine cycle names
 export const M_CYCLE_NAMES = {

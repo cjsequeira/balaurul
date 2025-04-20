@@ -43,6 +43,7 @@ const UI_TEXT_FP_CONTROL_INPUT_KEYS = Array.from("=-0987654321");
 const UI_NUM_FP_SLIDER_X = -20;
 const UI_NUM_FP_SLIDER_Y = -17;
 const UI_NUM_INPUT_SWITCHES = 12;
+const UI_NUM_RAM_PAGE_SIZE = 64;
 
 const UI_DISPLAY = document.getElementById("app_12bit_out_display");
 const UI_NUM_DISPLAY_MAX_CHARS = 80 * (2 * 77);
@@ -294,8 +295,8 @@ function sideEffect_appUpdate() {
             UI_ELAPSED_M.innerHTML = app.cpu.elapsed_m.toLocaleString();
             UI_ELAPSED_I.innerHTML = app.cpu.elapsed_i.toLocaleString();
 
-            // draw all RAM values; clear PC and MAR boxes
-            app.cpu.mem.forEach((elem, i) => {
+            // draw all RAM values in the displayed page; clear PC and MAR boxes
+            for (let i = 0; i < UI_NUM_RAM_PAGE_SIZE; i++) {
                 // update the value in the cell, in octal
                 document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + i.toString(10))
                     .innerHTML = app.cpu.mem[i].toString(8).padStart(4, "0");
@@ -306,7 +307,7 @@ function sideEffect_appUpdate() {
                     .remove(UI_TEXT_MEM_MAR_CLASS, UI_TEXT_MEM_PC_CLASS);
 
                 // update highlighting
-                if (app.old.mem[i] == elem) {
+                if (app.old.mem[i] == app.cpu.mem[i]) {
                     document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + i.toString(10))
                         .classList
                         .remove(UI_TEXT_HIGHLIGHT_CHANGED_CLASS);
@@ -315,17 +316,17 @@ function sideEffect_appUpdate() {
                         .classList
                         .add(UI_TEXT_HIGHLIGHT_CHANGED_CLASS);
                 }
-            });
+            };
 
-            // box current MAR memory element
-            document.getElementById(
-                UI_TEXT_MEM_CELL_ID_PREFIX + (app.cpu.mar % ModuleCPUconsts.RAM_WORDS).toString(10)
-            ).classList.add(UI_TEXT_MEM_MAR_CLASS);
+            // box current MAR memory element IF it's within the displayed memory page
+            if (app.cpu.mar < UI_NUM_RAM_PAGE_SIZE)
+                document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (app.cpu.mar).toString(10))
+                    .classList.add(UI_TEXT_MEM_MAR_CLASS);
 
-            // box current PC memory element
-            document.getElementById(
-                UI_TEXT_MEM_CELL_ID_PREFIX + (app.cpu.pc % ModuleCPUconsts.RAM_WORDS).toString(10)
-            ).classList.add(UI_TEXT_MEM_PC_CLASS);
+            // box current PC memory element IF it's within the displayed memory page
+            if (app.cpu.pc < UI_NUM_RAM_PAGE_SIZE)
+                document.getElementById(UI_TEXT_MEM_CELL_ID_PREFIX + (app.cpu.pc).toString(10))
+                    .classList.add(UI_TEXT_MEM_PC_CLASS);
 
             // update all HTML numerical elements
             ModuleUtil.updateHTMLwithDiff(
