@@ -692,7 +692,9 @@ function sideEffect_setup() {
 
     // set up status change for UI display mouseclick toggle
     UI_DISPLAY.addEventListener("click", () => {
-        if (app.fp_input.on) {
+        if ((app.fp_input.on) && (document.getSelection().toString().length < 1)) {
+            // only change mode if CPU is on AND user did not select any text
+
             app.key_data = !app.key_data;
 
             if (app.key_data) {
