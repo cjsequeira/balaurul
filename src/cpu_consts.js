@@ -24,6 +24,23 @@ export const M_CYCLE_NAMES = {
     OUT: "out",
 };
 
+// exportRAM messages
+export const MSG_EXPORT_RAM = {
+    INVALID_ADDR: "ERR: Invalid address",
+    NOT_ON: "ERR: CPU not on",
+    SUCCESS: "Exported from: ",
+}
+
+// replaceRAM messages
+export const MSG_REPLACE_RAM = {
+    INVALID_ADDR: "ERR: Invalid address",
+    NOT_ON: "ERR: CPU not on",
+    NOT_STOPPED: "ERR: CPU not stopped",
+    NO_VALID_DATA: "ERR: No valid data",
+    SUCCESS: "Imported at: ",
+};
+
+// opcodes
 export const OPCODES = [
     // **** 0o00 - 0o07: SPECIAL INSTRUCTIONS
     // 0o00: NOP: No operation (just increment PC); 0 operands

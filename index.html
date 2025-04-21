@@ -899,8 +899,21 @@
             <div id="app_12bit_memory" class="memory"></div>
 
             <!-- area for RAM import and export -->
+            <div class="circuit_spy_text">
+                Load to / export from:
+                <input
+                    type="text"
+                    id="app_12bit_ram_address"
+                    size="5"
+                    minlength="4"
+                    maxlength="4"
+                >
+                <span id="app_12bit_ram_import_status"></span>
+            </div>
+
             <div class="ram_import_export">
                 <textarea id="app_12bit_ram_import_export"></textarea>
+
                 <div>
                     <button id="app_12bit_ram_import">IMPORT TO RAM</button>
                     <button id="app_12bit_ram_export">EXPORT FROM RAM</button>
@@ -1032,8 +1045,9 @@
                 <li>Click "DEPOSIT NEXT" (or press "o"). Balaurul will increment the PC by one word (to 0041), 
                     deposit the value 7000 at that memory location, and display the value on the OUT register.
                 </li>
-                <li>Open the circuit spy and click "EXPORT FROM RAM". All words of memory will be displayed as octal
-                    values in the text box, where they can be copied, modified, and re-imported to memory.
+                <li>Open the circuit spy, enter the number 0 in the "Load to / export from" box, and click 
+                    "EXPORT FROM RAM". All words of memory will be displayed as octal values in the text 
+                    box, where they can be copied, modified, and re-imported to memory.
                 </li>
             </ol>
 
@@ -1074,6 +1088,7 @@ HLT             ; Halt</pre>
                 <li>Copy the single block of machine code (above) and paste it into the text box within
                     the memory monitor panel. 
                 </li>
+                <li>Type the number 0 into the "Load to / export from" box.</li>
                 <li>Click the "IMPORT TO RAM" button. Balaurul will import the text box contents into
                     memory, starting at memory location 0000. The memory monitor will then show the 
                     imported values.</li>

@@ -83,7 +83,6 @@ const UI_KEY_CONTROL_DEPOSIT_NEXT = "o";
 const UI_CIRCUIT_SPY_REGS_PANEL = document.getElementById("app_12bit_circuit_spy_regs");
 const UI_CIRCUIT_SPY_MEMORY_PANEL = document.getElementById("app_12bit_circuit_spy_memory");
 
-
 const UI_TEXT_CIRCUIT_SPY_OPEN_LEFT = "51rem";
 const UI_TEXT_CIRCUIT_SPY_CLOSED_LEFT = "23rem";
 const UI_TEXT_CIRCUIT_SPY_OPEN_TOP = "28.9rem";
@@ -141,6 +140,8 @@ const UI_OUT_SIGNED_DEC = document.getElementById("app_12bit_out_signed_dec");
 
 const UI_MEM = document.getElementById("app_12bit_memory");
 const UI_MEM_PAGE_SELECT = document.getElementById("app_12bit_mem_page_select");
+const UI_MEM_IMPORT_ADDR = document.getElementById("app_12bit_ram_address");
+const UI_MEM_IMPORT_STATUS = document.getElementById("app_12bit_ram_import_status");
 const UI_RAM_IMPORT_EXPORT = document.getElementById("app_12bit_ram_import_export");
 const UI_CONTROL_RAM_IMPORT = document.getElementById("app_12bit_ram_import");
 const UI_CONTROL_RAM_EXPORT = document.getElementById("app_12bit_ram_export");
@@ -481,6 +482,9 @@ function sideEffect_resetUI() {
     for (let i = 0; i < UI_NUM_MEM_ROWS; i++) {
         document.getElementById(UI_TEXT_MEM_HEADER_ID_PREFIX + i.toString(8)).innerHTML = "____";
     }
+
+    // reset memory import status message
+    UI_MEM_IMPORT_STATUS.innerHTML = "";
 }
 
 // set up the UI
@@ -827,12 +831,15 @@ function sideEffect_ctrlButtonUp(fp_signals, in_cpu, ui_button, input_key) {
 
 // handle click of "IMPORT RAM"
 function sideEffect_ctrlRAMimport(_, in_cpu) {
-    in_cpu.replaceRAM(UI_RAM_IMPORT_EXPORT.value);
+    UI_MEM_IMPORT_STATUS.innerHTML = in_cpu.replaceRAM(
+        UI_RAM_IMPORT_EXPORT.value, 
+        Number.parseInt(UI_MEM_IMPORT_ADDR.value, 8)
+    );
 }
 
 // handle click of "EXPORT RAM"
 function sideEffect_ctrlRAMexport(_, in_cpu) {
-    UI_RAM_IMPORT_EXPORT.value = in_cpu.exportRAM();
+    UI_RAM_IMPORT_EXPORT.value = in_cpu.exportRAM(Number.parseInt(UI_MEM_IMPORT_ADDR.value, 8));
 }
 
 // handle keypress releases

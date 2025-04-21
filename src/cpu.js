@@ -54,21 +54,40 @@ export class CPU {
     }
 
     // export RAM as octal strings if CPU is on; else export empty string
-    exportRAM() {
+    exportRAM(in_addr) {
+        // init holder for RAM export
         let ram_string = "";
 
-        if (this.status.on) {
-            // get number of octal digits in a CPU word, based on ModuleCPUconsts.BITS
-            // an octal digit is three bits in size
-            let num_digits = Math.round(ModuleCPUconsts.BITS / 3);
+        // init pointer to hold current CPU RAM word being populated
+        let pointer = null;
 
-            // iterate through all words in memory, adding a line break every 8 words
-            this.mem.forEach((value, i) => {
-                if (((i % 8) == 0) && (i > 0)) ram_string += "\r\n";
 
-                ram_string += value.toString(8).padStart(num_digits, "0") + " ";
-            });
-        }
+
+        // verify that the CPU is on
+        if (!this.status.on)
+            return ModuleCPUconsts.MSG_EXPORT_RAM.NOT_ON;
+
+        // verify that the address is an integer
+        if (!Number.isInteger(in_addr))
+            return ModuleCPUconsts.MSG_EXPORT_RAM.INVALID_ADDR;
+
+        // verify that the address is within range 
+        if ((in_addr < 0) || (in_addr > ModuleCPUconsts.RAM_WORDS))
+            return ModuleCPUconsts.MSG_EXPORT_RAM.INVALID_ADDR;
+
+        // set first CPU RAM word to be extracted
+        pointer = in_addr;
+
+        // get number of octal digits in a CPU word, based on ModuleCPUconsts.BITS
+        // an octal digit is three bits in size
+        let num_digits = Math.round(ModuleCPUconsts.BITS / 3);
+
+        // iterate through all words in memory, adding a line break to align with octal boundaries
+        for (let i = pointer; i < this.mem.length; i++) {
+            if (((i % 8) == 0) && (i > pointer)) ram_string += "\r\n";
+
+            ram_string += this.mem[i].toString(8).padStart(num_digits, "0") + " ";
+        };
 
         return ram_string;
     }
@@ -202,43 +221,67 @@ export class CPU {
     // all characters not 0 through 7 are ignored (skipped)
     // if there are fewer words than ModuleCPUconsts.RAM_WORDS, zeros are added to the end
     // if there are more words than ModuleCPUconsts.RAM_WORDS, just the first ModuleCPUconsts.RAM_WORDS are stored
-    replaceRAM(in_string) {
-        if ((this.status.on) && (!this.status.running) && (!this.status.halted)) {
-            // if CPU is on AND CPU is not running, then...
+    replaceRAM(in_string, in_addr) {
+        // string containing valid octal digits
+        let octal = "01234567";
 
-            // string containing valid octal digits
-            let octal = "01234567";
+        // get number of octal digits in a CPU word, based on ModuleCPUconsts.BITS
+        // an octal digit is three bits in size
+        let num_digits = Math.round(ModuleCPUconsts.BITS / 3);
 
-            // pointer to current CPU RAM word being populated
-            let pointer = 0;
+        // init holder for octal words
+        let word_string = "";
 
-            // get number of octal digits in a CPU word, based on ModuleCPUconsts.BITS
-            // an octal digit is three bits in size
-            let num_digits = Math.round(ModuleCPUconsts.BITS / 3);
-            let word_string = "";
+        // init pointer to hold current CPU RAM word being populated
+        let pointer = null;
 
-            // convert RAM input string to array for iteration
-            let input = Array.from(in_string);
+        // verify that the CPU is on
+        if (!this.status.on)
+            return ModuleCPUconsts.MSG_REPLACE_RAM.NOT_ON;
 
-            // iterate through each character of input array 
-            input.forEach((char) => {
-                if ((octal.indexOf(char) >= 0) && (pointer < this.mem.length)) {
-                    // if character is an octal digit AND there is still RAM to replace, then...
+        // verify that the CPU is stopped
+        if ((this.status.running) || (this.status.halted))
+            return ModuleCPUconsts.MSG_REPLACE_RAM.NOT_STOPPED;
 
-                    // add to word string
-                    word_string += char;
+        // verify that the address is an integer
+        if (!Number.isInteger(in_addr))
+            return ModuleCPUconsts.MSG_REPLACE_RAM.INVALID_ADDR;
 
-                    // if word string now contains enough digits, write to RAM and reset string
-                    if (word_string.length == num_digits) {
-                        this.mem[pointer] = parseInt(word_string, 8);
+        // verify that the address is within range 
+        if ((in_addr < 0) || (in_addr > ModuleCPUconsts.RAM_WORDS))
+            return ModuleCPUconsts.MSG_REPLACE_RAM.INVALID_ADDR;
 
-                        // reset word string and point to next word in RAM
-                        word_string = "";
-                        pointer++;
-                    }
+        // set first CPU RAM word to be populated
+        pointer = in_addr;
+
+        // convert RAM input string to array for iteration
+        let input = Array.from(in_string);
+
+        // iterate through each character of input array 
+        input.forEach((char) => {
+            if ((octal.indexOf(char) >= 0) && (pointer < this.mem.length)) {
+                // if character is an octal digit AND there is still RAM to replace, then...
+
+                // add to word string
+                word_string += char;
+
+                // if word string now contains enough digits, write to RAM and reset string
+                if (word_string.length == num_digits) {
+                    this.mem[pointer] = parseInt(word_string, 8);
+
+                    // reset word string and point to next word in RAM
+                    word_string = "";
+                    pointer++;
                 }
-            });
-        }
+            }
+        });
+
+        // if the pointer is still the same as the input address, then we didn't import anything!
+        if (pointer == in_addr)
+            return ModuleCPUconsts.MSG_REPLACE_RAM.NO_VALID_DATA;
+
+        // if we made it through all that, then return success message
+        return (ModuleCPUconsts.MSG_REPLACE_RAM.SUCCESS + in_addr.toString(8).padStart(4, "0"));
     }
 
     // scan input lines and adjust CPU status accordingly
