@@ -548,7 +548,7 @@ function m_cmpBwithA(cpu) {
 
     // set carry flag appropriately
     // carry calc is inspired by the Intel 8080 Assembly Language Programmers Manual, Rev. B, 1975
-    cpu.flags.carry = (temp >= Math.pow(2, BITS));
+    cpu.flags.carry = (temp < Math.pow(2, BITS));
 
     // restrict temp to only BITS in size
     temp %= Math.pow(2, BITS);
