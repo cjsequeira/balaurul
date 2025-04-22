@@ -51,8 +51,13 @@ export const updatedDisplayString = (char_code, string) =>
         // if OUT register is backspace (ASCII code 8), remove one char from tail
         ? string.substring(0, string.length - 1)
 
-        // otherwise, add character
-        : string + String.fromCharCode(char_code)
+        // otherwise...
+        : (char_code == 27)
+            // if OUT register is escape (ASCII code 27), return empty string
+            ? ""
+
+            // otherwise, return string with appended character
+            : string + String.fromCharCode(char_code)
 
 // return zeroed LED accumulators
 export const zeroedLEDaccumulators = () => ({
