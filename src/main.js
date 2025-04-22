@@ -49,7 +49,7 @@ const UI_NUM_MEM_COLS = 8;
 const UI_NUM_RAM_PAGE_SIZE = UI_NUM_MEM_ROWS * UI_NUM_MEM_COLS;
 
 const UI_DISPLAY = document.getElementById("app_12bit_out_display");
-const UI_NUM_DISPLAY_MAX_CHARS = 80 * (2 * 77);
+const UI_NUM_DISPLAY_MAX_CHARS = 200 * 77;
 
 const UI_FP_LED_FLAG_CARRY = document.getElementById("app_12bit_led_flag_carry");
 const UI_FP_LED_FLAG_ZERO = document.getElementById("app_12bit_led_flag_zero");
@@ -85,7 +85,7 @@ const UI_CIRCUIT_SPY_MEMORY_PANEL = document.getElementById("app_12bit_circuit_s
 
 const UI_TEXT_CIRCUIT_SPY_OPEN_LEFT = "51rem";
 const UI_TEXT_CIRCUIT_SPY_CLOSED_LEFT = "23rem";
-const UI_TEXT_CIRCUIT_SPY_OPEN_TOP = "28.9rem";
+const UI_TEXT_CIRCUIT_SPY_OPEN_TOP = "34.1rem";
 const UI_TEXT_CIRCUIT_SPY_CLOSED_TOP = "0rem";
 
 const UI_TEXT_MEM_CELL_ID_PREFIX = "app_12bit_memcell_";
