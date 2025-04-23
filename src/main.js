@@ -166,6 +166,9 @@ var app = {
     // holder for prior computer timestamp
     last_time: 0,
 
+    // holder for whether web browser document is in focus
+    focus: false,
+
     // holder for keyboard shortcuts
     keys: {},
 
@@ -700,13 +703,20 @@ function sideEffect_setup() {
 
     };
 
+    // establish document listeners for gaining and losing focus
+    document.addEventListener("focus", () => app.focus = true);
+    document.addEventListener("blur", () => app.focus = false);
+
+    // we assume application begins with document in focus!
+    app.focus = true;
+
     // establish document listener for keyboard presses
     document.addEventListener("keyup", (event) => sideEffect_keyUp(event, app.cpu));
 
-    // try to prevent browser from catching keypresses if keypress mode is data input
+    // try to prevent browser from catching keypresses if keypress mode is data input AND document is in focus
     // from: https://stackoverflow.com/questions/22559830/html-prevent-space-bar-from-scrolling-page 
     document.addEventListener('keydown', (event) => {
-        if (event.target == document.body && app.key_data) {
+        if (event.target == document.body && app.key_data && app.focus) {
             event.preventDefault();
         }
     });
