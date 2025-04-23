@@ -61,8 +61,6 @@ export class CPU {
         // init pointer to hold current CPU RAM word being populated
         let pointer = null;
 
-
-
         // verify that the CPU is on
         if (!this.status.on)
             return ModuleCPUconsts.MSG_EXPORT_RAM.NOT_ON;
@@ -239,8 +237,8 @@ export class CPU {
         if (!this.status.on)
             return ModuleCPUconsts.MSG_REPLACE_RAM.NOT_ON;
 
-        // verify that the CPU is stopped
-        if ((this.status.running) || (this.status.halted))
+        // verify that the CPU is not running (halt status is okay!)
+        if (this.status.running)
             return ModuleCPUconsts.MSG_REPLACE_RAM.NOT_STOPPED;
 
         // verify that the address is an integer
