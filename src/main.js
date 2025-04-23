@@ -713,12 +713,14 @@ function sideEffect_setup() {
     // establish document listener for keyboard presses
     document.addEventListener("keyup", (event) => sideEffect_keyUp(event, app.cpu));
 
-    // try to prevent browser from catching keypresses if keypress mode is data input AND document is in focus
+    // try to prevent browser from catching keypresses if: 
+    //  CPU is on
+    //  AND keypress mode is data input
+    //  AND document is in focus
     // from: https://stackoverflow.com/questions/22559830/html-prevent-space-bar-from-scrolling-page 
     document.addEventListener('keydown', (event) => {
-        if (event.target == document.body && app.key_data && app.focus) {
+        if ((event.target == document.body) && app.key_data && app.focus && app.fp_input.on)
             event.preventDefault();
-        }
     });
 
     // set up status change for UI display mouseclick toggle
@@ -784,6 +786,9 @@ function sideEffect_ctrlOnOff(fp_signals, in_cpu) {
     fp_signals.on = !fp_signals.on;
     in_cpu.scanInputs(fp_signals);
 
+    // reset keyboard input mode
+    app.key_data = false;
+
     // reset visual UI
     sideEffect_resetUI();
 
@@ -791,9 +796,8 @@ function sideEffect_ctrlOnOff(fp_signals, in_cpu) {
     app.LEDaccumulators = Array(NUM_LED_AVERAGE).fill(ModuleUI.zeroedLEDaccumulators());
 
     // turn on display if CPU is now on
-    if (fp_signals.on) {
+    if (fp_signals.on)
         UI_DISPLAY.style.backgroundColor = UI_TEXT_DISPLAY_BG_COLOR_ON;
-    }
 }
 
 function sideEffect_ctrlRunStop(fp_signals, in_cpu) {
@@ -842,7 +846,7 @@ function sideEffect_ctrlButtonUp(fp_signals, in_cpu, ui_button, input_key) {
 // handle click of "IMPORT RAM"
 function sideEffect_ctrlRAMimport(_, in_cpu) {
     UI_MEM_IMPORT_STATUS.innerHTML = in_cpu.replaceRAM(
-        UI_RAM_IMPORT_EXPORT.value, 
+        UI_RAM_IMPORT_EXPORT.value,
         Number.parseInt(UI_MEM_IMPORT_ADDR.value, 8)
     );
 }
